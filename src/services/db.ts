@@ -21,7 +21,7 @@ import {
   SystemAccessUser,
   PanelModuleId,
 } from '../types';
-
+import { pushDatabaseToSupabase } from './supabaseSync';
 
 const DB_STORAGE_KEY = 'macdp_db_data_v2';
 
@@ -1609,6 +1609,10 @@ export function saveDatabase(data: DatabaseSchema): void {
   try {
     localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(data));
     window.dispatchEvent(new CustomEvent('igreja_db_updated'));
+    // Sincroniza em segundo plano no Supabase
+    pushDatabaseToSupabase(data).catch((err) => {
+      console.warn('Sync com Supabase pendente:', err);
+    });
   } catch (err) {
     console.error('Erro ao salvar banco de dados no localStorage:', err);
   }

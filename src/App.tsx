@@ -3,6 +3,8 @@ import { DatabaseSchema, Sermon, ChurchEvent, UserRole, UserSession } from './ty
 import { getDatabase, calculateChurchStats, addEventRegistration } from './services/db';
 import { getCurrentUser, switchUserRole } from './services/authService';
 import { formatDate } from './utils/formatters';
+import { pullDatabaseFromSupabase, pushDatabaseToSupabase, subscribeToSupabaseRealtime } from './services/supabaseSync';
+import { isSupabaseConfigured } from './services/supabase';
 
 // Common Components
 import { Navbar } from './components/common/Navbar';
@@ -139,6 +141,34 @@ export function App() {
     };
     window.addEventListener('igreja_db_updated', handleDbUpdate);
     return () => window.removeEventListener('igreja_db_updated', handleDbUpdate);
+  }, []);
+
+  // Inicialização e Sincronização em Tempo Real com Supabase
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    // 1. Busca dados em nuvem do Supabase
+    pullDatabaseFromSupabase().then((remoteDb) => {
+      if (remoteDb && remoteDb.events && remoteDb.events.length > 0) {
+        setDb(remoteDb);
+        localStorage.setItem('macdp_db_data_v2', JSON.stringify(remoteDb));
+      } else {
+        // Se ainda não houver dados no Supabase, sobe os dados locais atuais como semente inicial
+        const currentLocal = getDatabase();
+        pushDatabaseToSupabase(currentLocal);
+      }
+    });
+
+    // 2. Conecta canal em tempo real para sincronização instantânea
+    const unsubscribe = subscribeToSupabaseRealtime((updatedDb) => {
+      setDb(updatedDb);
+      localStorage.setItem('macdp_db_data_v2', JSON.stringify(updatedDb));
+      addNotification('info', 'Dados sincronizados com o Supabase em tempo real!');
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const addNotification = (type: 'success' | 'error' | 'info', text: string) => {
