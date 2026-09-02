@@ -30,6 +30,7 @@ interface AdminLayoutProps {
   currentTab: string;
   onTabChange: (tab: string) => void;
   onBackToPublic: () => void;
+  onLogout?: () => void;
   currentUser: UserSession;
   onSwitchRole: (role: UserRole) => void;
   isDarkMode: boolean;
@@ -42,6 +43,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   currentTab,
   onTabChange,
   onBackToPublic,
+  onLogout,
   currentUser,
   onSwitchRole,
   isDarkMode,
@@ -185,11 +187,30 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           <button
             onClick={onBackToPublic}
             className="btn btn-secondary btn-sm"
-            style={{ width: '100%', gap: '0.5rem', marginBottom: '0.75rem' }}
+            style={{ width: '100%', gap: '0.5rem', marginBottom: '0.5rem' }}
           >
             <ArrowLeft size={16} />
             <span>Voltar ao Portal Público</span>
           </button>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="btn btn-secondary btn-sm"
+              style={{
+                width: '100%',
+                gap: '0.5rem',
+                marginBottom: '0.75rem',
+                color: '#EF4444',
+                borderColor: 'rgba(239, 68, 68, 0.25)',
+                background: 'rgba(239, 68, 68, 0.06)',
+              }}
+              title="Encerrar sessão no painel"
+            >
+              <LogOut size={16} />
+              <span>Sair do Painel</span>
+            </button>
+          )}
 
           <button
             onClick={handleResetData}
@@ -370,6 +391,35 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                       </button>
                     );
                   })}
+
+                  {onLogout && (
+                    <div style={{ marginTop: '0.6rem', paddingTop: '0.6rem', borderTop: '1px solid var(--border-subtle)' }}>
+                      <button
+                        onClick={() => {
+                          setRoleMenuOpen(false);
+                          onLogout();
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.65rem',
+                          width: '100%',
+                          padding: '0.65rem 0.75rem',
+                          borderRadius: 'var(--radius-md)',
+                          background: 'rgba(239, 68, 68, 0.08)',
+                          border: '1px solid rgba(239, 68, 68, 0.25)',
+                          color: '#EF4444',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                          fontSize: '0.825rem',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <LogOut size={16} />
+                        <span>Encerrar Sessão (Sair)</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DatabaseSchema, Sermon, ChurchEvent, UserRole, UserSession } from './types';
 import { getDatabase, calculateChurchStats, addEventRegistration } from './services/db';
-import { getCurrentUser, switchUserRole } from './services/authService';
+import { getCurrentUser, switchUserRole, isUserAuthenticated, logoutUser } from './services/authService';
 import { formatDate } from './utils/formatters';
 import { pullDatabaseFromSupabase, pushDatabaseToSupabase, subscribeToSupabaseRealtime } from './services/supabaseSync';
 import { isSupabaseConfigured } from './services/supabase';
@@ -39,6 +39,7 @@ import { MemberSelfRegistration } from './components/public/MemberSelfRegistrati
 import { EventDetailPage } from './components/public/EventDetailPage';
 import { EventRegistrationWizard } from './components/public/EventRegistrationWizard';
 import { ConferenceCountdown } from './components/public/ConferenceCountdown';
+import { AdminLogin } from './components/admin/AdminLogin';
 
 // Icons for Modals
 import { Play, Headphones, Share2, BookOpen, CheckCircle2, Calendar, Radio, Users } from 'lucide-react';
@@ -54,6 +55,7 @@ export function App() {
 
   // Auth / RBAC State
   const [currentUser, setCurrentUser] = useState<UserSession>(getCurrentUser);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isUserAuthenticated());
 
   // Theme State
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -193,6 +195,13 @@ export function App() {
     setCurrentUser(updated);
   };
 
+  const handleLogout = async () => {
+    await logoutUser();
+    setIsAuthenticated(false);
+    setView('public');
+    addNotification('info', 'Sessão administrativa encerrada com segurança.');
+  };
+
   const handlePublicNavigate = (sectionId: string) => {
     if (selectedEventForDetail) {
       setSelectedEventForDetail(null);
@@ -275,6 +284,7 @@ export function App() {
             currentSection={selectedEventForDetail ? 'eventos' : publicSection}
             onNavigate={handlePublicNavigate}
             onOpenAdmin={() => setView('admin')}
+            isAuthenticated={isAuthenticated}
             isDarkMode={isDarkMode}
             onToggleTheme={handleToggleTheme}
             isSolid={!!selectedEventForDetail}
@@ -336,19 +346,30 @@ export function App() {
             onOpenAdmin={() => setView('admin')}
           />
         </div>
+      ) : !isAuthenticated ? (
+        /* Tela de Autenticação Segura (Gatekeeper do Painel ERP) */
+        <AdminLogin
+          onLoginSuccess={(user) => {
+            setCurrentUser(user);
+            setIsAuthenticated(true);
+          }}
+          onBackToPublic={() => setView('public')}
+          onNotify={addNotification}
+        />
       ) : (
         /* Internal Administrative Panel (ERP) */
         <div key="admin-view" className="animate-page-enter" style={{ minHeight: '100vh' }}>
           <AdminLayout
-          currentTab={adminTab}
-          onTabChange={setAdminTab}
-          onBackToPublic={() => setView('public')}
-          currentUser={currentUser}
-          onSwitchRole={handleSwitchRole}
-          isDarkMode={isDarkMode}
-          onToggleTheme={handleToggleTheme}
-          onNotify={addNotification}
-        >
+            currentTab={adminTab}
+            onTabChange={setAdminTab}
+            onBackToPublic={() => setView('public')}
+            onLogout={handleLogout}
+            currentUser={currentUser}
+            onSwitchRole={handleSwitchRole}
+            isDarkMode={isDarkMode}
+            onToggleTheme={handleToggleTheme}
+            onNotify={addNotification}
+          >
           {adminTab === 'dashboard' && (
             <DashboardHome
               db={db}

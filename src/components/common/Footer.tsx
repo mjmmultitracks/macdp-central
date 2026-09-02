@@ -7,6 +7,7 @@ import {
   Clock,
   Heart,
   ShieldCheck,
+  Lock,
   Compass,
   Video,
 } from 'lucide-react';
@@ -200,7 +201,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
                 onClick={onOpenAdmin}
                 style={{ background: 'none', border: 'none', textAlign: 'left', color: 'var(--accent-gold)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.5rem' }}
               >
-                <ShieldCheck size={16} /> Painel Administrativo Interno
+                <Lock size={15} /> Acesso Restrito / Painel Administrativo
               </button>
             </div>
           </div>
