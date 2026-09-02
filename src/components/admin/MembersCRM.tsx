@@ -156,9 +156,9 @@ export const MembersCRM: React.FC<MembersCRMProps> = ({ members, visitors, cells
     setBirthDate('1995-05-20');
     setBaptismDate('2018-04-10');
     setMaritalStatus('Casado(a)');
-    setStreet('Rua dos Pinheiros, 450');
-    setNeighborhood('Pinheiros');
-    setCity('São Paulo');
+    setStreet('Rua Lagoa Grande, 382');
+    setNeighborhood('Conj. Canaranas / Cidade Nova');
+    setCity('Manaus');
     setSelectedMinistries(['Recepção']);
     setCellGroupId(cells[0]?.id || '');
     setSpiritualGifts('Hospitalidade, Ensino');
@@ -198,7 +198,7 @@ export const MembersCRM: React.FC<MembersCRMProps> = ({ members, visitors, cells
       name,
       email,
       phone,
-      photoUrl: photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+      photoUrl: photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0F172A&color=F59E0B&bold=true`,
       status,
       roleInChurch,
       birthDate,
@@ -209,7 +209,7 @@ export const MembersCRM: React.FC<MembersCRMProps> = ({ members, visitors, cells
         street,
         neighborhood,
         city,
-        zip: '01000-000',
+        zip: '69097-750',
       },
       ministries: selectedMinistries,
       cellGroupId: cellGroupId || undefined,
@@ -1007,7 +1007,7 @@ export const MembersCRM: React.FC<MembersCRMProps> = ({ members, visitors, cells
             <input
               type="text"
               className="form-input"
-              placeholder="Ex: Lucas Gabriel"
+              placeholder="Ex: Pr. Jaziel / Liderança de Acolhimento"
               value={vMentor}
               onChange={(e) => setVMentor(e.target.value)}
             />

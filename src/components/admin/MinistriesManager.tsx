@@ -369,7 +369,7 @@ export const MinistriesManager: React.FC<MinistriesManagerProps> = ({ ministries
                 type="text"
                 required
                 className="form-input"
-                placeholder="Ex: Thiago Albuquerque & Mariana Costa"
+                placeholder="Ex: Pr. Jaziel & Pra. Abda Maduro"
                 value={leaderName}
                 onChange={(e) => setLeaderName(e.target.value)}
               />

@@ -100,7 +100,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
                 📸 @_macdp
               </a>
               <a
-                href="https://youtube.com"
+                href="https://www.youtube.com/@_macdp"
                 target="_blank"
                 rel="noreferrer"
                 title="YouTube MACDP Oficial"

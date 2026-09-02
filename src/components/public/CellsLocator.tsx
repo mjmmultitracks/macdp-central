@@ -44,37 +44,37 @@ export const CellsLocator: React.FC<CellsLocatorProps> = ({ cells, ministries, o
       name: 'Louvor & Adoração Profética',
       icon: Music,
       description: 'Músicos, cantores e ministros que conduzem a congregação à manifestação da Presença de Deus.',
-      leaders: 'Thiago Albuquerque & Mariana Costa',
+      leaders: 'Ministério de Louvor MACDP',
     },
     {
       name: 'Caçadores Kids (Infantil)',
       icon: Baby,
       description: 'Cuidado amoroso e discipulado bíblico lúdico para crianças, ensinando os pequenos a caçar a Presença.',
-      leaders: 'Camila Albuquerque Silva',
+      leaders: 'Pra. Abda Maduro & Equipe Kids',
     },
     {
       name: 'Caçadores Youth (Jovens)',
       icon: Flame,
       description: 'Comunidade dinâmica para adolescentes e jovens de Manaus viverem um avivamento autêntico.',
-      leaders: 'Pr. Thiago & Liderança Jovem',
+      leaders: 'Pr. Jaziel Maduro & Pra. Abda Maduro',
     },
     {
       name: 'Ação Social & Amor ao Próximo',
       icon: HeartHandshake,
       description: 'Assistência social e distribuição de alimentos a famílias carentes da Zona Norte de Manaus.',
-      leaders: 'Roberto Mendes & Tereza Neves',
+      leaders: 'Pr. Samuel Trindade & Diaconia',
     },
     {
       name: 'Famílias & Casais na Presença',
       icon: Heart,
       description: 'Encontros mensais, cura de relacionamentos e blindagem dos lares com princípios apostólicos.',
-      leaders: 'Pra. Midiã Gomes Maduro',
+      leaders: 'Pr. Oziel & Pra. Midiã Gomes Maduro',
     },
     {
       name: 'Comunicação & Mídia (MACDP Oficial)',
       icon: Video,
       description: 'Transmissão ao vivo para o YouTube, captação audiovisual, redes sociais (@_macdp) e som.',
-      leaders: 'Fernando Rocha & Beatriz Silveira',
+      leaders: 'Equipe de Mídia & Transmissão @_macdp',
     },
   ];
 
@@ -254,7 +254,7 @@ export const CellsLocator: React.FC<CellsLocatorProps> = ({ cells, ministries, o
         >
           {filteredCells.map((cell) => {
             const encodedMsg = encodeURIComponent(
-              `Olá, líder ${cell.leaderName}! Encontrei a "${cell.name}" no site da Igreja Graça & Vida e gostaria muito de visitar o próximo encontro!`
+              `Olá, líder ${cell.leaderName}! Graça e paz! Encontrei a "${cell.name}" no site oficial do Ministério Apostólico Caçadores da Presença (MACDP) e gostaria muito de visitar o próximo encontro!`
             );
             const waUrl = `https://wa.me/55${cell.leaderPhone}?text=${encodedMsg}`;
 

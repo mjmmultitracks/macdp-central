@@ -88,7 +88,7 @@ export const MemberSelfRegistration: React.FC<MemberSelfRegistrationProps> = ({
       name: name.trim(),
       email: email.trim() || `${name.toLowerCase().replace(/\s+/g, '.')}@membro.macdp.com.br`,
       phone: phone.trim(),
-      photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
+      photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name.trim())}&background=0F172A&color=F59E0B&bold=true`,
       status: 'ativo',
       roleInChurch: 'Membro',
       birthDate,

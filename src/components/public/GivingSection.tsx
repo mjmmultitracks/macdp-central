@@ -37,7 +37,7 @@ export const GivingSection: React.FC<GivingSectionProps> = ({ onNotify }) => {
 
   // Generate dynamic Pix Code
   const pixCode = generatePixCopiaECola({
-    key: '92984509989',
+    key: '92991279663',
     name: 'MACDP Manaus',
     city: 'Manaus',
     amount: currentAmount,
@@ -350,10 +350,12 @@ export const GivingSection: React.FC<GivingSectionProps> = ({ onNotify }) => {
                     </svg>
 
                     <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0F172A', display: 'block' }}>
-                        Chave CNPJ: 12.345.678/0001-90
+                      <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0F172A', display: 'block' }}>
+                        Chave Pix: (92) 99127-9663
                       </span>
-                      <span style={{ fontSize: '0.7rem', color: '#64748B' }}>Igreja Graça & Vida de SP</span>
+                      <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600 }}>
+                        Ministério Apostólico Caçadores da Presença (MACDP)
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -416,157 +418,116 @@ export const GivingSection: React.FC<GivingSectionProps> = ({ onNotify }) => {
 
             {/* TAB 2: CARTÃO */}
             {activeTab === 'cartao' && (
-              <div>
-                {cardSuccess ? (
-                  <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-                    <div
-                      style={{
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: '50%',
-                        background: 'var(--success-soft)',
-                        color: 'var(--success)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto 1.5rem auto',
-                      }}
-                    >
-                      <CheckCircle2 size={36} />
-                    </div>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-                      Contribuição Concluída com Sucesso!
-                    </h3>
-                    <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-                      Valor de <strong>{formatCurrency(currentAmount)}</strong> destinado a <strong>{category}</strong>. Muito obrigado por investir na expansão do Reino de Deus.
-                    </p>
-                    <button
-                      onClick={() => setCardSuccess(false)}
-                      className="btn btn-secondary"
-                    >
-                      Fazer Nova Contribuição
-                    </button>
+              <div style={{ maxWidth: '560px', margin: '0 auto', textAlign: 'center', padding: '2rem 1rem' }}>
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: 'rgba(245, 158, 11, 0.12)',
+                    color: 'var(--accent-gold)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 1.5rem auto',
+                  }}
+                >
+                  <CreditCard size={32} />
+                </div>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.75rem' }}>
+                  Contribuição via Cartão de Débito ou Crédito
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '1.75rem' }}>
+                  Para sua total segurança, as doações presenciais com cartão (débito ou crédito) são processadas diretamente nas <strong>maquininhas oficiais da tesouraria no templo</strong> durante nossos cultos presenciais.
+                </p>
+                <div
+                  style={{
+                    background: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '1.25rem',
+                    marginBottom: '1.5rem',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--accent-gold)', fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.35rem' }}>
+                    <Sparkles size={16} />
+                    <span>Deseja contribuir online agora mesmo?</span>
                   </div>
-                ) : (
-                  <form onSubmit={handleSimulateCardDonation} style={{ maxWidth: '520px', margin: '0 auto' }}>
-                    <div className="form-group">
-                      <label className="form-label">Nome no Cartão:</label>
-                      <input
-                        type="text"
-                        required
-                        className="form-input"
-                        placeholder="Como impresso no cartão"
-                        defaultValue={donorName}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">Número do Cartão:</label>
-                      <input
-                        type="text"
-                        required
-                        className="form-input"
-                        placeholder="0000 0000 0000 0000"
-                        maxLength={19}
-                      />
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                      <div className="form-group">
-                        <label className="form-label">Validade (MM/AA):</label>
-                        <input type="text" required className="form-input" placeholder="12/28" maxLength={5} />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">CVV:</label>
-                        <input type="password" required className="form-input" placeholder="123" maxLength={4} />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={cardProcessing}
-                      className="btn btn-primary btn-lg"
-                      style={{ width: '100%', marginTop: '1rem', gap: '0.5rem' }}
-                    >
-                      <CreditCard size={18} />
-                      <span>{cardProcessing ? 'Processando doação...' : `Confirmar Contribuição de ${formatCurrency(currentAmount)}`}</span>
-                    </button>
-                  </form>
-                )}
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                    Utilize o <strong>Pix Oficial da MACDP</strong>: transferência instantânea com valor livre, sem nenhuma taxa e com recibo digital automático.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('pix')}
+                  className="btn btn-primary"
+                  style={{ gap: '0.5rem' }}
+                >
+                  <QrCode size={18} />
+                  <span>Contribuir via Pix Agora</span>
+                </button>
               </div>
             )}
 
-            {/* TAB 3: TED/DOC */}
+            {/* TAB 3: TED / TRANSFERÊNCIA */}
             {activeTab === 'ted' && (
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                  gap: '1.5rem',
+                  maxWidth: '560px',
+                  margin: '0 auto',
+                  textAlign: 'center',
+                  padding: '2rem 1rem',
                 }}
               >
                 <div
-                  className="card"
                   style={{
-                    background: 'var(--bg-tertiary)',
-                    borderLeft: '4px solid #003399',
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    background: 'rgba(59, 130, 246, 0.12)',
+                    color: 'var(--accent-blue-light)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 1.5rem auto',
                   }}
                 >
-                  <h4 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-                    Banco do Brasil (001)
-                  </h4>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                    <strong>Agência:</strong> 1234-5
-                    <br />
-                    <strong>Conta Corrente:</strong> 54321-0
-                    <br />
-                    <strong>Favorecido:</strong> Ministério Apostólico Caçadores da Presença (MACDP)
-                    <br />
-                    <strong>Chave Pix (Telefone):</strong> (92) 98450-9989
-                  </p>
+                  <Building2 size={32} />
                 </div>
-
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.75rem' }}>
+                  Transferência Bancária & Chave Pix Oficial
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+                  A forma mais rápida, segura e isenta de taxas para transferir qualquer valor para a igreja a partir de qualquer banco (Itaú, Bradesco, Banco do Brasil, Caixa, Nubank, Inter, etc.) é utilizando a chave Pix oficial:
+                </p>
                 <div
                   className="card"
                   style={{
                     background: 'var(--bg-tertiary)',
-                    borderLeft: '4px solid #EC7000',
+                    border: '1px solid var(--accent-gold)',
+                    textAlign: 'left',
+                    padding: '1.25rem',
+                    marginBottom: '1.5rem',
                   }}
                 >
-                  <h4 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-                    Banco Itaú (341)
-                  </h4>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                    <strong>Agência:</strong> 0987
-                    <br />
-                    <strong>Conta Corrente:</strong> 12345-6
-                    <br />
-                    <strong>Favorecido:</strong> Ministério Apostólico Caçadores da Presença (MACDP)
-                    <br />
-                    <strong>Chave Pix (Telefone):</strong> (92) 98450-9989
-                  </p>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: 1.8 }}>
+                    <strong>Favorecido:</strong> Ministério Apostólico Caçadores da Presença (MACDP)<br />
+                    <strong>Chave Pix (Telefone):</strong> (92) 99127-9663<br />
+                    <strong>Chave Pix sem formatação:</strong> <code style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>92991279663</code><br />
+                    <strong>Cidade / Sede:</strong> Manaus - AM<br />
+                    <strong>Secretaria / WhatsApp:</strong> (92) 98450-9989
+                  </div>
                 </div>
-
-                <div
-                  className="card"
-                  style={{
-                    background: 'var(--bg-tertiary)',
-                    borderLeft: '4px solid #CC092F',
-                  }}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('pix')}
+                  className="btn btn-primary"
+                  style={{ gap: '0.5rem' }}
                 >
-                  <h4 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-                    Banco Bradesco (237)
-                  </h4>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                    <strong>Agência:</strong> 2345
-                    <br />
-                    <strong>Conta Corrente:</strong> 67890-1
-                    <br />
-                    <strong>Favorecido:</strong> Ministério Apostólico Caçadores da Presença (MACDP)
-                    <br />
-                    <strong>Chave Pix (Telefone):</strong> (92) 98450-9989
-                  </p>
-                </div>
+                  <QrCode size={18} />
+                  <span>Ver QR Code do Pix</span>
+                </button>
               </div>
             )}
           </div>

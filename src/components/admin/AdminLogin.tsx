@@ -9,9 +9,7 @@ import {
   ArrowLeft,
   ShieldCheck,
   AlertCircle,
-  Sparkles,
   KeyRound,
-  CheckCircle2,
 } from 'lucide-react';
 
 interface AdminLoginProps {
@@ -53,12 +51,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleQuickFill = (quickEmail: string) => {
-    setEmail(quickEmail);
-    setPassword('macdp2026');
-    setErrorMessage(null);
   };
 
   return (
@@ -382,71 +374,23 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
           </button>
         </form>
 
-        {/* Quick Access Helper for Testing / First Access */}
+        {/* Security / Privacy notice */}
         <div
           style={{
             marginTop: '1.75rem',
-            padding: '1rem',
+            padding: '0.85rem 1rem',
             borderRadius: 'var(--radius-md)',
-            background: 'rgba(255, 255, 255, 0.03)',
+            background: 'rgba(255, 255, 255, 0.02)',
             border: '1px solid var(--border-subtle)',
-            fontSize: '0.8rem',
-            color: 'var(--text-secondary)',
+            fontSize: '0.78rem',
+            color: 'var(--text-muted)',
+            textAlign: 'center',
+            lineHeight: 1.5,
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '0.65rem',
-            }}
-          >
-            <span style={{ fontWeight: 700, color: 'var(--accent-gold-light)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Sparkles size={14} />
-              <span>Acesso Rápido da Presidência</span>
-            </span>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Senha padrão: macdp2026</span>
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('oziel.maduro@macdp.com.br')}
-              style={{
-                flex: 1,
-                padding: '0.4rem 0.6rem',
-                borderRadius: '6px',
-                background: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
-            >
-              👑 Pr. Oziel Maduro
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickFill('midia.maduro@macdp.com.br')}
-              style={{
-                flex: 1,
-                padding: '0.4rem 0.6rem',
-                borderRadius: '6px',
-                background: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
-            >
-              🕊️ Pra. Midiã Maduro
-            </button>
-          </div>
+          <span style={{ color: 'var(--accent-gold-light)', fontWeight: 600 }}>Ambiente Eclesiástico Restrito & Monitorado</span>
+          <br />
+          Para liberação de usuário ou recuperação de senha, contate a Secretaria da Presidência: (92) 98450-9989.
         </div>
 
         {/* Back to Public Site Link */}

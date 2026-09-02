@@ -488,14 +488,57 @@ export function App() {
               marginBottom: '1.25rem',
             }}
           >
-            {/* Live broadcast simulation stream */}
-            <iframe
-              src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1"
-              title="Transmissão ao Vivo"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
-            />
+            {/* Live broadcast official player */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'radial-gradient(ellipse at center, rgba(245, 158, 11, 0.15) 0%, #0B1120 75%)',
+                padding: '2rem',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  background: 'rgba(239, 68, 68, 0.2)',
+                  border: '2px solid #EF4444',
+                  color: '#EF4444',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '1rem',
+                  boxShadow: '0 0 25px rgba(239, 68, 68, 0.4)',
+                }}
+              >
+                <Radio size={32} />
+              </div>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.5rem' }}>
+                Transmissões Oficiais • MACDP Manaus
+              </h3>
+              <p style={{ color: '#94A3B8', fontSize: '0.9rem', maxWidth: '480px', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+                Nossos cultos são transmitidos ao vivo todos os domingos às 10:00 e 18:30, e quartas às 19:30 diretamente pelo YouTube oficial.
+              </p>
+              <a
+                href="https://www.youtube.com/@_macdp"
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-primary"
+                style={{ gap: '0.5rem' }}
+              >
+                <Play size={16} />
+                <span>Acessar Canal do YouTube @_macdp</span>
+              </a>
+            </div>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
@@ -546,13 +589,66 @@ export function App() {
                 marginBottom: '1.25rem',
               }}
             >
-              <iframe
-                src={activeSermon.videoEmbedUrl}
-                title={activeSermon.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
-              />
+              {activeSermon.videoEmbedUrl && activeSermon.videoEmbedUrl.includes('embed/') && !activeSermon.videoEmbedUrl.includes('dQw4w9WgXcQ') ? (
+                <iframe
+                  src={activeSermon.videoEmbedUrl}
+                  title={activeSermon.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                />
+              ) : (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'radial-gradient(ellipse at center, rgba(245, 158, 11, 0.15) 0%, #0B1120 75%)',
+                    padding: '2rem',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      background: 'rgba(239, 68, 68, 0.2)',
+                      border: '2px solid #EF4444',
+                      color: '#EF4444',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '1rem',
+                      boxShadow: '0 0 20px rgba(239, 68, 68, 0.35)',
+                    }}
+                  >
+                    <Play size={26} fill="currentColor" />
+                  </div>
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', marginBottom: '0.4rem' }}>
+                    {activeSermon.title}
+                  </h4>
+                  <p style={{ color: '#94A3B8', fontSize: '0.85rem', maxWidth: '420px', marginBottom: '1.25rem' }}>
+                    Assista a esta ministração na íntegra em nosso canal oficial do YouTube.
+                  </p>
+                  <a
+                    href="https://www.youtube.com/@_macdp"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-primary btn-sm"
+                    style={{ gap: '0.5rem' }}
+                  >
+                    <Play size={15} />
+                    <span>Assistir no Canal @_macdp</span>
+                  </a>
+                </div>
+              )}
             </div>
 
             <div style={{ marginBottom: '1.25rem' }}>

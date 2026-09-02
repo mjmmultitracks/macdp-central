@@ -495,7 +495,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({ transactions
               <input
                 type="text"
                 className="form-input"
-                placeholder="Ex: Lucas Gabriel / Enel SP"
+                placeholder="Ex: Oferta Culto / Amazonas Energia"
                 value={memberOrVendor}
                 onChange={(e) => setMemberOrVendor(e.target.value)}
               />

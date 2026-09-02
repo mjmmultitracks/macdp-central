@@ -43,7 +43,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
       id: 'domingo_2',
       day: 'Domingo',
       time: '18:30',
-      title: 'Culto da Família & Graça Kids',
+      title: 'Culto da Família & Caçadores Kids',
       description: 'Culto focado na restauração e fortalecimento dos lares, com louvor contemporâneo e salas para todas as idades infantis.',
       category: 'Famílias',
     },
