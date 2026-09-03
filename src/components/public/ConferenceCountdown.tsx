@@ -56,7 +56,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
 
   const formatNumber = (num: number) => String(num).padStart(2, '0');
 
-  const shareText = `🔥 *Conferência Caçadores da Presença 2026*\n\n📅 Início: 13 de Novembro de 2026 às 19h30\n📍 Local: Chácara Paraiso Verde - Iranduba - AM\n⏳ Faltam apenas ${timeLeft.days} dias, ${timeLeft.hours} horas e ${timeLeft.minutes} minutos!\n\nGaranta sua vaga no site oficial: ${window.location.origin}/#evento/evt_1`;
+  const shareText = `🔥 *Conferência Caçadores da Presença 2026*\n\n📅 Início: 13 de Novembro de 2026 às 19h30\n📍 Local: Chácara Paraiso Verde - Iranduba - AM\n⏳ Faltam apenas ${timeLeft.days} dias, ${timeLeft.hours} horas e ${timeLeft.minutes} minutos!\n\nGaranta sua vaga no site oficial:\n${window.location.origin}/evento/evt_1`;
 
   const shareWhatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 

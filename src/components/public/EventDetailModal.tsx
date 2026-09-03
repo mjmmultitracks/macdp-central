@@ -37,7 +37,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   const spotsLeft = event.totalCapacity - event.registeredCount;
   const isSoldOut = spotsLeft <= 0;
 
-  const shareText = `🏛️ *${event.title}* - Ministério Apostólico Caçadores da Presença (MACDP)\n\n📅 *Data:* ${formatDate(event.date)} às ${event.time}\n📍 *Local:* ${event.location}\n🎟️ *Inscrição:* ${event.isFree ? 'Entrada Gratuita' : `R$ ${event.price?.toFixed(2)}`}\n\nGaranta sua vaga no site oficial: ${window.location.origin}/#eventos`;
+  const shareEventUrl = `${window.location.origin}/evento/${event.id}`;
+  const shareText = `🏛️ *${event.title}* - Ministério Apostólico Caçadores da Presença (MACDP)\n\n📅 *Data:* ${formatDate(event.date)} às ${event.time}\n📍 *Local:* ${event.location}\n🎟️ *Inscrição:* ${event.isFree ? 'Entrada Gratuita' : `R$ ${event.price?.toFixed(2)}`}\n\nGaranta sua vaga no site oficial:\n${shareEventUrl}`;
 
   const shareWhatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 

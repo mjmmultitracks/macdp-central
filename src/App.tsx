@@ -122,32 +122,42 @@ export function App() {
     return () => window.removeEventListener('popstate', checkQuery);
   }, []);
 
-  // Hash listener for dedicated Event Detail Page (#evento/id)
+  // Route and Hash listener for dedicated Event Detail Page (/evento/id, /eventos/id, #evento/id, ?evento=id)
   useEffect(() => {
-    const checkEventHash = () => {
+    const checkEventRoute = () => {
       const hash = window.location.hash;
-      if (hash.startsWith('#evento/')) {
-        const eventId = hash.replace('#evento/', '');
-        const found = db.events.find((e) => e.id === eventId);
-        if (found) {
-          setSelectedEventForDetail(found);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+      const path = window.location.pathname;
+      const search = window.location.search;
+
+      let eventId = '';
+      if (path.startsWith('/evento/')) {
+        eventId = path.replace('/evento/', '').split('/')[0].split('?')[0];
+      } else if (path.startsWith('/eventos/')) {
+        eventId = path.replace('/eventos/', '').split('/')[0].split('?')[0];
+      } else if (hash.startsWith('#evento/')) {
+        eventId = hash.replace('#evento/', '');
       } else if (hash.startsWith('#evento-')) {
-        const eventId = hash.replace('#evento-', '');
+        eventId = hash.replace('#evento-', '');
+      } else if (search) {
+        const params = new URLSearchParams(search);
+        eventId = params.get('evento') || params.get('evento_id') || '';
+      }
+
+      if (eventId) {
         const found = db.events.find((e) => e.id === eventId);
         if (found) {
           setSelectedEventForDetail(found);
           window.scrollTo({ top: 0, behavior: 'smooth' });
+          document.title = `${found.title} - MACDP Central`;
         }
       }
     };
-    checkEventHash();
-    window.addEventListener('hashchange', checkEventHash);
-    window.addEventListener('popstate', checkEventHash);
+    checkEventRoute();
+    window.addEventListener('hashchange', checkEventRoute);
+    window.addEventListener('popstate', checkEventRoute);
     return () => {
-      window.removeEventListener('hashchange', checkEventHash);
-      window.removeEventListener('popstate', checkEventHash);
+      window.removeEventListener('hashchange', checkEventRoute);
+      window.removeEventListener('popstate', checkEventRoute);
     };
   }, [db.events]);
 

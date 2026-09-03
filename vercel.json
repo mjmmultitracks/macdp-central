@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/evento/:id",
+      "destination": "/api/event-share?id=:id"
+    },
+    {
+      "source": "/eventos/:id",
+      "destination": "/api/event-share?id=:id"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

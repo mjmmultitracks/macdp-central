@@ -44,6 +44,7 @@ import {
   Eye,
   CalendarRange,
   Shirt,
+  Share2,
 } from 'lucide-react';
 
 interface RoomItem {
@@ -1974,6 +1975,20 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                     </button>
 
                     <button
+                      onClick={() => {
+                        const url = `${window.location.origin}/evento/${evt.id}`;
+                        navigator.clipboard.writeText(url);
+                        onNotify('success', 'Link do evento copiado! Cole no WhatsApp para exibir o banner.');
+                      }}
+                      className="btn btn-secondary btn-sm"
+                      style={{ gap: '0.35rem', padding: '0.5rem 0.75rem', color: 'var(--accent-gold)' }}
+                      title="Copiar Link para Compartilhar no WhatsApp"
+                    >
+                      <Share2 size={14} />
+                      <span>Link</span>
+                    </button>
+
+                    <button
                       onClick={() => openEditEventModal(evt)}
                       className="btn btn-secondary btn-sm"
                       style={{ gap: '0.35rem', padding: '0.5rem 0.75rem' }}
@@ -2122,6 +2137,19 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                       >
                         <QrCode size={15} />
                         <span>Check-in ({evt.registrations.length})</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const url = `${window.location.origin}/evento/${evt.id}`;
+                          navigator.clipboard.writeText(url);
+                          onNotify('success', 'Link do evento copiado! Cole no WhatsApp para exibir o banner.');
+                        }}
+                        className="btn btn-secondary btn-sm"
+                        style={{ color: 'var(--accent-gold)' }}
+                        title="Copiar Link para Compartilhar no WhatsApp"
+                      >
+                        <Share2 size={15} />
                       </button>
 
                       <button
