@@ -47,9 +47,11 @@ import {
   Check,
   ExternalLink,
   Sparkles,
-  RotateCcw,
   Shirt,
   AlertCircle,
+  Upload,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react';
 
 interface FinancialManagerProps {
@@ -62,6 +64,81 @@ interface FinancialManagerProps {
 }
 
 type FinancialSubTab = 'fluxo' | 'contas' | 'categorias' | 'eventos_caixa';
+
+export const PRESET_BANKS = [
+  {
+    name: 'Banco Bradesco (237)',
+    shortName: 'Bradesco',
+    color: '#dc2626',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Banco_Bradesco_logo.svg/512px-Banco_Bradesco_logo.svg.png',
+  },
+  {
+    name: 'Nu Pagamentos S.A. (260)',
+    shortName: 'Nubank',
+    color: '#820ad1',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Nubank_logo_2021.svg/512px-Nubank_logo_2021.svg.png',
+  },
+  {
+    name: 'Banco do Brasil (001)',
+    shortName: 'Banco do Brasil',
+    color: '#facc15',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Banco_do_Brasil_logo.svg/512px-Banco_do_Brasil_logo.svg.png',
+  },
+  {
+    name: 'Itaú Unibanco (341)',
+    shortName: 'Itaú',
+    color: '#ec7000',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Ita%C3%BA_Unibanco_logo_2023.svg/512px-Ita%C3%BA_Unibanco_logo_2023.svg.png',
+  },
+  {
+    name: 'Caixa Econômica Federal (104)',
+    shortName: 'Caixa Econômica',
+    color: '#0066b3',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Caixa_Econ%C3%B4mica_Federal_logo.svg/512px-Caixa_Econ%C3%B4mica_Federal_logo.svg.png',
+  },
+  {
+    name: 'Banco Santander (033)',
+    shortName: 'Santander',
+    color: '#ec0000',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Banco_Santander_Logotipo.svg/512px-Banco_Santander_Logotipo.svg.png',
+  },
+  {
+    name: 'Banco Inter (077)',
+    shortName: 'Banco Inter',
+    color: '#ff7a00',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Banco_Inter_logo.svg/512px-Banco_Inter_logo.svg.png',
+  },
+  {
+    name: 'Mercado Pago (323)',
+    shortName: 'Mercado Pago',
+    color: '#00aae4',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Mercado_Pago_logo.svg/512px-Mercado_Pago_logo.svg.png',
+  },
+  {
+    name: 'Sicoob (756)',
+    shortName: 'Sicoob',
+    color: '#003641',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Sicoob_logo.svg/512px-Sicoob_logo.svg.png',
+  },
+  {
+    name: 'Sicredi (748)',
+    shortName: 'Sicredi',
+    color: '#00853b',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Logo_Sicredi.svg/512px-Logo_Sicredi.svg.png',
+  },
+  {
+    name: 'C6 Bank (336)',
+    shortName: 'C6 Bank',
+    color: '#242424',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/C6_Bank_logo.svg/512px-C6_Bank_logo.svg.png',
+  },
+  {
+    name: 'PagBank / PagSeguro (290)',
+    shortName: 'PagBank',
+    color: '#00a859',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/PagBank_logo.svg/512px-PagBank_logo.svg.png',
+  },
+];
 
 export const FinancialManager: React.FC<FinancialManagerProps> = ({
   transactions,
@@ -96,12 +173,13 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
   const [accountForm, setAccountForm] = useState<Omit<BankAccount, 'id'>>({
     name: '',
     bankName: 'Banco Bradesco (237)',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Banco_Bradesco_logo.svg/512px-Banco_Bradesco_logo.svg.png',
     accountType: 'corrente',
     agency: '',
     accountNumber: '',
     pixKey: '',
     initialBalance: 0,
-    color: '#d97706',
+    color: '#dc2626',
     isDefault: false,
     status: 'ativo',
     notes: '',
@@ -291,12 +369,13 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
     setAccountForm({
       name: '',
       bankName: 'Banco Bradesco (237)',
+      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Banco_Bradesco_logo.svg/512px-Banco_Bradesco_logo.svg.png',
       accountType: 'corrente',
       agency: '',
       accountNumber: '',
       pixKey: '',
       initialBalance: 0,
-      color: '#d97706',
+      color: '#dc2626',
       isDefault: bankAccounts.length === 0,
       status: 'ativo',
       notes: '',
@@ -309,6 +388,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
     setAccountForm({
       name: acc.name,
       bankName: acc.bankName,
+      logoUrl: acc.logoUrl || '',
       accountType: acc.accountType,
       agency: acc.agency || '',
       accountNumber: acc.accountNumber || '',
@@ -1156,8 +1236,26 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                           </td>
                           <td style={{ padding: '0.85rem 1rem', whiteSpace: 'nowrap' }}>
                             {account ? (
-                              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                                🏦 {account.name}
+                              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+                                {account.logoUrl ? (
+                                  <img
+                                    src={account.logoUrl}
+                                    alt=""
+                                    style={{
+                                      width: '18px',
+                                      height: '18px',
+                                      objectFit: 'contain',
+                                      borderRadius: '4px',
+                                      background: '#ffffff',
+                                      padding: '1px',
+                                      border: '1px solid var(--border-subtle)',
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                ) : (
+                                  <span>🏦</span>
+                                )}
+                                <span>{account.name}</span>
                               </span>
                             ) : (
                               <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Padrão</span>
@@ -1276,21 +1374,50 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                   <div>
                     {/* Header */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                        <div
-                          style={{
-                            width: '42px',
-                            height: '42px',
-                            borderRadius: '12px',
-                            background: acc.color ? `${acc.color}20` : 'var(--accent-gold-soft)',
-                            color: acc.color || 'var(--accent-gold)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          {acc.accountType === 'caixa_fisico' ? <Wallet size={20} /> : <Building size={20} />}
-                        </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        {acc.logoUrl ? (
+                          <div
+                            style={{
+                              width: '46px',
+                              height: '46px',
+                              borderRadius: '12px',
+                              background: '#ffffff',
+                              border: '1px solid var(--border-medium)',
+                              padding: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              overflow: 'hidden',
+                              boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                              flexShrink: 0,
+                            }}
+                          >
+                            <img
+                              src={acc.logoUrl}
+                              alt={acc.bankName}
+                              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              width: '46px',
+                              height: '46px',
+                              borderRadius: '12px',
+                              background: acc.color ? `${acc.color}20` : 'var(--accent-gold-soft)',
+                              color: acc.color || 'var(--accent-gold)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {acc.accountType === 'caixa_fisico' ? <Wallet size={20} /> : <Building size={20} />}
+                          </div>
+                        )}
                         <div>
                           <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
                             {acc.name}
@@ -2203,6 +2330,151 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             </div>
           </div>
 
+          {/* Campo de Logotipo do Banco */}
+          <div className="form-group" style={{ background: 'var(--bg-tertiary)', padding: '1.1rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <label className="form-label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.88rem' }}>
+                <ImageIcon size={16} color="var(--accent-gold)" />
+                <span>Logotipo da Instituição Bancária</span>
+              </label>
+              {accountForm.logoUrl && (
+                <button
+                  type="button"
+                  onClick={() => setAccountForm({ ...accountForm, logoUrl: '' })}
+                  className="btn btn-ghost btn-sm"
+                  style={{ color: 'var(--status-error)', padding: '0.2rem 0.55rem', fontSize: '0.75rem', gap: '0.3rem' }}
+                >
+                  <X size={13} />
+                  <span>Remover Logo</span>
+                </button>
+              )}
+            </div>
+
+            {/* Preview e Inputs */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '0.85rem' }}>
+              {/* Preview Box */}
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '14px',
+                  background: '#ffffff',
+                  border: '2px dashed var(--border-medium)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  padding: '4px',
+                  flexShrink: 0,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                }}
+              >
+                {accountForm.logoUrl ? (
+                  <img
+                    src={accountForm.logoUrl}
+                    alt="Logo do Banco"
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  />
+                ) : (
+                  <Building size={24} color="var(--text-muted)" />
+                )}
+              </div>
+
+              {/* Botões de Ação */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, minWidth: '220px' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {/* File Upload Button */}
+                  <label
+                    className="btn btn-secondary btn-sm"
+                    style={{ cursor: 'pointer', gap: '0.4rem', margin: 0 }}
+                  >
+                    <Upload size={14} />
+                    <span>Upload de Imagem (PNG / JPG / SVG)</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 2 * 1024 * 1024) {
+                            onNotify('error', 'A imagem deve ter no máximo 2MB.');
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            const result = evt.target?.result as string;
+                            if (result) {
+                              setAccountForm((prev) => ({ ...prev, logoUrl: result }));
+                              onNotify('success', 'Logo carregada com sucesso!');
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {/* Direct URL Input */}
+                <input
+                  type="url"
+                  className="form-input"
+                  placeholder="Ou cole o link direto da imagem (https://...)"
+                  value={accountForm.logoUrl?.startsWith('data:') ? '' : (accountForm.logoUrl || '')}
+                  onChange={(e) => setAccountForm({ ...accountForm, logoUrl: e.target.value })}
+                  style={{ fontSize: '0.8rem', padding: '0.4rem 0.65rem' }}
+                />
+              </div>
+            </div>
+
+            {/* Sugestões de Bancos Populares (1-Click) */}
+            <div>
+              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
+                Atalhos Rápidos de Logos Oficiais:
+              </span>
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                {PRESET_BANKS.map((preset) => (
+                  <button
+                    key={preset.shortName}
+                    type="button"
+                    onClick={() => {
+                      setAccountForm((prev) => ({
+                        ...prev,
+                        bankName: preset.name,
+                        logoUrl: preset.logoUrl,
+                        color: preset.color,
+                        name: prev.name || `${preset.shortName} - Conta Corrente`,
+                      }));
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      padding: '0.3rem 0.55rem',
+                      borderRadius: 'var(--radius-md)',
+                      background: accountForm.logoUrl === preset.logoUrl ? 'var(--accent-gold-soft)' : 'var(--bg-secondary)',
+                      border: accountForm.logoUrl === preset.logoUrl ? '1px solid var(--accent-gold)' : '1px solid var(--border-medium)',
+                      color: accountForm.logoUrl === preset.logoUrl ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                      fontSize: '0.76rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                    title={`Selecionar logo oficial do ${preset.shortName}`}
+                  >
+                    <img
+                      src={preset.logoUrl}
+                      alt={preset.shortName}
+                      style={{ width: '14px', height: '14px', objectFit: 'contain', background: '#fff', borderRadius: '2px', padding: '1px' }}
+                    />
+                    <span>{preset.shortName}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">Agência (Opcional)</label>
@@ -2570,8 +2842,19 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
               {bankAccounts.map((acc) => {
                 const bal = getAccountLiveBalance(acc);
                 return (
-                  <li key={acc.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
-                    <span>🏦 {acc.name} ({acc.bankName}):</span>
+                  <li key={acc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.45rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                      {acc.logoUrl ? (
+                        <img
+                          src={acc.logoUrl}
+                          alt=""
+                          style={{ width: '16px', height: '16px', objectFit: 'contain', background: '#fff', borderRadius: '3px', padding: '1px', border: '1px solid var(--border-subtle)', flexShrink: 0 }}
+                        />
+                      ) : (
+                        <span>🏦</span>
+                      )}
+                      <span>{acc.name} ({acc.bankName}):</span>
+                    </span>
                     <strong style={{ color: bal >= 0 ? 'var(--text-primary)' : 'var(--danger)' }}>
                       {formatCurrency(bal)}
                     </strong>

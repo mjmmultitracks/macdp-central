@@ -75,6 +75,7 @@ export interface BankAccount {
   id: string;
   name: string; // Ex: "Bradesco - Conta Corrente Principal", "Nubank - PIX Secretaria", "Caixa Físico / Tesouraria"
   bankName: string; // Ex: "Bradesco (237)", "Nubank (260)", "Caixa Físico / Espécie", etc.
+  logoUrl?: string; // Logo do banco (URL ou Base64)
   accountType: 'corrente' | 'poupanca' | 'caixa_fisico' | 'investimento';
   agency?: string;
   accountNumber?: string;

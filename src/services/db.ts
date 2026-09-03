@@ -69,6 +69,7 @@ export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [
     id: 'acc_1',
     name: 'Bradesco - Conta Principal',
     bankName: 'Banco Bradesco (237)',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Banco_Bradesco_logo.svg/512px-Banco_Bradesco_logo.svg.png',
     accountType: 'corrente',
     agency: '3210-4',
     accountNumber: '12345-6',
@@ -83,6 +84,7 @@ export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [
     id: 'acc_2',
     name: 'Nubank - Reserva & Projetos',
     bankName: 'Nu Pagamentos S.A. (260)',
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Nubank_logo_2021.svg/512px-Nubank_logo_2021.svg.png',
     accountType: 'corrente',
     agency: '0001',
     accountNumber: '9876543-2',
@@ -1326,6 +1328,20 @@ export function getDatabase(): DatabaseSchema {
     if (!parsed.bankAccounts) {
       parsed.bankAccounts = INITIAL_BANK_ACCOUNTS;
       saveDatabase(parsed);
+    } else {
+      let updatedAccs = false;
+      parsed.bankAccounts.forEach((acc) => {
+        if (!acc.logoUrl) {
+          if (acc.id === 'acc_1' || acc.name?.toLowerCase().includes('bradesco') || acc.bankName?.toLowerCase().includes('bradesco')) {
+            acc.logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Banco_Bradesco_logo.svg/512px-Banco_Bradesco_logo.svg.png';
+            updatedAccs = true;
+          } else if (acc.id === 'acc_2' || acc.name?.toLowerCase().includes('nubank') || acc.bankName?.toLowerCase().includes('nu')) {
+            acc.logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Nubank_logo_2021.svg/512px-Nubank_logo_2021.svg.png';
+            updatedAccs = true;
+          }
+        }
+      });
+      if (updatedAccs) saveDatabase(parsed);
     }
     if (!parsed.financialCategories) {
       parsed.financialCategories = INITIAL_FINANCIAL_CATEGORIES;
