@@ -9,13 +9,15 @@ import {
   Compass,
   Video,
 } from 'lucide-react';
+import { ChurchSettings } from '../../types';
 
 interface FooterProps {
   onNavigate: (section: string) => void;
   onOpenAdmin: () => void;
+  churchSettings?: ChurchSettings;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, churchSettings }) => {
   return (
     <footer
       style={{
@@ -54,8 +56,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
                 }}
               >
                 <img
-                  src="/images/logo.png"
-                  alt="Logo Oficial MACDP"
+                  src={churchSettings?.logoUrl || '/images/logo.png'}
+                  alt={churchSettings?.name || 'Logo Oficial MACDP'}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/images/logo.png';
+                  }}
                   style={{
                     width: '100%',
                     height: '100%',
@@ -65,58 +70,68 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
                 />
               </div>
               <div>
-                <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '0.2rem' }}>Ministério Apostólico</span>
-                <h4 style={{ fontSize: '1.2rem', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>Caçadores da Presença</h4>
+                <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '0.2rem' }}>
+                  {churchSettings?.subtitle || 'Ministério Apostólico'}
+                </span>
+                <h4 style={{ fontSize: '1.2rem', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>
+                  {churchSettings?.name || 'Caçadores da Presença'}
+                </h4>
               </div>
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.75rem', lineHeight: 1.6 }}>
-              <strong>"Proibido a Entrada de Pessoas Perfeitas."</strong>
-            </p>
+            {churchSettings?.slogan && (
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.75rem', lineHeight: 1.6 }}>
+                <strong>"{churchSettings.slogan}"</strong>
+              </p>
+            )}
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-              Uma igreja acolhedora, profética e apaixonada pela presença manifesta de Deus em Manaus/AM. Pastores Presidentes Oziel Gomes Maduro e Midiã Gomes Maduro.
+              {churchSettings?.description || 'Uma igreja acolhedora, profética e apaixonada pela presença manifesta de Deus em Manaus/AM.'}
             </p>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <a
-                href="https://instagram.com/_macdp"
-                target="_blank"
-                rel="noreferrer"
-                title="Instagram @_macdp"
-                style={{
-                  padding: '0.4rem 0.85rem',
-                  borderRadius: 'var(--radius-full)',
-                  background: 'var(--bg-tertiary)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  transition: 'background 0.2s',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                📸 @_macdp
-              </a>
-              <a
-                href="https://www.youtube.com/@_macdp"
-                target="_blank"
-                rel="noreferrer"
-                title="YouTube MACDP Oficial"
-                style={{
-                  padding: '0.4rem 0.85rem',
-                  borderRadius: 'var(--radius-full)',
-                  background: 'var(--bg-tertiary)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                ▶ MACDP Oficial
-              </a>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              {churchSettings?.social?.instagram && (
+                <a
+                  href={churchSettings.social.instagram}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Instagram Oficial"
+                  style={{
+                    padding: '0.4rem 0.85rem',
+                    borderRadius: 'var(--radius-full)',
+                    background: 'var(--bg-tertiary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    transition: 'background 0.2s',
+                    border: '1px solid var(--border-subtle)',
+                  }}
+                >
+                  📸 {churchSettings.social.instagramHandle || '@_macdp'}
+                </a>
+              )}
+              {churchSettings?.social?.youtube && (
+                <a
+                  href={churchSettings.social.youtube}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="YouTube Oficial"
+                  style={{
+                    padding: '0.4rem 0.85rem',
+                    borderRadius: 'var(--radius-full)',
+                    background: 'var(--bg-tertiary)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    border: '1px solid var(--border-subtle)',
+                  }}
+                >
+                  ▶ Canal do YouTube
+                </a>
+              )}
             </div>
           </div>
 
@@ -151,18 +166,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
               <span>Onde Estamos</span>
             </h4>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.5 }}>
-              Rua Lagoa Grande, 382
+              {churchSettings?.address.street || 'Rua Lagoa Grande, 382'}
               <br />
-              Conj. Canaranas - Cidade Nova
+              {churchSettings?.address.neighborhood || 'Conj. Canaranas - Cidade Nova'}
               <br />
-              Manaus - AM, CEP 69097-750
+              {churchSettings?.address.city || 'Manaus'} - {churchSettings?.address.state || 'AM'}, CEP {churchSettings?.address.zip || '69097-750'}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Phone size={15} color="var(--accent-gold)" /> WhatsApp / Tel: (92) 98450-9989
+                <Phone size={15} color="var(--accent-gold)" /> WhatsApp / Tel: {churchSettings?.phone || '(92) 99127-9663'}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Mail size={15} color="var(--accent-gold)" /> contato@macdp.com.br
+                <Mail size={15} color="var(--accent-gold)" /> {churchSettings?.email || 'contato@macdp.com.br'}
               </span>
             </div>
           </div>

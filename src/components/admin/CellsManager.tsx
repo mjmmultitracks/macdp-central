@@ -260,14 +260,8 @@ export const CellsManager: React.FC<CellsManagerProps> = ({ cells, onNotify }) =
         </div>
       </div>
 
-      {/* Cells Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '1.5rem',
-        }}
-      >
+      {/* Cells List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         {filteredCells.map((cell) => {
           const cleanPhone = cell.leaderPhone.replace(/\D/g, '');
           const waLink = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(
@@ -280,70 +274,83 @@ export const CellsManager: React.FC<CellsManagerProps> = ({ cells, onNotify }) =
               className="card card-hover"
               style={{
                 display: 'flex',
-                flexDirection: 'column',
+                alignItems: 'center',
                 justifyContent: 'space-between',
+                padding: '1.1rem 1.35rem',
                 border: '1px solid var(--border-medium)',
-                position: 'relative',
+                borderRadius: 'var(--radius-lg)',
+                gap: '1.25rem',
+                flexWrap: 'wrap',
+                transition: 'all 0.2s ease',
               }}
             >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                  <span
-                    style={{
-                      background: 'rgba(245, 158, 11, 0.15)',
-                      color: 'var(--accent-gold-light)',
-                      border: '1px solid rgba(245, 158, 11, 0.35)',
-                      padding: '0.25rem 0.65rem',
-                      borderRadius: 'var(--radius-full)',
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    Público: {cell.targetAudience}
-                  </span>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-                    ~{cell.membersCount} discípulos
-                  </span>
+              {/* Left Identity & Main Info */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 340px', minWidth: 0 }}>
+                <div
+                  style={{
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '12px',
+                    background: 'rgba(245, 158, 11, 0.12)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    color: 'var(--accent-gold)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Compass size={22} />
                 </div>
 
-                <h4 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-                  {cell.name}
-                </h4>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
-                    <Users size={16} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
-                    <span>
-                      <strong>Líder:</strong> {cell.leaderName}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                      {cell.name}
+                    </h4>
+                    <span
+                      style={{
+                        background: 'rgba(245, 158, 11, 0.15)',
+                        color: 'var(--accent-gold-light)',
+                        border: '1px solid rgba(245, 158, 11, 0.35)',
+                        padding: '0.15rem 0.55rem',
+                        borderRadius: 'var(--radius-full)',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {cell.targetAudience}
+                    </span>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                      • ~{cell.membersCount} discípulos
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                    <MapPin size={16} color="var(--accent-blue-light)" style={{ flexShrink: 0 }} />
-                    <span>
-                      {cell.neighborhood} • <small>{cell.address}</small>
-                    </span>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                    <Clock size={16} color="var(--text-muted)" style={{ flexShrink: 0 }} />
-                    <span>
-                      {cell.dayOfWeek} às <strong>{cell.time}</strong>
-                    </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Users size={14} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+                      <span><strong>Líder:</strong> {cell.leaderName}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <MapPin size={14} color="var(--accent-blue-light)" style={{ flexShrink: 0 }} />
+                      <span>{cell.neighborhood} • <small style={{ color: 'var(--text-muted)' }}>{cell.address}</small></span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Clock size={14} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+                      <span>{cell.dayOfWeek} às <strong>{cell.time}</strong></span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Action Buttons */}
+              {/* Right Action Buttons */}
               <div
                 style={{
-                  borderTop: '1px solid var(--border-subtle)',
-                  paddingTop: '1rem',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
                   gap: '0.5rem',
+                  flexShrink: 0,
                 }}
               >
                 <a
@@ -351,31 +358,30 @@ export const CellsManager: React.FC<CellsManagerProps> = ({ cells, onNotify }) =
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-secondary btn-sm"
-                  style={{ gap: '0.4rem', color: '#10B981' }}
+                  style={{ gap: '0.4rem', color: '#10B981', background: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.25)' }}
                   title="Falar com o líder via WhatsApp"
                 >
                   <MessageCircle size={15} />
-                  <span>WhatsApp Líder</span>
+                  <span>WhatsApp</span>
                 </a>
 
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <button
-                    onClick={() => openEditCellModal(cell)}
-                    className="btn btn-secondary btn-sm"
-                    style={{ padding: '0.45rem 0.65rem' }}
-                    title="Editar Célula"
-                  >
-                    <Edit2 size={15} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCell(cell)}
-                    className="btn btn-secondary btn-sm"
-                    style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
-                    title="Excluir Célula"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
+                <button
+                  onClick={() => openEditCellModal(cell)}
+                  className="btn btn-secondary btn-sm"
+                  style={{ gap: '0.35rem', padding: '0.45rem 0.75rem' }}
+                  title="Editar Célula"
+                >
+                  <Edit2 size={14} />
+                  <span>Editar</span>
+                </button>
+                <button
+                  onClick={() => handleDeleteCell(cell)}
+                  className="btn btn-secondary btn-sm"
+                  style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
+                  title="Excluir Célula"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
             </div>
           );
@@ -384,7 +390,6 @@ export const CellsManager: React.FC<CellsManagerProps> = ({ cells, onNotify }) =
         {filteredCells.length === 0 && (
           <div
             style={{
-              gridColumn: '1 / -1',
               textAlign: 'center',
               padding: '4rem 1rem',
               background: 'var(--bg-secondary)',
@@ -398,7 +403,7 @@ export const CellsManager: React.FC<CellsManagerProps> = ({ cells, onNotify }) =
               Tente alterar os filtros de busca ou cadastre uma nova célula no sistema.
             </p>
             <button onClick={openNewCellModal} className="btn btn-primary btn-sm">
-              <Plus size={16} /> Cadastrar Nova Célula
+              Cadastrar Nova Célula
             </button>
           </div>
         )}

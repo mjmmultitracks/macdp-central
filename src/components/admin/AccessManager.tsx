@@ -36,6 +36,7 @@ import {
   Eye,
   CheckSquare,
   Square,
+  Building2,
 } from 'lucide-react';
 
 interface AccessManagerProps {
@@ -63,6 +64,7 @@ const AVAILABLE_MODULES: ModuleOption[] = [
   { id: 'eventos_admin', label: 'Eventos & Reservas', icon: Calendar, category: 'Eventos' },
   { id: 'oracao_admin', label: 'Central de Oração', icon: HeartHandshake, category: 'Pastoral' },
   { id: 'acessos_admin', label: 'Gestão de Acessos', icon: KeyRound, category: 'Segurança' },
+  { id: 'config_igreja', label: 'Configurações da Igreja', icon: Building2, category: 'Administração' },
 ];
 
 export const AccessManager: React.FC<AccessManagerProps> = ({
@@ -375,22 +377,17 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
         </div>
       </div>
 
-      {/* Users Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-          gap: '1.5rem',
-        }}
-      >
+      {/* Users List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         {filteredUsers.map((user) => (
           <div
             key={user.id}
             className="card card-hover"
             style={{
               display: 'flex',
-              flexDirection: 'column',
+              alignItems: 'center',
               justifyContent: 'space-between',
+              padding: '1.15rem 1.35rem',
               border: `1px solid ${
                 user.status === 'bloqueado'
                   ? '#EF4444'
@@ -399,73 +396,115 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
                   : 'var(--border-medium)'
               }`,
               opacity: user.status === 'bloqueado' ? 0.75 : 1,
+              borderRadius: 'var(--radius-lg)',
+              gap: '1.25rem',
+              flexWrap: 'wrap',
+              transition: 'all 0.2s ease',
             }}
           >
-            <div>
-              {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                <span
-                  style={{
-                    background:
-                      user.roleType === 'Administrador'
-                        ? 'rgba(245, 158, 11, 0.15)'
-                        : user.roleType === 'Pastor'
-                        ? 'rgba(59, 130, 246, 0.15)'
-                        : 'rgba(255, 255, 255, 0.08)',
-                    color:
-                      user.roleType === 'Administrador'
-                        ? 'var(--accent-gold)'
-                        : user.roleType === 'Pastor'
-                        ? 'var(--accent-blue-light)'
-                        : 'var(--text-secondary)',
-                    padding: '0.2rem 0.65rem',
-                    borderRadius: '6px',
-                    fontSize: '0.78rem',
-                    fontWeight: 800,
-                  }}
-                >
-                  {user.roleType.toUpperCase()}
-                </span>
-
-                <span
-                  className={`badge ${user.status === 'ativo' ? 'badge-success' : 'badge-danger'}`}
-                >
-                  {user.status === 'ativo' ? 'Ativo' : 'Bloqueado'}
-                </span>
+            {/* Left Info */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 360px', minWidth: 0 }}>
+              <div
+                style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '12px',
+                  background:
+                    user.roleType === 'Administrador'
+                      ? 'rgba(245, 158, 11, 0.12)'
+                      : user.roleType === 'Pastor'
+                      ? 'rgba(59, 130, 246, 0.12)'
+                      : 'rgba(255, 255, 255, 0.08)',
+                  border: `1px solid ${
+                    user.roleType === 'Administrador'
+                      ? 'rgba(245, 158, 11, 0.3)'
+                      : user.roleType === 'Pastor'
+                      ? 'rgba(59, 130, 246, 0.3)'
+                      : 'var(--border-subtle)'
+                  }`,
+                  color:
+                    user.roleType === 'Administrador'
+                      ? 'var(--accent-gold)'
+                      : user.roleType === 'Pastor'
+                      ? 'var(--accent-blue-light)'
+                      : 'var(--text-secondary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <KeyRound size={22} />
               </div>
 
-              <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.25rem', color: 'var(--text-primary)' }}>
-                {user.name}
-              </h4>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                  <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                    {user.name}
+                  </h4>
 
-              <div style={{ fontSize: '0.85rem', color: 'var(--accent-gold-light)', fontWeight: 600, marginBottom: '0.85rem' }}>
-                {user.roleTitle}
-              </div>
+                  <span
+                    style={{
+                      background:
+                        user.roleType === 'Administrador'
+                          ? 'rgba(245, 158, 11, 0.15)'
+                          : user.roleType === 'Pastor'
+                          ? 'rgba(59, 130, 246, 0.15)'
+                          : 'rgba(255, 255, 255, 0.08)',
+                      color:
+                        user.roleType === 'Administrador'
+                          ? 'var(--accent-gold)'
+                          : user.roleType === 'Pastor'
+                          ? 'var(--accent-blue-light)'
+                          : 'var(--text-secondary)',
+                      padding: '0.15rem 0.55rem',
+                      borderRadius: '6px',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                    }}
+                  >
+                    {user.roleType.toUpperCase()}
+                  </span>
 
-              {/* Contacts */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.83rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Mail size={14} color="var(--accent-gold)" />
-                  <span>{user.email}</span>
+                  <span
+                    className={`badge ${user.status === 'ativo' ? 'badge-success' : 'badge-danger'}`}
+                    style={{ fontSize: '0.72rem' }}
+                  >
+                    {user.status === 'ativo' ? 'Ativo' : 'Bloqueado'}
+                  </span>
+
+                  <span style={{ fontSize: '0.82rem', color: 'var(--accent-gold-light)', fontWeight: 600 }}>
+                    • {user.roleTitle}
+                  </span>
                 </div>
-                {user.phone && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Phone size={14} color="var(--accent-blue-light)" />
-                    <span>{user.phone}</span>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem', flexWrap: 'wrap', fontSize: '0.83rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Mail size={13} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+                    <span>{user.email}</span>
                   </div>
-                )}
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                  Permissão: <strong>{user.canEdit ? 'Acesso Total (Edição)' : 'Apenas Visualização'}</strong>
-                  {user.lastAccess && <span> • Último: {user.lastAccess}</span>}
-                </div>
-              </div>
 
-              {/* Allowed Modules Badges */}
-              <div style={{ marginBottom: '1rem' }}>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.5px', marginBottom: '0.4rem' }}>
-                  Módulos Autorizados ({user.allowedModules.length}):
+                  {user.phone && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Phone size={13} color="var(--accent-blue-light)" style={{ flexShrink: 0 }} />
+                      <span>{user.phone}</span>
+                    </div>
+                  )}
+
+                  <span style={{ color: 'var(--text-muted)' }}>
+                    {user.canEdit ? '⚡ Acesso Total' : '👁️ Somente Leitura'}
+                  </span>
+
+                  {user.lastAccess && (
+                    <span style={{ color: 'var(--text-muted)' }}>
+                      • Último acesso: {user.lastAccess}
+                    </span>
+                  )}
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+
+                {/* Modules pills */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Módulos:</span>
                   {user.allowedModules.map((modId) => {
                     const found = AVAILABLE_MODULES.find((m) => m.id === modId);
                     return (
@@ -475,8 +514,8 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
                           background: 'var(--bg-tertiary)',
                           border: '1px solid var(--border-subtle)',
                           borderRadius: '4px',
-                          padding: '0.15rem 0.45rem',
-                          fontSize: '0.72rem',
+                          padding: '0.1rem 0.4rem',
+                          fontSize: '0.7rem',
                           color: 'var(--text-secondary)',
                         }}
                       >
@@ -486,29 +525,21 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
                   })}
                 </div>
               </div>
-
-              {user.notes && (
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '0.75rem' }}>
-                  "{user.notes}"
-                </div>
-              )}
             </div>
 
-            {/* Actions Toolbar */}
+            {/* Right Actions */}
             <div
               style={{
-                borderTop: '1px solid var(--border-subtle)',
-                paddingTop: '0.85rem',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
                 gap: '0.4rem',
+                flexShrink: 0,
               }}
             >
               <button
                 onClick={() => openEditUserModal(user)}
                 className="btn btn-secondary btn-sm"
-                style={{ gap: '0.35rem', flex: 1 }}
+                style={{ gap: '0.35rem', padding: '0.45rem 0.75rem' }}
               >
                 <Edit2 size={14} />
                 <span>Editar Limitações</span>
@@ -519,7 +550,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
                 className="btn btn-secondary btn-sm"
                 style={{
                   color: user.status === 'ativo' ? '#EF4444' : 'var(--status-success)',
-                  padding: '0.4rem 0.6rem',
+                  padding: '0.45rem 0.65rem',
                 }}
                 title={user.status === 'ativo' ? 'Bloquear Acesso' : 'Desbloquear Acesso'}
               >
@@ -529,7 +560,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
               <button
                 onClick={() => handleDeleteUser(user)}
                 className="btn btn-secondary btn-sm"
-                style={{ color: 'var(--status-error)', padding: '0.4rem 0.6rem' }}
+                style={{ color: 'var(--status-error)', padding: '0.45rem 0.65rem' }}
                 title="Revogar Acesso"
               >
                 <Trash2 size={15} />
@@ -537,6 +568,27 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
             </div>
           </div>
         ))}
+
+        {filteredUsers.length === 0 && (
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '4rem 1rem',
+              background: 'var(--bg-secondary)',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px dashed var(--border-medium)',
+            }}
+          >
+            <KeyRound size={40} color="var(--text-muted)" style={{ marginBottom: '1rem' }} />
+            <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.5rem' }}>Nenhum usuário de acesso encontrado</h4>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+              Tente alterar os filtros de busca ou cadastre uma nova pessoa com permissões.
+            </p>
+            <button onClick={openNewUserModal} className="btn btn-primary btn-sm">
+              <Plus size={16} /> Cadastrar Nova Pessoa
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ==================== MODAL CRIAR / EDITAR ACESSOS ==================== */}

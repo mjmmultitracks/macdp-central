@@ -201,14 +201,8 @@ export const MinistriesManager: React.FC<MinistriesManagerProps> = ({ ministries
         </div>
       </div>
 
-      {/* Ministries Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '1.5rem',
-        }}
-      >
+      {/* Ministries List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         {filteredMinistries.map((min) => {
           const cleanPhone = min.leaderPhone.replace(/\D/g, '');
           const waLink = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(
@@ -221,67 +215,83 @@ export const MinistriesManager: React.FC<MinistriesManagerProps> = ({ ministries
               className="card card-hover"
               style={{
                 display: 'flex',
-                flexDirection: 'column',
+                alignItems: 'center',
                 justifyContent: 'space-between',
+                padding: '1.15rem 1.35rem',
                 border: '1px solid var(--border-medium)',
+                borderRadius: 'var(--radius-lg)',
+                gap: '1.25rem',
+                flexWrap: 'wrap',
+                transition: 'all 0.2s ease',
               }}
             >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                  <div
-                    style={{
-                      width: '42px',
-                      height: '42px',
-                      borderRadius: '10px',
-                      background: 'rgba(245, 158, 11, 0.15)',
-                      color: 'var(--accent-gold)',
-                      border: '1px solid rgba(245, 158, 11, 0.35)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Sparkles size={20} />
-                  </div>
-                  <span className="badge badge-gold">
-                    ~{min.membersCount || 0} Voluntários
-                  </span>
+              {/* Left Identity & Info */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 340px', minWidth: 0 }}>
+                <div
+                  style={{
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '12px',
+                    background: 'rgba(245, 158, 11, 0.12)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                    color: 'var(--accent-gold)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Sparkles size={22} />
                 </div>
 
-                <h4 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.6rem', color: 'var(--text-primary)' }}>
-                  {min.name}
-                </h4>
-
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-                  {min.description}
-                </p>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
-                    <Users size={16} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
-                    <span>
-                      <strong>Liderança:</strong> {min.leaderName}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                      {min.name}
+                    </h4>
+                    <span className="badge badge-gold" style={{ fontSize: '0.72rem' }}>
+                      ~{min.membersCount || 0} Voluntários
                     </span>
                   </div>
 
-                  {min.meetingSchedule && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      <Clock size={16} color="var(--accent-blue-light)" style={{ flexShrink: 0 }} />
-                      <span>{min.meetingSchedule}</span>
+                  <p
+                    style={{
+                      color: 'var(--text-secondary)',
+                      fontSize: '0.85rem',
+                      margin: '0 0 0.4rem 0',
+                      lineHeight: 1.4,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {min.description}
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem', flexWrap: 'wrap', fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Users size={14} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+                      <span><strong>Liderança:</strong> {min.leaderName}</span>
                     </div>
-                  )}
+
+                    {min.meetingSchedule && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--accent-blue-light)' }}>
+                        <Clock size={14} style={{ flexShrink: 0 }} />
+                        <span>{min.meetingSchedule}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Action Buttons */}
+              {/* Right Action Buttons */}
               <div
                 style={{
-                  borderTop: '1px solid var(--border-subtle)',
-                  paddingTop: '1rem',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
                   gap: '0.5rem',
+                  flexShrink: 0,
                 }}
               >
                 <a
@@ -289,31 +299,30 @@ export const MinistriesManager: React.FC<MinistriesManagerProps> = ({ ministries
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-secondary btn-sm"
-                  style={{ gap: '0.4rem', color: '#10B981' }}
+                  style={{ gap: '0.4rem', color: '#10B981', background: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.25)' }}
                   title="Falar com a liderança via WhatsApp"
                 >
                   <MessageCircle size={15} />
-                  <span>WhatsApp Líder</span>
+                  <span>WhatsApp</span>
                 </a>
 
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <button
-                    onClick={() => openEditMinistryModal(min)}
-                    className="btn btn-secondary btn-sm"
-                    style={{ padding: '0.45rem 0.65rem' }}
-                    title="Editar Ministério"
-                  >
-                    <Edit2 size={15} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteMinistry(min)}
-                    className="btn btn-secondary btn-sm"
-                    style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
-                    title="Excluir Ministério"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
+                <button
+                  onClick={() => openEditMinistryModal(min)}
+                  className="btn btn-secondary btn-sm"
+                  style={{ gap: '0.35rem', padding: '0.45rem 0.75rem' }}
+                  title="Editar Ministério"
+                >
+                  <Edit2 size={14} />
+                  <span>Editar</span>
+                </button>
+                <button
+                  onClick={() => handleDeleteMinistry(min)}
+                  className="btn btn-secondary btn-sm"
+                  style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
+                  title="Excluir Ministério"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
             </div>
           );
@@ -322,7 +331,6 @@ export const MinistriesManager: React.FC<MinistriesManagerProps> = ({ ministries
         {filteredMinistries.length === 0 && (
           <div
             style={{
-              gridColumn: '1 / -1',
               textAlign: 'center',
               padding: '4rem 1rem',
               background: 'var(--bg-secondary)',

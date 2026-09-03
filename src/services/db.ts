@@ -20,10 +20,43 @@ import {
   PastoralAppointment,
   SystemAccessUser,
   PanelModuleId,
+  ChurchSettings,
 } from '../types';
 import { pushDatabaseToSupabase } from './supabaseSync';
 
 const DB_STORAGE_KEY = 'macdp_db_data_v3';
+
+export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
+  name: 'Ministério Apostólico Caçadores da Presença',
+  shortName: 'MACDP Central',
+  subtitle: 'Ministério Apostólico',
+  slogan: 'Proibido a Entrada de Pessoas Perfeitas.',
+  description: 'Uma igreja acolhedora, profética e apaixonada pela presença manifesta de Deus em Manaus/AM. Pastores Presidentes Oziel Gomes Maduro e Midiã Gomes Maduro.',
+  logoUrl: '/images/logo.png',
+  pastorPresident: 'Pr. Oziel Gomes Maduro & Pra. Midiã Gomes Maduro',
+  cnpj: '34.567.890/0001-12',
+  phone: '(92) 99127-9663',
+  whatsapp: '92991279663',
+  email: 'contato@macdp.com.br',
+  address: {
+    street: 'Rua Lagoa Grande, 382',
+    neighborhood: 'Conj. Canaranas / Cidade Nova',
+    city: 'Manaus',
+    state: 'AM',
+    zip: '69097-750',
+  },
+  social: {
+    instagram: 'https://instagram.com/_macdp',
+    instagramHandle: '@_macdp',
+    youtube: 'https://www.youtube.com/@_macdp',
+    facebook: 'https://facebook.com/macdpoficial',
+  },
+  pix: {
+    key: '92991279663',
+    receiver: 'Ministério Apostólico Caçadores da Presença',
+    bank: 'Bradesco / NuBank',
+  },
+};
 
 // Seed initial data
 export const INITIAL_DATABASE: DatabaseSchema = {
@@ -1168,6 +1201,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       notes: 'Acesso apenas leitura para credenciar participantes na entrada.',
     },
   ],
+  churchSettings: INITIAL_CHURCH_SETTINGS,
 };
 
 export function getDatabase(): DatabaseSchema {
@@ -1212,6 +1246,10 @@ export function getDatabase(): DatabaseSchema {
     }
     if (!parsed.accessUsers || parsed.accessUsers.length === 0) {
       parsed.accessUsers = INITIAL_DATABASE.accessUsers;
+      saveDatabase(parsed);
+    }
+    if (!parsed.churchSettings) {
+      parsed.churchSettings = INITIAL_CHURCH_SETTINGS;
       saveDatabase(parsed);
     }
     if (parsed.events) {
@@ -1936,6 +1974,36 @@ export function deleteAccessUser(id: string): boolean {
   db.accessUsers = filtered;
   saveDatabase(db);
   return true;
+}
+
+// ==================== CONFIGURAÇÕES DA IGREJA (NOME, LOGO, CONTATOS) ====================
+export function getChurchSettings(): ChurchSettings {
+  const db = getDatabase();
+  return db.churchSettings || INITIAL_CHURCH_SETTINGS;
+}
+
+export function updateChurchSettings(settings: Partial<ChurchSettings>): ChurchSettings {
+  const db = getDatabase();
+  const current = db.churchSettings || INITIAL_CHURCH_SETTINGS;
+  const updated: ChurchSettings = {
+    ...current,
+    ...settings,
+    address: {
+      ...current.address,
+      ...(settings.address || {}),
+    },
+    social: {
+      ...current.social,
+      ...(settings.social || {}),
+    },
+    pix: {
+      ...current.pix,
+      ...(settings.pix || {}),
+    },
+  };
+  db.churchSettings = updated;
+  saveDatabase(db);
+  return updated;
 }
 
 

@@ -452,67 +452,97 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
             </div>
           </div>
 
-          {/* Classes Cards Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          {/* Classes List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {filteredClasses.map((cls) => (
               <div
                 key={cls.id}
                 className="card card-hover"
                 style={{
                   display: 'flex',
-                  flexDirection: 'column',
+                  alignItems: 'center',
                   justifyContent: 'space-between',
+                  padding: '1.15rem 1.35rem',
                   border: '1px solid var(--border-medium)',
+                  borderRadius: 'var(--radius-lg)',
+                  gap: '1.25rem',
+                  flexWrap: 'wrap',
+                  transition: 'all 0.2s ease',
                 }}
               >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                    <span className="badge badge-gold">{cls.category}</span>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      👥 {cls.studentsCount} alunos
-                    </span>
+                {/* Left Info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 340px', minWidth: 0 }}>
+                  <div
+                    style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '12px',
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.3)',
+                      color: 'var(--accent-gold)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <GraduationCap size={22} />
                   </div>
 
-                  <h4 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.6rem', color: 'var(--text-primary)' }}>
-                    {cls.name}
-                  </h4>
-
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-                    {cls.description}
-                  </p>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem', fontSize: '0.85rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Users size={15} color="var(--accent-gold)" />
-                      <span><strong>Facilitador/Professor:</strong> {cls.teacher}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                      <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                        {cls.name}
+                      </h4>
+                      <span className="badge badge-gold" style={{ fontSize: '0.72rem' }}>
+                        {cls.category}
+                      </span>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        • 👥 {cls.studentsCount} alunos
+                      </span>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
-                      <Clock size={15} color="var(--accent-blue-light)" />
-                      <span>{cls.schedule}</span>
-                    </div>
+                    <p
+                      style={{
+                        color: 'var(--text-secondary)',
+                        fontSize: '0.85rem',
+                        margin: '0 0 0.4rem 0',
+                        lineHeight: 1.4,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 1,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {cls.description}
+                    </p>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
-                      <MapPin size={15} color="var(--text-muted)" />
-                      <span>{cls.room}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem', flexWrap: 'wrap', fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Users size={14} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+                        <span><strong>Professor:</strong> {cls.teacher}</span>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Clock size={14} color="var(--accent-blue-light)" style={{ flexShrink: 0 }} />
+                        <span>{cls.schedule}</span>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <MapPin size={14} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+                        <span>{cls.room}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
+                {/* Right Actions */}
                 <div
                   style={{
-                    borderTop: '1px solid var(--border-subtle)',
-                    paddingTop: '1rem',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
                     gap: '0.5rem',
+                    flexShrink: 0,
                   }}
                 >
                   <button
@@ -524,26 +554,26 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
                     style={{ gap: '0.4rem', color: 'var(--accent-gold)' }}
                   >
                     <Send size={14} />
-                    <span>Enviar Comunicado</span>
+                    <span>Comunicado</span>
                   </button>
 
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    <button
-                      onClick={() => openEditClassModal(cls)}
-                      className="btn btn-secondary btn-sm"
-                      title="Editar Turma"
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteClass(cls)}
-                      className="btn btn-secondary btn-sm"
-                      style={{ color: 'var(--status-error)' }}
-                      title="Excluir Turma"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => openEditClassModal(cls)}
+                    className="btn btn-secondary btn-sm"
+                    style={{ gap: '0.35rem', padding: '0.45rem 0.75rem' }}
+                    title="Editar Turma"
+                  >
+                    <Edit2 size={14} />
+                    <span>Editar</span>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClass(cls)}
+                    className="btn btn-secondary btn-sm"
+                    style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
+                    title="Excluir Turma"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -831,103 +861,129 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
             </div>
           </div>
 
-          {/* Materials Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          {/* Materials List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {filteredMaterials.map((mat) => (
               <div
                 key={mat.id}
                 className="card card-hover"
                 style={{
                   display: 'flex',
-                  flexDirection: 'column',
+                  alignItems: 'center',
                   justifyContent: 'space-between',
+                  padding: '1.15rem 1.35rem',
                   border: '1px solid var(--border-medium)',
+                  borderRadius: 'var(--radius-lg)',
+                  gap: '1.25rem',
+                  flexWrap: 'wrap',
+                  transition: 'all 0.2s ease',
                 }}
               >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                    <span
-                      style={{
-                        background: mat.targetType === 'celulas' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                        color: mat.targetType === 'celulas' ? 'var(--accent-gold-light)' : 'var(--accent-blue-light)',
-                        border: '1px solid var(--border-subtle)',
-                        padding: '0.2rem 0.65rem',
-                        borderRadius: 'var(--radius-full)',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {mat.targetType === 'celulas' ? '🧭 Para Células' : '✨ Para Ministérios'}
-                    </span>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      {formatDate(mat.date)}
-                    </span>
+                {/* Left Info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 340px', minWidth: 0 }}>
+                  <div
+                    style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '12px',
+                      background: mat.targetType === 'celulas' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(59, 130, 246, 0.12)',
+                      border: `1px solid ${mat.targetType === 'celulas' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+                      color: mat.targetType === 'celulas' ? 'var(--accent-gold)' : 'var(--accent-blue-light)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <BookOpen size={22} />
                   </div>
 
-                  <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-                    {mat.title}
-                  </h4>
-
-                  {mat.weekTopic && (
-                    <div style={{ fontSize: '0.82rem', color: 'var(--accent-gold)', fontWeight: 600, marginBottom: '0.75rem' }}>
-                      📌 {mat.weekTopic}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                      <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                        {mat.title}
+                      </h4>
+                      <span
+                        style={{
+                          background: mat.targetType === 'celulas' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                          color: mat.targetType === 'celulas' ? 'var(--accent-gold-light)' : 'var(--accent-blue-light)',
+                          border: '1px solid var(--border-subtle)',
+                          padding: '0.15rem 0.55rem',
+                          borderRadius: 'var(--radius-full)',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {mat.targetType === 'celulas' ? '🧭 Para Células' : '✨ Para Ministérios'}
+                      </span>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        • {formatDate(mat.date)}
+                      </span>
                     </div>
-                  )}
 
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-                    {mat.summary}
-                  </p>
+                    {mat.weekTopic && (
+                      <div style={{ fontSize: '0.82rem', color: 'var(--accent-gold)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                        📌 {mat.weekTopic}
+                      </div>
+                    )}
 
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                    <span>✍️ Autor: <strong>{mat.author}</strong></span>
+                    <p
+                      style={{
+                        color: 'var(--text-secondary)',
+                        fontSize: '0.85rem',
+                        margin: '0 0 0.35rem 0',
+                        lineHeight: 1.4,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 1,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {mat.summary}
+                    </p>
+
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      ✍️ Autor: <strong>{mat.author}</strong>
+                    </div>
                   </div>
                 </div>
 
-                {/* Material Action Toolbar */}
+                {/* Right Actions */}
                 <div
                   style={{
-                    borderTop: '1px solid var(--border-subtle)',
-                    paddingTop: '1rem',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
                     gap: '0.5rem',
-                    flexWrap: 'wrap',
+                    flexShrink: 0,
                   }}
                 >
                   <button
                     onClick={() => handleCopyMaterialWhatsApp(mat)}
                     className="btn btn-secondary btn-sm"
-                    style={{ gap: '0.4rem', color: '#10B981', flex: 1 }}
+                    style={{ gap: '0.4rem', color: '#10B981', background: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.25)' }}
                     title="Copiar texto pronto para o WhatsApp dos líderes"
                   >
                     <Share2 size={15} />
                     <span>Disparar WhatsApp</span>
                   </button>
 
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    <button
-                      onClick={() => openEditMaterialModal(mat)}
-                      className="btn btn-secondary btn-sm"
-                      title="Editar Material"
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteMaterial(mat)}
-                      className="btn btn-secondary btn-sm"
-                      style={{ color: 'var(--status-error)' }}
-                      title="Excluir Material"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => openEditMaterialModal(mat)}
+                    className="btn btn-secondary btn-sm"
+                    style={{ gap: '0.35rem', padding: '0.45rem 0.75rem' }}
+                    title="Editar Material"
+                  >
+                    <Edit2 size={14} />
+                    <span>Editar</span>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteMaterial(mat)}
+                    className="btn btn-secondary btn-sm"
+                    style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
+                    title="Excluir Material"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             ))}

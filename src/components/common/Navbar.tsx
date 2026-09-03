@@ -12,6 +12,7 @@ import {
   Compass,
   Sparkles,
 } from 'lucide-react';
+import { ChurchSettings } from '../../types';
 
 interface NavbarProps {
   currentSection: string;
@@ -21,6 +22,7 @@ interface NavbarProps {
   isDarkMode: boolean;
   onToggleTheme: () => void;
   isSolid?: boolean;
+  churchSettings?: ChurchSettings;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -31,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   isDarkMode,
   onToggleTheme,
   isSolid = false,
+  churchSettings,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -108,8 +111,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
           >
             <img
-              src="/images/logo.png"
-              alt="Logo Oficial MACDP"
+              src={churchSettings?.logoUrl || '/images/logo.png'}
+              alt={churchSettings?.name || 'Logo Oficial MACDP'}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/images/logo.png';
+              }}
               style={{
                 width: '100%',
                 height: '100%',
@@ -130,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 marginBottom: '0.18rem',
               }}
             >
-              Ministério Apostólico
+              {churchSettings?.subtitle || 'Ministério Apostólico'}
             </div>
             <div
               style={{
@@ -142,7 +148,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 color: isScrolled || isSolid ? 'var(--text-primary)' : '#ffffff',
               }}
             >
-              Caçadores da Presença
+              {churchSettings?.shortName || churchSettings?.name || 'Caçadores da Presença'}
             </div>
           </div>
         </div>

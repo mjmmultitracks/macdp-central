@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserSession } from '../../types';
+import { UserSession, ChurchSettings } from '../../types';
 import { loginWithCredentials } from '../../services/authService';
 import {
   Lock,
@@ -16,12 +16,14 @@ interface AdminLoginProps {
   onLoginSuccess: (user: UserSession) => void;
   onBackToPublic: () => void;
   onNotify?: (type: 'success' | 'error' | 'info', text: string) => void;
+  churchSettings?: ChurchSettings;
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({
   onLoginSuccess,
   onBackToPublic,
   onNotify,
+  churchSettings,
 }) => {
   const [email, setEmail] = useState('oziel.maduro@macdp.com.br');
   const [password, setPassword] = useState('');
@@ -129,8 +131,11 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
             }}
           >
             <img
-              src="/images/logo.png"
-              alt="Logo Oficial MACDP"
+              src={churchSettings?.logoUrl || '/images/logo.png'}
+              alt={churchSettings?.name || 'Logo Oficial MACDP'}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/images/logo.png';
+              }}
               style={{
                 width: '100%',
                 height: '100%',
@@ -164,18 +169,18 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
           <h2
             style={{
               fontFamily: 'var(--font-heading)',
-              fontSize: '1.6rem',
+              fontSize: '1.45rem',
               fontWeight: 900,
               color: '#ffffff',
               letterSpacing: '-0.02em',
               marginBottom: '0.35rem',
             }}
           >
-            Painel Eclesiástico
+            {churchSettings?.shortName || churchSettings?.name || 'Painel Eclesiástico'}
           </h2>
 
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Ministério Apostólico Caçadores da Presença
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0 }}>
+            {churchSettings?.subtitle || 'Ministério Apostólico Caçadores da Presença'}
           </p>
         </div>
 
@@ -390,7 +395,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
         >
           <span style={{ color: 'var(--accent-gold-light)', fontWeight: 600 }}>Ambiente Eclesiástico Restrito & Monitorado</span>
           <br />
-          Para liberação de usuário ou recuperação de senha, contate a Secretaria da Presidência: (92) 98450-9989.
+          Para liberação de usuário ou recuperação de senha, contate a Secretaria: {churchSettings?.phone || '(92) 99127-9663'}.
         </div>
 
         {/* Back to Public Site Link */}

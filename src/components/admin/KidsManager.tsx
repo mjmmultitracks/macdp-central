@@ -419,14 +419,8 @@ export const KidsManager: React.FC<KidsManagerProps> = ({
             </div>
           </div>
 
-          {/* Children Check-in Cards Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '1.25rem',
-            }}
-          >
+          {/* Children Check-in List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {filteredChildren.map((child) => {
               return (
                 <div
@@ -434,8 +428,9 @@ export const KidsManager: React.FC<KidsManagerProps> = ({
                   className="card card-hover"
                   style={{
                     display: 'flex',
-                    flexDirection: 'column',
+                    alignItems: 'center',
                     justifyContent: 'space-between',
+                    padding: '1.15rem 1.35rem',
                     border: `1px solid ${
                       child.checkInStatus === 'presente'
                         ? 'var(--status-success)'
@@ -444,121 +439,125 @@ export const KidsManager: React.FC<KidsManagerProps> = ({
                         : 'var(--border-medium)'
                     }`,
                     background: child.checkInStatus === 'presente' ? 'rgba(16, 185, 129, 0.03)' : 'var(--bg-secondary)',
+                    borderRadius: 'var(--radius-lg)',
+                    gap: '1.25rem',
+                    flexWrap: 'wrap',
+                    transition: 'all 0.2s ease',
                   }}
                 >
-                  <div>
-                    {/* Header Row with Badge & Security Code */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                      <span
-                        style={{
-                          background: 'rgba(245, 158, 11, 0.15)',
-                          color: 'var(--accent-gold)',
-                          border: '1px solid rgba(245, 158, 11, 0.35)',
-                          padding: '0.2rem 0.65rem',
-                          borderRadius: '6px',
-                          fontSize: '0.82rem',
-                          fontWeight: 800,
-                          letterSpacing: '0.5px',
-                        }}
-                      >
-                        🏷️ {child.securityCode}
-                      </span>
+                  {/* Left Info */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 360px', minWidth: 0 }}>
+                    <span
+                      style={{
+                        background: 'rgba(245, 158, 11, 0.15)',
+                        color: 'var(--accent-gold)',
+                        border: '1px solid rgba(245, 158, 11, 0.35)',
+                        padding: '0.4rem 0.65rem',
+                        borderRadius: '8px',
+                        fontSize: '0.82rem',
+                        fontWeight: 800,
+                        letterSpacing: '0.5px',
+                        flexShrink: 0,
+                        textAlign: 'center',
+                      }}
+                    >
+                      🏷️ {child.securityCode}
+                    </span>
 
-                      <span
-                        className={`badge ${
-                          child.checkInStatus === 'presente'
-                            ? 'badge-success'
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                          {child.name}
+                        </h4>
+
+                        <span
+                          className={`badge ${
+                            child.checkInStatus === 'presente'
+                              ? 'badge-success'
+                              : child.checkInStatus === 'retirada'
+                              ? 'badge-gold'
+                              : 'badge-danger'
+                          }`}
+                        >
+                          {child.checkInStatus === 'presente'
+                            ? 'Presente na Sala'
                             : child.checkInStatus === 'retirada'
-                            ? 'badge-gold'
-                            : 'badge-danger'
-                        }`}
-                      >
-                        {child.checkInStatus === 'presente'
-                          ? 'Presente na Sala'
-                          : child.checkInStatus === 'retirada'
-                          ? 'Saída Registrada'
-                          : 'Ausente'}
-                      </span>
-                    </div>
+                            ? 'Saída Registrada'
+                            : 'Ausente'}
+                        </span>
 
-                    <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.25rem', color: 'var(--text-primary)' }}>
-                      {child.name}
-                    </h4>
-
-                    <div style={{ fontSize: '0.85rem', color: 'var(--accent-gold-light)', fontWeight: 600, marginBottom: '0.75rem' }}>
-                      {child.age} anos • {child.room}
-                    </div>
-
-                    {/* Guardian & Entry Info */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.83rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                      <div>
-                        👤 <strong>Responsável:</strong> {child.guardianName} ({child.guardianRelationship})
+                        <span style={{ fontSize: '0.82rem', color: 'var(--accent-gold-light)', fontWeight: 600 }}>
+                          • {child.age} anos • {child.room}
+                        </span>
                       </div>
-                      <div>
-                        📞 <strong>Contato:</strong> {child.guardianPhone}
-                      </div>
-                      {child.checkInTime && (
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem', flexWrap: 'wrap', fontSize: '0.83rem', color: 'var(--text-secondary)' }}>
                         <div>
-                          ⏰ <strong>Entrada:</strong> {child.checkInTime}
-                          {child.checkOutTime && <span> • <strong>Saída:</strong> {child.checkOutTime}</span>}
+                          👤 <strong>Resp:</strong> {child.guardianName} ({child.guardianRelationship})
+                        </div>
+                        <div>
+                          📞 <strong>Tel:</strong> {child.guardianPhone}
+                        </div>
+                        {child.checkInTime && (
+                          <div>
+                            ⏰ <strong>Entrada:</strong> {child.checkInTime}
+                            {child.checkOutTime && <span> • <strong>Saída:</strong> {child.checkOutTime}</span>}
+                          </div>
+                        )}
+                      </div>
+
+                      {child.allergiesOrNotes && (
+                        <div
+                          style={{
+                            display: 'inline-block',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            borderRadius: 'var(--radius-sm)',
+                            padding: '0.2rem 0.55rem',
+                            fontSize: '0.75rem',
+                            color: '#f87171',
+                            marginTop: '0.35rem',
+                          }}
+                        >
+                          ⚠️ <strong>Alergia/Cuidado:</strong> {child.allergiesOrNotes}
                         </div>
                       )}
                     </div>
-
-                    {/* Allergy / Special Care Alert */}
-                    {child.allergiesOrNotes && (
-                      <div
-                        style={{
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          border: '1px solid rgba(239, 68, 68, 0.3)',
-                          borderRadius: 'var(--radius-sm)',
-                          padding: '0.5rem 0.75rem',
-                          fontSize: '0.78rem',
-                          color: '#f87171',
-                          marginBottom: '1rem',
-                        }}
-                      >
-                        ⚠️ <strong>Alergias / Cuidados:</strong> {child.allergiesOrNotes}
-                      </div>
-                    )}
                   </div>
 
-                  {/* Actions Toolbar */}
+                  {/* Right Actions */}
                   <div
                     style={{
-                      borderTop: '1px solid var(--border-subtle)',
-                      paddingTop: '0.85rem',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '0.4rem',
-                      flexWrap: 'wrap',
+                      gap: '0.5rem',
+                      flexShrink: 0,
                     }}
                   >
                     {child.checkInStatus !== 'presente' ? (
                       <button
                         onClick={() => handleCheckIn(child)}
                         className="btn btn-primary btn-sm"
-                        style={{ gap: '0.35rem', flex: 1 }}
+                        style={{ gap: '0.35rem' }}
                       >
                         <LogIn size={15} />
-                        <span>Fazer Check-in (Entrada)</span>
+                        <span>Check-in</span>
                       </button>
                     ) : (
                       <button
                         onClick={() => handleCheckOut(child)}
                         className="btn btn-secondary btn-sm"
-                        style={{ gap: '0.35rem', color: 'var(--status-warning)', flex: 1 }}
+                        style={{ gap: '0.35rem', color: 'var(--status-warning)' }}
                       >
                         <LogOut size={15} />
-                        <span>Fazer Check-out (Saída)</span>
+                        <span>Check-out</span>
                       </button>
                     )}
 
                     <button
                       onClick={() => handleAlertParent(child)}
                       className="btn btn-secondary btn-sm"
-                      style={{ color: '#10B981', padding: '0.4rem 0.6rem' }}
+                      style={{ color: '#10B981', padding: '0.45rem 0.65rem' }}
                       title="Chamar Responsável pelo WhatsApp"
                     >
                       <MessageCircle size={15} />
@@ -567,7 +566,7 @@ export const KidsManager: React.FC<KidsManagerProps> = ({
                     <button
                       onClick={() => openEditChildModal(child)}
                       className="btn btn-secondary btn-sm"
-                      style={{ padding: '0.4rem 0.6rem' }}
+                      style={{ padding: '0.45rem 0.65rem' }}
                       title="Editar Criança"
                     >
                       <Edit2 size={15} />
@@ -580,7 +579,6 @@ export const KidsManager: React.FC<KidsManagerProps> = ({
             {filteredChildren.length === 0 && (
               <div
                 style={{
-                  gridColumn: '1 / -1',
                   textAlign: 'center',
                   padding: '4rem 1rem',
                   background: 'var(--bg-secondary)',
@@ -740,102 +738,122 @@ export const KidsManager: React.FC<KidsManagerProps> = ({
             </button>
           </div>
 
-          {/* Lessons Cards Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          {/* Lessons List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {filteredLessons.map((les) => (
               <div
                 key={les.id}
                 className="card card-hover"
                 style={{
                   display: 'flex',
-                  flexDirection: 'column',
+                  alignItems: 'center',
                   justifyContent: 'space-between',
+                  padding: '1.15rem 1.35rem',
                   border: '1px solid var(--border-medium)',
+                  borderRadius: 'var(--radius-lg)',
+                  gap: '1.25rem',
+                  flexWrap: 'wrap',
+                  transition: 'all 0.2s ease',
                 }}
               >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <span
-                      style={{
-                        background: les.programType === 'EBF' ? 'rgba(236, 72, 153, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                        color: les.programType === 'EBF' ? '#EC4899' : 'var(--accent-gold)',
-                        border: '1px solid var(--border-subtle)',
-                        padding: '0.2rem 0.65rem',
-                        borderRadius: 'var(--radius-full)',
-                        fontSize: '0.75rem',
-                        fontWeight: 800,
-                      }}
-                    >
-                      {les.programType === 'EBF' ? '🏖️ EBF (Férias)' : '📖 EBD (Dominical)'}
-                    </span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      {formatDate(les.date)}
-                    </span>
+                {/* Left Info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 340px', minWidth: 0 }}>
+                  <div
+                    style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '12px',
+                      background: les.programType === 'EBF' ? 'rgba(236, 72, 153, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                      border: `1px solid ${les.programType === 'EBF' ? 'rgba(236, 72, 153, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                      color: les.programType === 'EBF' ? '#EC4899' : 'var(--accent-gold)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <BookOpen size={22} />
                   </div>
 
-                  <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
-                    {les.title}
-                  </h4>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                      <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                        {les.title}
+                      </h4>
+                      <span
+                        style={{
+                          background: les.programType === 'EBF' ? 'rgba(236, 72, 153, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                          color: les.programType === 'EBF' ? '#EC4899' : 'var(--accent-gold)',
+                          border: '1px solid var(--border-subtle)',
+                          padding: '0.15rem 0.55rem',
+                          borderRadius: 'var(--radius-full)',
+                          fontSize: '0.72rem',
+                          fontWeight: 800,
+                        }}
+                      >
+                        {les.programType === 'EBF' ? '🏖️ EBF' : '📖 EBD'}
+                      </span>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        • {formatDate(les.date)}
+                      </span>
+                    </div>
 
-                  <div style={{ fontSize: '0.83rem', color: 'var(--accent-gold-light)', fontWeight: 600, marginBottom: '0.75rem' }}>
-                    Sala: {les.targetRoom} • Tia/Prof: {les.teacherName}
-                  </div>
+                    <div style={{ fontSize: '0.84rem', color: 'var(--accent-gold-light)', fontWeight: 600, marginBottom: '0.3rem' }}>
+                      Sala: {les.targetRoom} • Tia/Prof: {les.teacherName}
+                    </div>
 
-                  {les.memoryVerse && (
-                    <div
+                    {les.memoryVerse && (
+                      <div
+                        style={{
+                          fontSize: '0.82rem',
+                          color: 'var(--text-secondary)',
+                          fontStyle: 'italic',
+                          marginBottom: '0.3rem',
+                        }}
+                      >
+                        🗣️ <strong>Versículo:</strong> "{les.memoryVerse}"
+                      </div>
+                    )}
+
+                    <p
                       style={{
-                        background: 'var(--bg-tertiary)',
-                        borderLeft: '3px solid var(--accent-gold)',
-                        padding: '0.65rem 0.85rem',
-                        borderRadius: '4px',
-                        fontSize: '0.82rem',
-                        fontStyle: 'italic',
-                        marginBottom: '0.85rem',
-                        color: 'var(--text-secondary)',
+                        color: 'var(--text-muted)',
+                        fontSize: '0.83rem',
+                        margin: 0,
+                        lineHeight: 1.4,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 1,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
                       }}
                     >
-                      🗣️ <strong>Versículo para Memorizar:</strong> "{les.memoryVerse}"
-                    </div>
-                  )}
-
-                  {les.activities && (
-                    <div style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
-                      🎨 <strong>Atividades Lúdicas:</strong> {les.activities}
-                    </div>
-                  )}
-
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                    {les.description}
-                  </p>
+                      {les.description}
+                    </p>
+                  </div>
                 </div>
 
+                {/* Right Actions */}
                 <div
                   style={{
-                    borderTop: '1px solid var(--border-subtle)',
-                    paddingTop: '0.85rem',
-                    marginTop: '1rem',
                     display: 'flex',
-                    justifyContent: 'flex-end',
-                    gap: '0.35rem',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    flexShrink: 0,
                   }}
                 >
                   <button
                     onClick={() => openEditLessonModal(les)}
                     className="btn btn-secondary btn-sm"
+                    style={{ gap: '0.35rem', padding: '0.45rem 0.75rem' }}
                     title="Editar Lição"
                   >
                     <Edit2 size={14} />
+                    <span>Editar</span>
                   </button>
                   <button
                     onClick={() => handleDeleteLesson(les)}
                     className="btn btn-secondary btn-sm"
-                    style={{ color: 'var(--status-error)' }}
+                    style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
                     title="Excluir Lição"
                   >
                     <Trash2 size={14} />

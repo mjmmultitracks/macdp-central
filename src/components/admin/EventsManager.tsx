@@ -2079,45 +2079,69 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {rooms.map((room) => (
             <div
               key={room.id}
+              className="card card-hover"
               style={{
                 background: 'var(--bg-tertiary)',
                 borderRadius: 'var(--radius-md)',
-                padding: '1.15rem',
+                padding: '0.95rem 1.25rem',
                 border: '1px solid var(--border-subtle)',
                 display: 'flex',
-                flexDirection: 'column',
+                alignItems: 'center',
                 justifyContent: 'space-between',
+                gap: '1rem',
+                flexWrap: 'wrap',
+                transition: 'all 0.2s ease',
               }}
             >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                  <strong style={{ fontSize: '0.95rem' }}>{room.name}</strong>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--accent-gold)', fontWeight: 600 }}>
-                    {room.capacity}
-                  </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 280px', minWidth: 0 }}>
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '8px',
+                    background: 'rgba(59, 130, 246, 0.12)',
+                    border: '1px solid rgba(59, 130, 246, 0.25)',
+                    color: 'var(--accent-blue-light)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <MapPin size={18} />
                 </div>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                  Status: <em>{room.status}</em>
-                </p>
+
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{room.name}</strong>
+                    <span className="badge badge-gold" style={{ fontSize: '0.72rem' }}>
+                      {room.capacity}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                    Status: <span style={{ color: room.status.toLowerCase().includes('disponível') || room.status.toLowerCase().includes('livre') ? '#10B981' : 'var(--accent-gold)' }}>{room.status}</span>
+                  </div>
+                </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.65rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
                 <button
                   onClick={() => openEditRoomModal(room)}
                   className="btn btn-secondary btn-sm"
-                  style={{ padding: '0.35rem 0.55rem' }}
+                  style={{ gap: '0.35rem', padding: '0.4rem 0.65rem' }}
                   title="Editar Espaço"
                 >
                   <Edit2 size={13} />
+                  <span>Editar</span>
                 </button>
                 <button
                   onClick={() => handleDeleteRoom(room)}
                   className="btn btn-secondary btn-sm"
-                  style={{ padding: '0.35rem 0.55rem', color: 'var(--status-error)' }}
+                  style={{ padding: '0.4rem 0.6rem', color: 'var(--status-error)' }}
                   title="Excluir Espaço"
                 >
                   <Trash2 size={13} />

@@ -428,22 +428,17 @@ export const PastoralManager: React.FC<PastoralManagerProps> = ({
             </div>
           </div>
 
-          {/* Appointments Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          {/* Appointments List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {filteredAppointments.map((appt) => (
               <div
                 key={appt.id}
                 className="card card-hover"
                 style={{
                   display: 'flex',
-                  flexDirection: 'column',
+                  alignItems: 'center',
                   justifyContent: 'space-between',
+                  padding: '1.15rem 1.35rem',
                   border: `1px solid ${
                     appt.status === 'confirmado'
                       ? 'var(--status-success)'
@@ -452,103 +447,109 @@ export const PastoralManager: React.FC<PastoralManagerProps> = ({
                       : 'var(--border-medium)'
                   }`,
                   opacity: appt.status === 'realizado' ? 0.75 : 1,
+                  borderRadius: 'var(--radius-lg)',
+                  gap: '1.25rem',
+                  flexWrap: 'wrap',
+                  transition: 'all 0.2s ease',
                 }}
               >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                    <span
-                      style={{
-                        background: 'rgba(245, 158, 11, 0.15)',
-                        color: 'var(--accent-gold)',
-                        border: '1px solid rgba(245, 158, 11, 0.35)',
-                        padding: '0.2rem 0.65rem',
-                        borderRadius: '6px',
-                        fontSize: '0.78rem',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {appt.appointmentType}
-                    </span>
-
-                    <span
-                      className={`badge ${
-                        appt.status === 'confirmado'
-                          ? 'badge-success'
-                          : appt.status === 'realizado'
-                          ? 'badge-gold'
-                          : 'badge-blue'
-                      }`}
-                    >
-                      {appt.status.toUpperCase()}
-                    </span>
-                  </div>
-
-                  <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.3rem', color: 'var(--text-primary)' }}>
-                    {appt.personName}
-                  </h4>
-
-                  <div style={{ fontSize: '0.84rem', color: 'var(--accent-gold-light)', fontWeight: 600, marginBottom: '0.85rem' }}>
-                    👤 {appt.personType} • 📞 {appt.personPhone}
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Clock size={15} color="var(--accent-gold)" />
-                      <span><strong>Horário:</strong> {formatDate(appt.date)} às {appt.time}</span>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <MapPin size={15} color="var(--accent-blue-light)" />
-                      <span><strong>Local:</strong> {appt.location}</span>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <UserCheck size={15} color="#10B981" />
-                      <span><strong>Pastor(a):</strong> {appt.assignedPastor}</span>
-                    </div>
-                  </div>
-
+                {/* Left Info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 360px', minWidth: 0 }}>
                   <div
                     style={{
-                      background: 'var(--bg-tertiary)',
-                      padding: '0.75rem',
-                      borderRadius: '6px',
-                      fontSize: '0.83rem',
-                      color: 'var(--text-secondary)',
-                      lineHeight: 1.5,
-                      marginBottom: '1rem',
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '12px',
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.3)',
+                      color: 'var(--accent-gold)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
                     }}
                   >
-                    <strong>Motivo:</strong> {appt.reason}
+                    <UserCheck size={22} />
                   </div>
 
-                  {appt.confidentialNotes && (
-                    <div style={{ fontSize: '0.78rem', color: '#94A3B8', fontStyle: 'italic', marginBottom: '0.75rem' }}>
-                      🔒 <strong>Notas Confidenciais:</strong> {appt.confidentialNotes}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                      <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                        {appt.personName}
+                      </h4>
+
+                      <span
+                        style={{
+                          background: 'rgba(245, 158, 11, 0.15)',
+                          color: 'var(--accent-gold)',
+                          border: '1px solid rgba(245, 158, 11, 0.35)',
+                          padding: '0.15rem 0.55rem',
+                          borderRadius: '6px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {appt.appointmentType}
+                      </span>
+
+                      <span
+                        className={`badge ${
+                          appt.status === 'confirmado'
+                            ? 'badge-success'
+                            : appt.status === 'realizado'
+                            ? 'badge-gold'
+                            : 'badge-blue'
+                        }`}
+                        style={{ fontSize: '0.72rem' }}
+                      >
+                        {appt.status.toUpperCase()}
+                      </span>
                     </div>
-                  )}
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem', flexWrap: 'wrap', fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Clock size={14} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+                        <span>{formatDate(appt.date)} às {appt.time}</span>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <MapPin size={14} color="var(--accent-blue-light)" style={{ flexShrink: 0 }} />
+                        <span>{appt.location}</span>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <UserCheck size={14} color="#10B981" style={{ flexShrink: 0 }} />
+                        <span>Pastor(a): {appt.assignedPastor}</span>
+                      </div>
+
+                      <span>📞 {appt.personPhone}</span>
+                    </div>
+
+                    {appt.reason && (
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                        <strong>Motivo:</strong> {appt.reason}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Actions Toolbar */}
+                {/* Right Actions */}
                 <div
                   style={{
-                    borderTop: '1px solid var(--border-subtle)',
-                    paddingTop: '0.85rem',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
                     gap: '0.4rem',
-                    flexWrap: 'wrap',
+                    flexShrink: 0,
                   }}
                 >
                   <button
                     onClick={() => handleSendWhatsAppReminder(appt)}
                     className="btn btn-secondary btn-sm"
-                    style={{ gap: '0.35rem', color: '#10B981', flex: 1 }}
+                    style={{ gap: '0.35rem', color: '#10B981', background: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.25)' }}
                     title="Disparar Lembrete pelo WhatsApp"
                   >
                     <MessageCircle size={15} />
-                    <span>Lembrete WhatsApp</span>
+                    <span>Lembrete</span>
                   </button>
 
                   {appt.status !== 'realizado' && (
@@ -565,15 +566,17 @@ export const PastoralManager: React.FC<PastoralManagerProps> = ({
                   <button
                     onClick={() => openEditApptModal(appt)}
                     className="btn btn-secondary btn-sm"
+                    style={{ gap: '0.35rem', padding: '0.45rem 0.75rem' }}
                     title="Editar Atendimento"
                   >
                     <Edit2 size={14} />
+                    <span>Editar</span>
                   </button>
 
                   <button
                     onClick={() => handleDeleteAppt(appt)}
                     className="btn btn-secondary btn-sm"
-                    style={{ color: 'var(--status-error)' }}
+                    style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
                     title="Cancelar Atendimento"
                   >
                     <Trash2 size={14} />
@@ -585,7 +588,6 @@ export const PastoralManager: React.FC<PastoralManagerProps> = ({
             {filteredAppointments.length === 0 && (
               <div
                 style={{
-                  gridColumn: '1 / -1',
                   textAlign: 'center',
                   padding: '4rem 1rem',
                   background: 'var(--bg-secondary)',
@@ -655,66 +657,95 @@ export const PastoralManager: React.FC<PastoralManagerProps> = ({
             </select>
           </div>
 
-          {/* Prayer Cards Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          {/* Prayer Cards List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {filteredPrayers.map((pray) => (
               <div
                 key={pray.id}
                 className="card card-hover"
                 style={{
                   display: 'flex',
-                  flexDirection: 'column',
+                  alignItems: 'center',
                   justifyContent: 'space-between',
+                  padding: '1.15rem 1.35rem',
                   border: '1px solid var(--border-medium)',
+                  borderRadius: 'var(--radius-lg)',
+                  gap: '1.25rem',
+                  flexWrap: 'wrap',
+                  transition: 'all 0.2s ease',
                 }}
               >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <span className="badge badge-gold">{pray.category}</span>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      {formatDateTime(pray.createdAt)}
-                    </span>
+                {/* Left Info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 360px', minWidth: 0 }}>
+                  <div
+                    style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '12px',
+                      background: 'rgba(239, 68, 68, 0.12)',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      color: '#EF4444',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <HeartHandshake size={22} />
                   </div>
 
-                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
-                    {pray.requesterName}
-                  </h4>
-
-                  {pray.phone && (
-                    <div style={{ fontSize: '0.82rem', color: 'var(--accent-gold-light)', marginBottom: '0.75rem' }}>
-                      📞 Contato: {pray.phone}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                      <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                        {pray.requesterName}
+                      </h4>
+                      <span className="badge badge-gold" style={{ fontSize: '0.72rem' }}>
+                        {pray.category}
+                      </span>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        • {formatDateTime(pray.createdAt)}
+                      </span>
+                      {pray.phone && (
+                        <span style={{ fontSize: '0.8rem', color: 'var(--accent-gold-light)' }}>
+                          • 📞 {pray.phone}
+                        </span>
+                      )}
                     </div>
-                  )}
 
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-                    "{pray.message}"
-                  </p>
+                    <p
+                      style={{
+                        color: 'var(--text-secondary)',
+                        fontSize: '0.86rem',
+                        lineHeight: 1.4,
+                        margin: 0,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      "{pray.message}"
+                    </p>
+                  </div>
                 </div>
 
+                {/* Right Actions */}
                 <div
                   style={{
-                    borderTop: '1px solid var(--border-subtle)',
-                    paddingTop: '0.85rem',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '0.5rem',
+                    gap: '0.4rem',
+                    flexShrink: 0,
                   }}
                 >
                   <button
                     onClick={() => handleConvertPrayerToAppt(pray)}
                     className="btn btn-primary btn-sm"
-                    style={{ gap: '0.35rem', flex: 1 }}
+                    style={{ gap: '0.35rem' }}
                     title="Agendar Visita ou Atendimento no Gabinete"
                   >
                     <Calendar size={14} />
-                    <span>Agendar Visita / Gabinete</span>
+                    <span>Agendar Gabinete</span>
                   </button>
 
                   <button
@@ -725,7 +756,7 @@ export const PastoralManager: React.FC<PastoralManagerProps> = ({
                       window.open(`https://wa.me/55${clean}?text=${encodeURIComponent(msg)}`, '_blank');
                     }}
                     className="btn btn-secondary btn-sm"
-                    style={{ color: '#10B981' }}
+                    style={{ color: '#10B981', padding: '0.45rem 0.65rem' }}
                     title="Responder pelo WhatsApp"
                   >
                     <MessageCircle size={15} />
@@ -733,6 +764,24 @@ export const PastoralManager: React.FC<PastoralManagerProps> = ({
                 </div>
               </div>
             ))}
+
+            {filteredPrayers.length === 0 && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '3.5rem 1rem',
+                  background: 'var(--bg-secondary)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px dashed var(--border-medium)',
+                }}
+              >
+                <HeartHandshake size={36} color="var(--text-muted)" style={{ marginBottom: '0.75rem' }} />
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.35rem' }}>Nenhum pedido de oração encontrado</h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                  Não há pedidos filtrados para esta categoria.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

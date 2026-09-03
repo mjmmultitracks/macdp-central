@@ -315,7 +315,7 @@ export const PatrimonyManager: React.FC<PatrimonyManagerProps> = ({
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="todos">Todos Status</option>
+        <option value="todos">Todos Status</option>
             <option value="ativo">Ativos (Em Uso)</option>
             <option value="em_manutencao">Em Manutenção</option>
             <option value="inativo">Inativos</option>
@@ -324,22 +324,17 @@ export const PatrimonyManager: React.FC<PatrimonyManagerProps> = ({
         </div>
       </div>
 
-      {/* Assets Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))',
-          gap: '1.5rem',
-        }}
-      >
+      {/* Assets List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         {filteredAssets.map((asset) => (
           <div
             key={asset.id}
             className="card card-hover"
             style={{
               display: 'flex',
-              flexDirection: 'column',
+              alignItems: 'center',
               justifyContent: 'space-between',
+              padding: '1.15rem 1.35rem',
               border: `1px solid ${
                 asset.status === 'em_manutencao'
                   ? 'var(--status-warning)'
@@ -348,28 +343,38 @@ export const PatrimonyManager: React.FC<PatrimonyManagerProps> = ({
                   : 'var(--border-subtle)'
               }`,
               opacity: asset.status === 'baixado' ? 0.7 : 1,
+              borderRadius: 'var(--radius-lg)',
+              gap: '1.25rem',
+              flexWrap: 'wrap',
+              transition: 'all 0.2s ease',
             }}
           >
-            <div>
-              {/* Card Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                <span
-                  style={{
-                    background: 'rgba(59, 130, 246, 0.15)',
-                    color: 'var(--accent-blue-light)',
-                    border: '1px solid rgba(59, 130, 246, 0.35)',
-                    padding: '0.25rem 0.65rem',
-                    borderRadius: '6px',
-                    fontSize: '0.82rem',
-                    fontWeight: 800,
-                    letterSpacing: '0.5px',
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  🏷️ {asset.tagNumber}
-                </span>
+            {/* Left Info */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 340px', minWidth: 0 }}>
+              <span
+                style={{
+                  background: 'rgba(59, 130, 246, 0.15)',
+                  color: 'var(--accent-blue-light)',
+                  border: '1px solid rgba(59, 130, 246, 0.35)',
+                  padding: '0.4rem 0.65rem',
+                  borderRadius: '8px',
+                  fontSize: '0.82rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.5px',
+                  fontFamily: 'monospace',
+                  flexShrink: 0,
+                  textAlign: 'center',
+                }}
+              >
+                🏷️ {asset.tagNumber}
+              </span>
 
-                <div style={{ display: 'flex', gap: '0.35rem' }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                  <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                    {asset.name}
+                  </h4>
+
                   <span
                     className={`badge ${
                       asset.status === 'ativo'
@@ -387,38 +392,34 @@ export const PatrimonyManager: React.FC<PatrimonyManagerProps> = ({
                       ? 'Inativo'
                       : 'Baixado'}
                   </span>
-                </div>
-              </div>
 
-              <h4 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
-                {asset.name}
-              </h4>
-
-              <div style={{ fontSize: '0.84rem', color: 'var(--accent-gold-light)', fontWeight: 600, marginBottom: '0.85rem' }}>
-                {asset.category} • Conservação: {asset.condition}
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <MapPin size={15} color="var(--accent-gold)" />
-                  <span><strong>Localização:</strong> {asset.location}</span>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--accent-gold-light)', fontWeight: 600 }}>
+                    • {asset.category} ({asset.condition})
+                  </span>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <Building size={15} color="var(--accent-blue-light)" />
-                  <span><strong>Departamento:</strong> {asset.department}</span>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <DollarSign size={15} color="var(--status-success)" />
-                  <span><strong>Valor Estimado:</strong> {formatCurrency(asset.estimatedValue)}</span>
-                </div>
-
-                {asset.serialNumber && (
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Serial / Modelo: {asset.serialNumber}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem', flexWrap: 'wrap', fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <MapPin size={14} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+                    <span><strong>Local:</strong> {asset.location}</span>
                   </div>
-                )}
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Building size={14} color="var(--accent-blue-light)" style={{ flexShrink: 0 }} />
+                    <span><strong>Setor:</strong> {asset.department}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <DollarSign size={14} color="var(--status-success)" style={{ flexShrink: 0 }} />
+                    <span><strong>Valor:</strong> {formatCurrency(asset.estimatedValue)}</span>
+                  </div>
+
+                  {asset.serialNumber && (
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                      SN: {asset.serialNumber}
+                    </span>
+                  )}
+                </div>
 
                 {asset.notes && (
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.25rem' }}>
@@ -428,44 +429,43 @@ export const PatrimonyManager: React.FC<PatrimonyManagerProps> = ({
               </div>
             </div>
 
-            {/* Actions Toolbar */}
+            {/* Right Actions */}
             <div
               style={{
-                borderTop: '1px solid var(--border-subtle)',
-                paddingTop: '0.85rem',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
                 gap: '0.4rem',
+                flexShrink: 0,
               }}
             >
               <button
                 onClick={() => setTagModalAsset(asset)}
                 className="btn btn-secondary btn-sm"
-                style={{ gap: '0.35rem', color: 'var(--accent-gold)', flex: 1 }}
+                style={{ gap: '0.35rem', color: 'var(--accent-gold)' }}
                 title="Visualizar e Imprimir Etiqueta Patrimonial"
               >
                 <Tag size={15} />
                 <span>Etiqueta</span>
               </button>
 
-              <div style={{ display: 'flex', gap: '0.35rem' }}>
-                <button
-                  onClick={() => openEditAssetModal(asset)}
-                  className="btn btn-secondary btn-sm"
-                  title="Editar Bem"
-                >
-                  <Edit2 size={14} />
-                </button>
-                <button
-                  onClick={() => handleDeleteAsset(asset)}
-                  className="btn btn-secondary btn-sm"
-                  style={{ color: 'var(--status-error)' }}
-                  title="Excluir / Dar Baixa"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
+              <button
+                onClick={() => openEditAssetModal(asset)}
+                className="btn btn-secondary btn-sm"
+                style={{ gap: '0.35rem', padding: '0.45rem 0.75rem' }}
+                title="Editar Bem"
+              >
+                <Edit2 size={14} />
+                <span>Editar</span>
+              </button>
+
+              <button
+                onClick={() => handleDeleteAsset(asset)}
+                className="btn btn-secondary btn-sm"
+                style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
+                title="Excluir / Dar Baixa"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
           </div>
         ))}
@@ -473,7 +473,6 @@ export const PatrimonyManager: React.FC<PatrimonyManagerProps> = ({
         {filteredAssets.length === 0 && (
           <div
             style={{
-              gridColumn: '1 / -1',
               textAlign: 'center',
               padding: '4rem 1rem',
               background: 'var(--bg-secondary)',
@@ -482,9 +481,9 @@ export const PatrimonyManager: React.FC<PatrimonyManagerProps> = ({
             }}
           >
             <Archive size={40} color="var(--text-muted)" style={{ marginBottom: '1rem' }} />
-            <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.5rem' }}>Nenhum bem patrimonial encontrado</h4>
+            <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.5rem' }}>Nenhum patrimônio encontrado</h4>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-              Tente alterar os filtros de busca ou cadastre um novo item.
+              Tente alterar os filtros de busca ou cadastre um novo item patrimonial.
             </p>
             <button onClick={openNewAssetModal} className="btn btn-primary btn-sm">
               <Plus size={16} /> Cadastrar Novo Bem

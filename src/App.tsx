@@ -35,6 +35,7 @@ import { KidsManager } from './components/admin/KidsManager';
 import { PatrimonyManager } from './components/admin/PatrimonyManager';
 import { PastoralManager } from './components/admin/PastoralManager';
 import { AccessManager } from './components/admin/AccessManager';
+import { ChurchSettingsManager } from './components/admin/ChurchSettingsManager';
 import { MemberSelfRegistration } from './components/public/MemberSelfRegistration';
 import { EventDetailPage } from './components/public/EventDetailPage';
 import { EventRegistrationWizard } from './components/public/EventRegistrationWizard';
@@ -376,6 +377,7 @@ export function App() {
             isDarkMode={isDarkMode}
             onToggleTheme={handleToggleTheme}
             isSolid={!!selectedEventForDetail}
+            churchSettings={db.churchSettings}
           />
 
           {/* Public Content: Dedicated Event Page or Main Church Homepage */}
@@ -432,6 +434,7 @@ export function App() {
           <Footer
             onNavigate={handlePublicNavigate}
             onOpenAdmin={navigateToAdmin}
+            churchSettings={db.churchSettings}
           />
         </div>
       ) : !isAuthenticated ? (
@@ -443,6 +446,7 @@ export function App() {
           }}
           onBackToPublic={() => navigateToPublic('home')}
           onNotify={addNotification}
+          churchSettings={db.churchSettings}
         />
       ) : (
         /* Internal Administrative Panel (ERP) */
@@ -457,6 +461,7 @@ export function App() {
             isDarkMode={isDarkMode}
             onToggleTheme={handleToggleTheme}
             onNotify={addNotification}
+            churchSettings={db.churchSettings}
           >
           {adminTab === 'dashboard' && (
             <DashboardHome
@@ -550,6 +555,13 @@ export function App() {
           {adminTab === 'acessos_admin' && (
             <AccessManager
               accessUsers={db.accessUsers || []}
+              onNotify={addNotification}
+            />
+          )}
+
+          {adminTab === 'config_igreja' && (
+            <ChurchSettingsManager
+              churchSettings={db.churchSettings}
               onNotify={addNotification}
             />
           )}

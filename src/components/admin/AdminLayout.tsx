@@ -24,7 +24,9 @@ import {
   AlertTriangle,
   LogOut,
   ChevronDown,
+  Building2,
 } from 'lucide-react';
+import { ChurchSettings } from '../../types';
 
 interface AdminLayoutProps {
   currentTab: string;
@@ -36,6 +38,7 @@ interface AdminLayoutProps {
   isDarkMode: boolean;
   onToggleTheme: () => void;
   onNotify: (type: 'success' | 'error' | 'info', text: string) => void;
+  churchSettings?: ChurchSettings;
   children: React.ReactNode;
 }
 
@@ -49,6 +52,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   isDarkMode,
   onToggleTheme,
   onNotify,
+  churchSettings,
   children,
 }) => {
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
@@ -66,6 +70,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'eventos_admin', label: 'Eventos & Reservas', icon: Calendar, permission: 'events_manage' },
     { id: 'oracao_admin', label: 'Central de Oração', icon: HeartHandshake, permission: 'prayer_central_triage' },
     { id: 'acessos_admin', label: 'Gestão de Acessos', icon: KeyRound, permission: 'members_manage' },
+    { id: 'config_igreja', label: 'Configurações da Igreja', icon: Building2, permission: 'dashboard_full' },
   ];
 
   const handleResetData = () => {
@@ -122,8 +127,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             }}
           >
             <img
-              src="/images/logo.png"
-              alt="Logo MACDP"
+              src={churchSettings?.logoUrl || '/images/logo.png'}
+              alt={churchSettings?.name || 'Logo MACDP'}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/images/logo.png';
+              }}
               style={{
                 width: '100%',
                 height: '100%',
@@ -132,10 +140,33 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               }}
             />
           </div>
-          <div>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 800, lineHeight: 1.1 }}>Painel Eclesiástico</h3>
-            <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', fontWeight: 600 }}>
-              Caçadores da Presença
+          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+            <h3
+              style={{
+                fontSize: '0.92rem',
+                fontWeight: 800,
+                lineHeight: 1.15,
+                margin: 0,
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+              }}
+              title={churchSettings?.name || 'Painel Eclesiástico'}
+            >
+              {churchSettings?.shortName || churchSettings?.name || 'Painel Eclesiástico'}
+            </h3>
+            <span
+              style={{
+                fontSize: '0.72rem',
+                color: 'var(--accent-gold)',
+                fontWeight: 600,
+                display: 'block',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+              }}
+            >
+              {churchSettings?.subtitle || 'Caçadores da Presença'}
             </span>
           </div>
         </div>

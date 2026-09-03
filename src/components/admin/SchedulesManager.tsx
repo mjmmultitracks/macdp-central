@@ -331,9 +331,9 @@ export const SchedulesManager: React.FC<SchedulesManagerProps> = ({
                 ) : (
                   <div
                     style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                      gap: '1rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.6rem',
                     }}
                   >
                     {sch.team.map((slot) => {

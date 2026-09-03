@@ -338,7 +338,8 @@ export type PanelModuleId =
   | 'financeiro'
   | 'eventos_admin'
   | 'oracao_admin'
-  | 'acessos_admin';
+  | 'acessos_admin'
+  | 'config_igreja';
 
 export interface SystemAccessUser {
   id: string;
@@ -353,6 +354,38 @@ export interface SystemAccessUser {
   lastAccess?: string;
   createdAt: string;
   notes?: string;
+}
+
+export interface ChurchSettings {
+  name: string; // Nome oficial completo (Ex: Ministério Apostólico Caçadores da Presença)
+  shortName: string; // Sigla / Nome Curto (Ex: MACDP Central)
+  subtitle: string; // Subtítulo / Segmento (Ex: Ministério Apostólico)
+  slogan: string; // Lema da igreja (Ex: "Proibido a Entrada de Pessoas Perfeitas.")
+  description: string; // Resumo institucional da visão
+  logoUrl: string; // URL ou Base64 do logotipo oficial
+  pastorPresident: string; // Nome dos Pastores Presidentes
+  cnpj?: string; // CNPJ eclesiástico
+  phone: string; // Telefone oficial / Secretaria
+  whatsapp: string; // WhatsApp oficial com DDD (números)
+  email: string; // E-mail institucional de contato
+  address: {
+    street: string; // Rua e número
+    neighborhood: string; // Bairro
+    city: string; // Cidade
+    state: string; // Estado / UF (Ex: AM)
+    zip: string; // CEP
+  };
+  social: {
+    instagram: string; // Link do Instagram
+    instagramHandle: string; // Ex: @_macdp
+    youtube: string; // Link do canal do YouTube
+    facebook?: string; // Link da página do Facebook
+  };
+  pix: {
+    key: string; // Chave PIX
+    receiver: string; // Nome do favorecido
+    bank?: string; // Banco / Instituição
+  };
 }
 
 export interface DatabaseSchema {
@@ -373,6 +406,7 @@ export interface DatabaseSchema {
   patrimonyAssets: PatrimonyAsset[];
   pastoralAppointments: PastoralAppointment[];
   accessUsers: SystemAccessUser[];
+  churchSettings?: ChurchSettings;
 }
 
 
