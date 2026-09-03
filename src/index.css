@@ -41,6 +41,9 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
   --shadow-gold: 0 10px 25px -5px rgba(217, 119, 6, 0.25);
 
+  --logo-bg: #0f172a;
+  --logo-border: rgba(245, 158, 11, 0.4);
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
@@ -88,6 +91,15 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
   --shadow-gold: 0 10px 25px -5px rgba(245, 158, 11, 0.25);
+
+  --logo-bg: #0b1120;
+  --logo-border: rgba(245, 158, 11, 0.4);
+}
+
+.church-logo-frame {
+  background: var(--logo-bg) !important;
+  border: 1.5px solid var(--logo-border) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Reset & Base */

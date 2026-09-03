@@ -95,16 +95,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           }}
         >
           <div
+            className="church-logo-frame"
             style={{
               width: '46px',
               height: '46px',
               borderRadius: '12px',
-              background: 'rgba(255, 255, 255, 0.06)',
-              border: '1px solid rgba(245, 158, 11, 0.35)',
+              background: '#0f172a',
+              border: '1.5px solid rgba(245, 158, 11, 0.4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '2px',
+              padding: '3px',
               boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
               overflow: 'hidden',
               flexShrink: 0,

@@ -40,16 +40,17 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, churchS
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
               <div
+                className="church-logo-frame"
                 style={{
                   width: '44px',
                   height: '44px',
                   borderRadius: '10px',
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                  background: '#0f172a',
+                  border: '1.5px solid rgba(245, 158, 11, 0.4)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '2px',
+                  padding: '3px',
                   boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
                   overflow: 'hidden',
                   flexShrink: 0,

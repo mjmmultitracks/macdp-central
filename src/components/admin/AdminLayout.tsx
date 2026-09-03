@@ -112,16 +112,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           }}
         >
           <div
+            className="church-logo-frame"
             style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(245, 158, 11, 0.35)',
+              width: '42px',
+              height: '42px',
+              borderRadius: '10px',
+              background: '#0f172a',
+              border: '1.5px solid rgba(245, 158, 11, 0.4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '2px',
+              padding: '3px',
               overflow: 'hidden',
               flexShrink: 0,
             }}

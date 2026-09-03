@@ -229,17 +229,18 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flex: '1 1 360px', minWidth: 0 }}>
             {/* Logo box */}
             <div
+              className="church-logo-frame"
               style={{
-                width: '74px',
-                height: '74px',
+                width: '76px',
+                height: '76px',
                 borderRadius: '16px',
-                background: 'var(--bg-elevated)',
-                border: '2px solid var(--accent-gold-glow)',
+                background: '#0f172a',
+                border: '2px solid rgba(245, 158, 11, 0.45)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '6px',
-                boxShadow: 'var(--shadow-sm)',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
                 overflow: 'hidden',
                 flexShrink: 0,
               }}
@@ -454,13 +455,14 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
               }}
             >
               <div
+                className="church-logo-frame"
                 style={{
-                  width: '90px',
-                  height: '90px',
+                  width: '92px',
+                  height: '92px',
                   borderRadius: '16px',
-                  background: 'var(--bg-elevated)',
-                  border: '1px solid var(--border-medium)',
-                  boxShadow: 'var(--shadow-sm)',
+                  background: '#0f172a',
+                  border: '1.5px solid rgba(245, 158, 11, 0.45)',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
