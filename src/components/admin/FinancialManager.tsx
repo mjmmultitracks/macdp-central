@@ -480,12 +480,16 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
 
         {/* Sub-menu Navigation Tabs */}
         <div
+          className="scrollable-tabs-bar"
           style={{
             display: 'flex',
             borderTop: '1px solid var(--border-subtle)',
             paddingTop: '0.75rem',
             gap: '0.5rem',
-            flexWrap: 'wrap',
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            whiteSpace: 'nowrap',
           }}
         >
           <button

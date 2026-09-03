@@ -11,6 +11,8 @@ import {
   Users,
   Compass,
   Sparkles,
+  Shield,
+  MessageCircle,
 } from 'lucide-react';
 import { ChurchSettings } from '../../types';
 
@@ -278,6 +280,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   fontWeight: 600,
                   textAlign: 'left',
                   cursor: 'pointer',
+                  minHeight: '46px',
                 }}
               >
                 <Icon size={20} />
@@ -285,6 +288,50 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             );
           })}
+
+          {/* Quick Admin & Contact Actions inside Mobile Drawer */}
+          <div style={{ marginTop: '0.75rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            {onOpenAdmin && (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenAdmin();
+                  setMobileMenuOpen(false);
+                }}
+                className="btn btn-primary"
+                style={{
+                  width: '100%',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  fontSize: '0.92rem',
+                  fontWeight: 800,
+                }}
+              >
+                <Shield size={17} />
+                <span>{isAuthenticated ? 'Painel Administrativo' : 'Acesso da Liderança'}</span>
+              </button>
+            )}
+
+            {churchSettings?.whatsapp && (
+              <a
+                href={`https://wa.me/${churchSettings.whatsapp.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-secondary"
+                style={{
+                  width: '100%',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  fontSize: '0.92rem',
+                  color: '#22c55e',
+                  borderColor: 'rgba(34, 197, 94, 0.4)',
+                }}
+              >
+                <MessageCircle size={17} />
+                <span>Falar no WhatsApp da Igreja</span>
+              </a>
+            )}
+          </div>
         </div>
       )}
 

@@ -25,6 +25,8 @@ import {
   LogOut,
   ChevronDown,
   Building2,
+  Menu,
+  X,
 } from 'lucide-react';
 import { ChurchSettings } from '../../types';
 
@@ -56,6 +58,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   children,
 }) => {
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const menuItems: Array<{ id: string; label: string; icon: any; permission: PermissionFeature }> = [
     { id: 'dashboard', label: 'Dashboard Geral', icon: LayoutDashboard, permission: 'dashboard_full' },
@@ -85,9 +88,19 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     : true;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
-      {/* Sidebar */}
+    <div className="admin-main-wrapper" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)', position: 'relative' }}>
+      {/* Backdrop para Drawer Móvel */}
+      {mobileSidebarOpen && (
+        <div
+          className="admin-drawer-backdrop"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar / Drawer Móvel */}
       <aside
+        className={`admin-sidebar-drawer ${mobileSidebarOpen ? 'open' : ''}`}
         style={{
           width: '260px',
           background: 'var(--bg-secondary)',
@@ -97,80 +110,101 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           flexShrink: 0,
           position: 'sticky',
           top: 0,
-          height: '100vh',
-          zIndex: 100,
+          height: '100dvh',
+          zIndex: 1000,
         }}
       >
         {/* Church Logo & Admin Brand */}
         <div
           style={{
-            padding: '1.5rem',
+            padding: '1.25rem 1.25rem',
             borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'space-between',
             gap: '0.75rem',
           }}
         >
-          <div
-            className="church-logo-frame"
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0, flex: 1 }}>
+            <div
+              className="church-logo-frame"
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                background: '#0f172a',
+                border: '1.5px solid rgba(245, 158, 11, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '3px',
+                overflow: 'hidden',
+                flexShrink: 0,
+              }}
+            >
+              <img
+                src={churchSettings?.logoUrl || '/images/logo.png'}
+                alt={churchSettings?.name || 'Logo MACDP'}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/images/logo.png';
+                }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '6px',
+                }}
+              />
+            </div>
+            <div style={{ minWidth: 0, overflow: 'hidden' }}>
+              <h3
+                style={{
+                  fontSize: '0.9rem',
+                  fontWeight: 800,
+                  lineHeight: 1.15,
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                }}
+                title={churchSettings?.name || 'Painel Eclesiástico'}
+              >
+                {churchSettings?.shortName || churchSettings?.name || 'Painel Eclesiástico'}
+              </h3>
+              <span
+                style={{
+                  fontSize: '0.7rem',
+                  color: 'var(--accent-gold)',
+                  fontWeight: 600,
+                  display: 'block',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                }}
+              >
+                {churchSettings?.subtitle || 'Caçadores da Presença'}
+              </span>
+            </div>
+          </div>
+
+          {/* Botão de Fechar Drawer no Mobile */}
+          <button
+            type="button"
+            onClick={() => setMobileSidebarOpen(false)}
+            className="btn btn-ghost btn-sm admin-drawer-close"
             style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '10px',
-              background: '#0f172a',
-              border: '1.5px solid rgba(245, 158, 11, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '3px',
-              overflow: 'hidden',
-              flexShrink: 0,
+              padding: '0.35rem',
+              borderRadius: '8px',
+              color: 'var(--text-muted)',
+              minHeight: '34px',
+              minWidth: '34px',
             }}
+            aria-label="Fechar menu"
           >
-            <img
-              src={churchSettings?.logoUrl || '/images/logo.png'}
-              alt={churchSettings?.name || 'Logo MACDP'}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/images/logo.png';
-              }}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                borderRadius: '6px',
-              }}
-            />
-          </div>
-          <div style={{ minWidth: 0, overflow: 'hidden' }}>
-            <h3
-              style={{
-                fontSize: '0.92rem',
-                fontWeight: 800,
-                lineHeight: 1.15,
-                margin: 0,
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                overflow: 'hidden',
-              }}
-              title={churchSettings?.name || 'Painel Eclesiástico'}
-            >
-              {churchSettings?.shortName || churchSettings?.name || 'Painel Eclesiástico'}
-            </h3>
-            <span
-              style={{
-                fontSize: '0.72rem',
-                color: 'var(--accent-gold)',
-                fontWeight: 600,
-                display: 'block',
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                overflow: 'hidden',
-              }}
-            >
-              {churchSettings?.subtitle || 'Caçadores da Presença'}
-            </span>
-          </div>
+            <X size={18} />
+          </button>
         </div>
+
 
         {/* Navigation Menu */}
         <nav style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, overflowY: 'auto' }}>
@@ -182,7 +216,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             return (
               <button
                 key={item.id}
-                onClick={() => onTabChange(item.id)}
+                onClick={() => {
+                  onTabChange(item.id);
+                  setMobileSidebarOpen(false);
+                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -268,9 +305,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       </aside>
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, width: '100%' }}>
         {/* Top Header */}
         <header
+          className="admin-header"
           style={{
             height: '70px',
             background: 'var(--bg-secondary)',
@@ -284,9 +322,26 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             zIndex: 90,
           }}
         >
-          {/* Active section title */}
-          <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
+          {/* Active section title & Mobile Hamburger */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="btn btn-ghost btn-sm admin-hamburger-btn"
+              style={{
+                padding: '0.45rem',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                background: 'var(--bg-tertiary)',
+                border: '1px solid var(--border-subtle)',
+                minHeight: '38px',
+                minWidth: '38px',
+              }}
+              aria-label="Abrir Menu de Navegação"
+            >
+              <Menu size={20} />
+            </button>
+            <h2 style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 800, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {menuItems.find((m) => m.id === currentTab)?.label || 'Painel Administrativo'}
             </h2>
           </div>
@@ -334,7 +389,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   alt={currentUser.name}
                   style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
                 />
-                <div style={{ textAlign: 'left' }}>
+                <div className="admin-user-details" style={{ textAlign: 'left' }}>
                   <div style={{ fontSize: '0.85rem', fontWeight: 700, lineHeight: 1.1 }}>
                     {currentUser.name}
                   </div>
@@ -355,6 +410,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     border: '1px solid var(--border-medium)',
                     borderRadius: 'var(--radius-lg)',
                     width: '320px',
+                    maxWidth: 'min(320px, calc(100vw - 1.5rem))',
                     boxShadow: 'var(--shadow-xl)',
                     padding: '0.75rem',
                     zIndex: 200,
@@ -459,7 +515,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         </header>
 
         {/* Content Body */}
-        <main style={{ padding: '2rem', flex: 1 }}>
+        <main className="admin-main-content" style={{ flex: 1 }}>
           {!userHasCurrentTabPermission ? (
             <div
               style={{

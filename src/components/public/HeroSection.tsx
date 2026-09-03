@@ -9,6 +9,7 @@ interface HeroSectionProps {
 export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, onOpenLiveModal }) => {
   return (
     <section
+      className="hero-section"
       style={{
         position: 'relative',
         minHeight: '92vh',
@@ -144,6 +145,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, onOpenLive
 
           {/* CTA Buttons */}
           <div
+            className="hero-cta-buttons"
             style={{
               display: 'flex',
               flexWrap: 'wrap',
@@ -255,6 +257,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, onOpenLive
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .hero-section {
+            padding: 6.5rem 0 3.5rem 0 !important;
+            min-height: auto !important;
+          }
+          .hero-cta-buttons {
+            flex-direction: column !important;
+            width: 100% !important;
+            margin-bottom: 2.5rem !important;
+          }
+          .hero-cta-buttons .btn {
+            width: 100% !important;
+            max-width: 100% !important;
+            justify-content: center !important;
+          }
+        }
+      `}</style>
     </section>
   );
 };

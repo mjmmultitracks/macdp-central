@@ -1016,7 +1016,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
           }}
         >
           {/* Campo de Busca Amplo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 360px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '1 1 280px' }}>
             <div style={{ position: 'relative', width: '100%', maxWidth: '440px' }}>
               <Search
                 size={18}
@@ -1036,7 +1036,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                   onClick={() => setSearchGuest('')}
                   style={{
                     position: 'absolute',
-                    right: '0.9rem',
+                    right: '0.75rem',
                     top: '50%',
                     transform: 'translateY(-50%)',
                     background: 'none',
@@ -1055,9 +1055,22 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
           </div>
 
           {/* Filtros de Status & Seletor de Modo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', width: '100%', maxWidth: '100%' }}>
             {/* Pílulas de Filtro */}
-            <div style={{ display: 'flex', background: 'var(--bg-tertiary)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', gap: '0.25rem' }}>
+            <div
+              className="scrollable-tabs-bar"
+              style={{
+                display: 'flex',
+                background: 'var(--bg-tertiary)',
+                padding: '0.25rem',
+                borderRadius: '8px',
+                border: '1px solid var(--border-subtle)',
+                gap: '0.25rem',
+                overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                maxWidth: '100%',
+              }}
+            >
               <button
                 type="button"
                 onClick={() => setCheckinFilter('all')}

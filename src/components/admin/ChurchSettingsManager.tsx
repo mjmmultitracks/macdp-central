@@ -388,7 +388,18 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
       </div>
 
       {/* Navigation Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-medium)', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <div
+        className="scrollable-tabs-bar"
+        style={{
+          display: 'flex',
+          borderBottom: '1px solid var(--border-medium)',
+          gap: '0.5rem',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          whiteSpace: 'nowrap',
+        }}
+      >
         <button
           type="button"
           onClick={() => setActiveTab('brand')}

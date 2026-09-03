@@ -197,7 +197,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1.25rem',
+        padding: '0.75rem 0.5rem',
         overflowY: 'auto',
       }}
     >
@@ -210,7 +210,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(245, 158, 11, 0.15)',
           width: '100%',
           maxWidth: '680px',
-          maxHeight: '94vh',
+          maxHeight: 'calc(100dvh - 1.5rem)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',

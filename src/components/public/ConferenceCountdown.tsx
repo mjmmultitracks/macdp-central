@@ -71,6 +71,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
       }}
     >
       <div
+        className="conference-countdown-card"
         style={{
           background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.92) 50%, rgba(20, 15, 5, 0.96) 100%)',
           border: '1.5px solid rgba(245, 158, 11, 0.45)',
@@ -98,9 +99,10 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
         />
 
         <div
+          className="conference-countdown-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
             gap: '2.5rem',
             alignItems: 'center',
           }}
@@ -147,7 +149,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
             </div>
 
             {/* Botões de Ação */}
-            <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="conference-countdown-buttons" style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', alignItems: 'center' }}>
               {event && (
                 <button
                   type="button"
@@ -380,6 +382,28 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .conference-countdown-card {
+            padding: 1.5rem 1rem !important;
+            border-radius: var(--radius-xl) !important;
+          }
+          .conference-countdown-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1.75rem !important;
+          }
+          .conference-countdown-buttons {
+            flex-direction: column !important;
+            width: 100% !important;
+          }
+          .conference-countdown-buttons .btn,
+          .conference-countdown-buttons a {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+        }
+      `}</style>
     </section>
   );
 };
