@@ -4,8 +4,6 @@ import {
   X,
   Sun,
   Moon,
-  ShieldCheck,
-  Lock,
   Heart,
   Church,
   Calendar,
@@ -18,7 +16,7 @@ import {
 interface NavbarProps {
   currentSection: string;
   onNavigate: (section: string) => void;
-  onOpenAdmin: () => void;
+  onOpenAdmin?: () => void;
   isAuthenticated?: boolean;
   isDarkMode: boolean;
   onToggleTheme: () => void;
@@ -212,45 +210,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
-          {/* Admin / ERP Button */}
-          <button
-            onClick={onOpenAdmin}
-            className="btn btn-sm"
-            style={{
-              background: 'linear-gradient(135deg, #1E293B, #0F172A)',
-              color: '#F8FAFC',
-              border: isAuthenticated ? '1px solid var(--status-success)' : '1px solid var(--accent-gold-light)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-              gap: '0.45rem',
-              display: 'inline-flex',
-              alignItems: 'center',
-              fontSize: '0.85rem',
-            }}
-            title={isAuthenticated ? 'Painel ERP (Conectado)' : 'Área Restrita (Requer Login)'}
-          >
-            {isAuthenticated ? (
-              <>
-                <ShieldCheck size={16} color="var(--status-success)" />
-                <span>Painel ERP</span>
-                <span
-                  style={{
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    background: '#10B981',
-                    boxShadow: '0 0 6px #10B981',
-                    marginLeft: '2px',
-                  }}
-                />
-              </>
-            ) : (
-              <>
-                <Lock size={14} color="var(--accent-gold-light)" />
-                <span>Painel ERP</span>
-              </>
-            )}
-          </button>
-
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -319,29 +278,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             );
           })}
-
-          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
-            <button
-              onClick={() => {
-                onOpenAdmin();
-                setMobileMenuOpen(false);
-              }}
-              className="btn btn-primary"
-              style={{ width: '100%', gap: '0.5rem' }}
-            >
-              {isAuthenticated ? (
-                <>
-                  <ShieldCheck size={18} />
-                  <span>Acessar Painel ERP (Conectado)</span>
-                </>
-              ) : (
-                <>
-                  <Lock size={18} />
-                  <span>Área Restrita / Painel ERP</span>
-                </>
-              )}
-            </button>
-          </div>
         </div>
       )}
 

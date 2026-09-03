@@ -45,8 +45,27 @@ import { AdminLogin } from './components/admin/AdminLogin';
 import { Play, Headphones, Share2, BookOpen, CheckCircle2, Calendar, Radio, Users } from 'lucide-react';
 
 export function App() {
+  // Verificação de rota administrativa segura (/admin, /painel, #admin, ?admin=true)
+  const isAdminRoute = () => {
+    const path = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    const search = new URLSearchParams(window.location.search);
+    return (
+      path === '/admin' ||
+      path === '/admin/' ||
+      path === '/painel' ||
+      path === '/painel/' ||
+      path === '/gestao' ||
+      path === '/gestao/' ||
+      hash === '#admin' ||
+      hash === '#painel' ||
+      search.get('admin') === 'true' ||
+      search.get('painel') === 'true'
+    );
+  };
+
   // Navigation State
-  const [view, setView] = useState<'public' | 'admin'>('public');
+  const [view, setView] = useState<'public' | 'admin'>(() => (isAdminRoute() ? 'admin' : 'public'));
   const [publicSection, setPublicSection] = useState('home');
   const [adminTab, setAdminTab] = useState('dashboard');
 
@@ -153,7 +172,7 @@ export function App() {
     pullDatabaseFromSupabase().then((remoteDb) => {
       if (remoteDb && remoteDb.events && remoteDb.events.length > 0) {
         setDb(remoteDb);
-        localStorage.setItem('macdp_db_data_v2', JSON.stringify(remoteDb));
+        localStorage.setItem('macdp_db_data_v3', JSON.stringify(remoteDb));
       } else {
         // Se ainda não houver dados no Supabase, sobe os dados locais atuais como semente inicial
         const currentLocal = getDatabase();
@@ -164,7 +183,7 @@ export function App() {
     // 2. Conecta canal em tempo real para sincronização instantânea
     const unsubscribe = subscribeToSupabaseRealtime((updatedDb) => {
       setDb(updatedDb);
-      localStorage.setItem('macdp_db_data_v2', JSON.stringify(updatedDb));
+      localStorage.setItem('macdp_db_data_v3', JSON.stringify(updatedDb));
       addNotification('info', 'Dados sincronizados com o Supabase em tempo real!');
     });
 
@@ -172,6 +191,68 @@ export function App() {
       unsubscribe();
     };
   }, []);
+
+  // Listener de rotas de URL (/admin, /painel, #admin, ?admin=true) e atalho secreto de teclado
+  useEffect(() => {
+    const handleUrlChange = () => {
+      if (isAdminRoute()) {
+        setView('admin');
+      } else if (window.location.pathname === '/' && window.location.hash !== '#admin' && !new URLSearchParams(window.location.search).get('admin')) {
+        setView('public');
+      }
+    };
+
+    // Atalho secreto e seguro de teclado para pastores e liderança (Ctrl + Shift + A ou Cmd + Shift + A)
+    const handleSecretShortcut = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        setView((prev) => {
+          const next = prev === 'public' ? 'admin' : 'public';
+          if (next === 'admin') {
+            if (window.location.pathname !== '/admin') {
+              window.history.pushState(null, '', '/admin');
+            }
+          } else {
+            if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/painel')) {
+              window.history.pushState(null, '', '/');
+            }
+          }
+          return next;
+        });
+      }
+    };
+
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    window.addEventListener('keydown', handleSecretShortcut);
+
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleUrlChange);
+      window.removeEventListener('keydown', handleSecretShortcut);
+    };
+  }, []);
+
+  // Navegação para a rota /admin com atualização limpa do histórico do navegador
+  const navigateToAdmin = () => {
+    setView('admin');
+    if (window.location.pathname !== '/admin') {
+      window.history.pushState(null, '', '/admin');
+    }
+  };
+
+  // Retorno para o site público restaurando a URL raiz /
+  const navigateToPublic = (sectionId = 'home') => {
+    setView('public');
+    if (
+      window.location.pathname.startsWith('/admin') ||
+      window.location.pathname.startsWith('/painel') ||
+      window.location.pathname.startsWith('/gestao')
+    ) {
+      window.history.pushState(null, '', '/');
+    }
+    handlePublicNavigate(sectionId);
+  };
 
   const addNotification = (type: 'success' | 'error' | 'info', text: string) => {
     const newToast: ToastMessage = {
@@ -199,6 +280,13 @@ export function App() {
     await logoutUser();
     setIsAuthenticated(false);
     setView('public');
+    if (
+      window.location.pathname.startsWith('/admin') ||
+      window.location.pathname.startsWith('/painel') ||
+      window.location.pathname.startsWith('/gestao')
+    ) {
+      window.history.pushState(null, '', '/');
+    }
     addNotification('info', 'Sessão administrativa encerrada com segurança.');
   };
 
@@ -283,7 +371,7 @@ export function App() {
           <Navbar
             currentSection={selectedEventForDetail ? 'eventos' : publicSection}
             onNavigate={handlePublicNavigate}
-            onOpenAdmin={() => setView('admin')}
+            onOpenAdmin={navigateToAdmin}
             isAuthenticated={isAuthenticated}
             isDarkMode={isDarkMode}
             onToggleTheme={handleToggleTheme}
@@ -343,7 +431,7 @@ export function App() {
           {/* Public Footer */}
           <Footer
             onNavigate={handlePublicNavigate}
-            onOpenAdmin={() => setView('admin')}
+            onOpenAdmin={navigateToAdmin}
           />
         </div>
       ) : !isAuthenticated ? (
@@ -353,7 +441,7 @@ export function App() {
             setCurrentUser(user);
             setIsAuthenticated(true);
           }}
-          onBackToPublic={() => setView('public')}
+          onBackToPublic={() => navigateToPublic('home')}
           onNotify={addNotification}
         />
       ) : (
@@ -362,7 +450,7 @@ export function App() {
           <AdminLayout
             currentTab={adminTab}
             onTabChange={setAdminTab}
-            onBackToPublic={() => setView('public')}
+            onBackToPublic={() => navigateToPublic('home')}
             onLogout={handleLogout}
             currentUser={currentUser}
             onSwitchRole={handleSwitchRole}

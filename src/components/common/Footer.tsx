@@ -6,8 +6,6 @@ import {
   Mail,
   Clock,
   Heart,
-  ShieldCheck,
-  Lock,
   Compass,
   Video,
 } from 'lucide-react';
@@ -197,12 +195,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
               >
                 <Video size={15} color="var(--accent-gold)" /> Ouvir Mensagens / Podcasts
               </button>
-              <button
-                onClick={onOpenAdmin}
-                style={{ background: 'none', border: 'none', textAlign: 'left', color: 'var(--accent-gold)', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.5rem' }}
-              >
-                <Lock size={15} /> Acesso Restrito / Painel Administrativo
-              </button>
             </div>
           </div>
         </div>
@@ -221,7 +213,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
             color: 'var(--text-muted)',
           }}
         >
-          <div>
+          <div
+            onClick={(e) => {
+              // Gesto discreto de triplo-clique para pastores/liderança em dispositivos móveis
+              if (e.detail >= 3 && onOpenAdmin) {
+                onOpenAdmin();
+              }
+            }}
+            style={{ userSelect: 'none', cursor: 'default' }}
+          >
             © {new Date().getFullYear()} Ministério Apostólico Caçadores da Presença (MACDP) • Manaus - AM. Todos os direitos reservados.
           </div>
           <div style={{ display: 'flex', gap: '1.5rem' }}>
