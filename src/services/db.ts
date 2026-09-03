@@ -405,8 +405,8 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       scripture: 'Lucas 5:31-32; Mateus 11:28-30',
       duration: '52 min',
       videoThumbnail: '/images/hero.jpg',
-      videoEmbedUrl: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
-      audioUrl: 'https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg',
+      videoEmbedUrl: 'https://www.youtube.com/@_macdp',
+      audioUrl: '',
       summary:
         'A igreja de Jesus não é um museu para santos perfeitos, mas um hospital de amor e cura para os necessitados de Sua presença transformadora. Venha como você está!',
       tags: ['Graça', 'Acolhimento', 'Presença de Deus', 'Cura'],
@@ -421,8 +421,8 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       scripture: 'Salmos 42:1-2; Jeremias 29:12-14',
       duration: '46 min',
       videoThumbnail: '/images/fellowship.jpg',
-      videoEmbedUrl: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
-      audioUrl: 'https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg',
+      videoEmbedUrl: 'https://www.youtube.com/@_macdp',
+      audioUrl: '',
       summary:
         'Como ter um coração sedento pela glória manifesta de Deus, rompendo a religiosidade fria através da adoração profunda.',
       tags: ['Intimidade', 'Oração', 'Presença', 'Família'],
@@ -437,8 +437,8 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       scripture: 'Josué 24:15; Efésios 5:21-33',
       duration: '48 min',
       videoThumbnail: '/images/hero.jpg',
-      videoEmbedUrl: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
-      audioUrl: 'https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg',
+      videoEmbedUrl: 'https://www.youtube.com/@_macdp',
+      audioUrl: '',
       summary:
         'Princípios apostólicos para blindar o casamento e abençoar a descendência debaixo da cobertura da Presença.',
       tags: ['Família', 'Aliança', 'Propósito'],

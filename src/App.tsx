@@ -589,7 +589,7 @@ export function App() {
                 marginBottom: '1.25rem',
               }}
             >
-              {activeSermon.videoEmbedUrl && activeSermon.videoEmbedUrl.includes('embed/') && !activeSermon.videoEmbedUrl.includes('dQw4w9WgXcQ') ? (
+              {activeSermon.videoEmbedUrl && activeSermon.videoEmbedUrl.includes('embed/') ? (
                 <iframe
                   src={activeSermon.videoEmbedUrl}
                   title={activeSermon.title}
