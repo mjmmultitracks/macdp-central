@@ -67,7 +67,8 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
   const [guestPhone, setGuestPhone] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [isAddGuestModalOpen, setIsAddGuestModalOpen] = useState(false);
-  const [checkinFilter, setCheckinFilter] = useState<'all' | 'present' | 'waiting' | 'pending_payment'>('all');
+  const [checkinFilter, setCheckinFilter] = useState<'all' | 'present' | 'waiting' | 'pending_payment' | 'with_shirt'>('all');
+  const [mainEventFilter, setMainEventFilter] = useState<'all' | 'paid' | 'free'>('all');
   const [checkinDisplayMode, setCheckinDisplayMode] = useState<'cards' | 'table'>('cards');
   const [viewingFormReg, setViewingFormReg] = useState<EventRegistration | null>(null);
 
@@ -526,6 +527,9 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
       if (checkinFilter === 'pending_payment') {
         return !selectedEventForCheckin.isFree && (r.paymentStatus === 'pending' || r.paymentMethod === 'manual');
       }
+      if (checkinFilter === 'with_shirt') {
+        return !!r.includeShirt;
+      }
       return true;
     });
 
@@ -675,7 +679,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
           </div>
         </div>
 
-        {/* 5 Cards de Métricas e Indicadores no Topo */}
+        {/* Métricas Principais em Cards - Clicáveis como Filtros Interativos */}
         <div
           style={{
             display: 'grid',
@@ -685,16 +689,52 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         >
           {/* Card 1: Total de Inscritos */}
           <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setCheckinFilter('all')}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCheckinFilter('all'); }}
             style={{
-              background: 'var(--bg-secondary)',
+              background: checkinFilter === 'all' ? 'var(--accent-gold-soft)' : 'var(--bg-secondary)',
               borderRadius: 'var(--radius-xl)',
               padding: '1.25rem 1.4rem',
-              border: '1px solid var(--border-medium)',
-              boxShadow: 'var(--shadow-sm)',
+              border: checkinFilter === 'all' ? '2px solid var(--accent-gold)' : '1px solid var(--border-medium)',
+              boxShadow: checkinFilter === 'all' ? '0 6px 20px var(--accent-gold-glow)' : 'var(--shadow-sm)',
+              cursor: 'pointer',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative',
+              userSelect: 'none',
             }}
+            onMouseEnter={(e) => {
+              if (checkinFilter !== 'all') {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.borderColor = 'var(--accent-gold)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (checkinFilter !== 'all') {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.borderColor = 'var(--border-medium)';
+              }
+            }}
+            title="Clique para ver todos os inscritos"
           >
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800 }}>
-              Total de Inscritos
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '0.8rem', color: checkinFilter === 'all' ? 'var(--accent-gold)' : 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800 }}>
+                Total de Inscritos
+              </div>
+              <span
+                style={{
+                  fontSize: '0.68rem',
+                  fontWeight: 800,
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: 'var(--radius-full)',
+                  background: checkinFilter === 'all' ? 'var(--accent-gold)' : 'var(--bg-tertiary)',
+                  color: checkinFilter === 'all' ? '#000' : 'var(--text-muted)',
+                  letterSpacing: '0.3px',
+                }}
+              >
+                {checkinFilter === 'all' ? '✓ Ativo' : 'Filtrar'}
+              </span>
             </div>
             <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', marginTop: '0.3rem' }}>
               {totalRegs}
@@ -706,16 +746,51 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
 
           {/* Card 2: Presentes (Credenciados) */}
           <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setCheckinFilter((prev) => (prev === 'present' ? 'all' : 'present'))}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCheckinFilter((prev) => (prev === 'present' ? 'all' : 'present')); }}
             style={{
-              background: 'rgba(16, 185, 129, 0.08)',
+              background: checkinFilter === 'present' ? 'rgba(16, 185, 129, 0.22)' : 'rgba(16, 185, 129, 0.08)',
               borderRadius: 'var(--radius-xl)',
               padding: '1.25rem 1.4rem',
-              border: '1.5px solid rgba(16, 185, 129, 0.35)',
-              boxShadow: 'var(--shadow-sm)',
+              border: checkinFilter === 'present' ? '2px solid var(--status-success)' : '1.5px solid rgba(16, 185, 129, 0.35)',
+              boxShadow: checkinFilter === 'present' ? '0 6px 20px rgba(16, 185, 129, 0.3)' : 'var(--shadow-sm)',
+              cursor: 'pointer',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              userSelect: 'none',
             }}
+            onMouseEnter={(e) => {
+              if (checkinFilter !== 'present') {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.borderColor = 'var(--status-success)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (checkinFilter !== 'present') {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+              }
+            }}
+            title="Clique para filtrar apenas os participantes credenciados"
           >
-            <div style={{ fontSize: '0.8rem', color: 'var(--status-success)', textTransform: 'uppercase', fontWeight: 800 }}>
-              ✓ Presentes (Credenciados)
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--status-success)', textTransform: 'uppercase', fontWeight: 800 }}>
+                ✓ Presentes (Credenciados)
+              </div>
+              <span
+                style={{
+                  fontSize: '0.68rem',
+                  fontWeight: 800,
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: 'var(--radius-full)',
+                  background: checkinFilter === 'present' ? 'var(--status-success)' : 'rgba(16, 185, 129, 0.15)',
+                  color: checkinFilter === 'present' ? '#ffffff' : 'var(--status-success)',
+                  letterSpacing: '0.3px',
+                }}
+              >
+                {checkinFilter === 'present' ? '✓ Ativo' : 'Filtrar'}
+              </span>
             </div>
             <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--status-success)', marginTop: '0.3rem' }}>
               {presentRegs}
@@ -727,18 +802,53 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
 
           {/* Card 3: Aguardando Entrada */}
           <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setCheckinFilter((prev) => (prev === 'waiting' ? 'all' : 'waiting'))}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCheckinFilter((prev) => (prev === 'waiting' ? 'all' : 'waiting')); }}
             style={{
-              background: 'var(--bg-secondary)',
+              background: checkinFilter === 'waiting' ? 'rgba(59, 130, 246, 0.18)' : 'var(--bg-secondary)',
               borderRadius: 'var(--radius-xl)',
               padding: '1.25rem 1.4rem',
-              border: '1px solid var(--border-medium)',
-              boxShadow: 'var(--shadow-sm)',
+              border: checkinFilter === 'waiting' ? '2px solid #3b82f6' : '1px solid var(--border-medium)',
+              boxShadow: checkinFilter === 'waiting' ? '0 6px 20px rgba(59, 130, 246, 0.25)' : 'var(--shadow-sm)',
+              cursor: 'pointer',
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              userSelect: 'none',
             }}
+            onMouseEnter={(e) => {
+              if (checkinFilter !== 'waiting') {
+                e.currentTarget.style.transform = 'translateY(-3px)';
+                e.currentTarget.style.borderColor = '#3b82f6';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (checkinFilter !== 'waiting') {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.borderColor = 'var(--border-medium)';
+              }
+            }}
+            title="Clique para filtrar apenas os que ainda não entraram"
           >
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800 }}>
-              Aguardando Entrada
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '0.8rem', color: checkinFilter === 'waiting' ? '#3b82f6' : 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800 }}>
+                Aguardando Entrada
+              </div>
+              <span
+                style={{
+                  fontSize: '0.68rem',
+                  fontWeight: 800,
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: 'var(--radius-full)',
+                  background: checkinFilter === 'waiting' ? '#3b82f6' : 'var(--bg-tertiary)',
+                  color: checkinFilter === 'waiting' ? '#ffffff' : 'var(--text-muted)',
+                  letterSpacing: '0.3px',
+                }}
+              >
+                {checkinFilter === 'waiting' ? '✓ Ativo' : 'Filtrar'}
+              </span>
             </div>
-            <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-secondary)', marginTop: '0.3rem' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 900, color: checkinFilter === 'waiting' ? '#3b82f6' : 'var(--text-secondary)', marginTop: '0.3rem' }}>
               {waitingRegs}
             </div>
           </div>
@@ -746,22 +856,61 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
           {/* Card 4: Pagamentos Pendentes */}
           {!selectedEventForCheckin.isFree && (
             <div
+              role="button"
+              tabIndex={0}
+              onClick={() => setCheckinFilter((prev) => (prev === 'pending_payment' ? 'all' : 'pending_payment'))}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCheckinFilter((prev) => (prev === 'pending_payment' ? 'all' : 'pending_payment')); }}
               style={{
-                background: pendingPaymentsCount > 0 ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-secondary)',
+                background: checkinFilter === 'pending_payment'
+                  ? 'rgba(245, 158, 11, 0.28)'
+                  : (pendingPaymentsCount > 0 ? 'rgba(245, 158, 11, 0.12)' : 'var(--bg-secondary)'),
                 borderRadius: 'var(--radius-xl)',
                 padding: '1.25rem 1.4rem',
-                border: `1.5px solid ${pendingPaymentsCount > 0 ? 'var(--accent-gold)' : 'var(--border-medium)'}`,
-                boxShadow: 'var(--shadow-sm)',
+                border: checkinFilter === 'pending_payment'
+                  ? '2px solid #f59e0b'
+                  : `1.5px solid ${pendingPaymentsCount > 0 ? 'rgba(245, 158, 11, 0.5)' : 'var(--border-medium)'}`,
+                boxShadow: checkinFilter === 'pending_payment' ? '0 6px 20px rgba(245, 158, 11, 0.3)' : 'var(--shadow-sm)',
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                userSelect: 'none',
               }}
+              onMouseEnter={(e) => {
+                if (checkinFilter !== 'pending_payment') {
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  e.currentTarget.style.borderColor = '#f59e0b';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (checkinFilter !== 'pending_payment') {
+                  e.currentTarget.style.transform = 'none';
+                  e.currentTarget.style.borderColor = pendingPaymentsCount > 0 ? 'rgba(245, 158, 11, 0.5)' : 'var(--border-medium)';
+                }
+              }}
+              title="Clique para filtrar apenas inscrições com pagamento pendente"
             >
-              <div style={{ fontSize: '0.8rem', color: pendingPaymentsCount > 0 ? 'var(--accent-gold)' : 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800 }}>
-                ⏳ Pagamento Manual Pendente
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '0.8rem', color: pendingPaymentsCount > 0 ? 'var(--accent-gold)' : 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800 }}>
+                  ⏳ Pagamento Pendente
+                </div>
+                <span
+                  style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: 'var(--radius-full)',
+                    background: checkinFilter === 'pending_payment' ? '#f59e0b' : 'rgba(245, 158, 11, 0.15)',
+                    color: checkinFilter === 'pending_payment' ? '#000' : 'var(--accent-gold)',
+                    letterSpacing: '0.3px',
+                  }}
+                >
+                  {checkinFilter === 'pending_payment' ? '✓ Ativo' : 'Filtrar'}
+                </span>
               </div>
               <div style={{ fontSize: '2rem', fontWeight: 900, color: pendingPaymentsCount > 0 ? 'var(--accent-gold)' : 'var(--text-primary)', marginTop: '0.3rem' }}>
                 {pendingPaymentsCount}
                 {pendingPaymentsCount > 0 && (
-                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f59e0b', marginLeft: '0.45rem' }}>
-                    Contatar participante!
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#f59e0b', marginLeft: '0.45rem' }}>
+                    Aprovar na lista
                   </span>
                 )}
               </div>
@@ -771,16 +920,51 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
           {/* Card 5: Camisas Vendidas */}
           {selectedEventForCheckin.hasShirt && (
             <div
+              role="button"
+              tabIndex={0}
+              onClick={() => setCheckinFilter((prev) => (prev === 'with_shirt' ? 'all' : 'with_shirt'))}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCheckinFilter((prev) => (prev === 'with_shirt' ? 'all' : 'with_shirt')); }}
               style={{
-                background: 'var(--bg-secondary)',
+                background: checkinFilter === 'with_shirt' ? 'rgba(59, 130, 246, 0.2)' : 'var(--bg-secondary)',
                 borderRadius: 'var(--radius-xl)',
                 padding: '1.25rem 1.4rem',
-                border: '1.5px solid rgba(245, 158, 11, 0.4)',
-                boxShadow: 'var(--shadow-sm)',
+                border: checkinFilter === 'with_shirt' ? '2px solid #3b82f6' : '1.5px solid rgba(59, 130, 246, 0.35)',
+                boxShadow: checkinFilter === 'with_shirt' ? '0 6px 20px rgba(59, 130, 246, 0.25)' : 'var(--shadow-sm)',
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                userSelect: 'none',
               }}
+              onMouseEnter={(e) => {
+                if (checkinFilter !== 'with_shirt') {
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  e.currentTarget.style.borderColor = '#3b82f6';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (checkinFilter !== 'with_shirt') {
+                  e.currentTarget.style.transform = 'none';
+                  e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.35)';
+                }
+              }}
+              title="Clique para filtrar apenas os participantes que compraram camisa"
             >
-              <div style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', textTransform: 'uppercase', fontWeight: 800 }}>
-                👕 Camisas Vendidas
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '0.8rem', color: '#3b82f6', textTransform: 'uppercase', fontWeight: 800 }}>
+                  👕 Camisas Vendidas
+                </div>
+                <span
+                  style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: 'var(--radius-full)',
+                    background: checkinFilter === 'with_shirt' ? '#3b82f6' : 'rgba(59, 130, 246, 0.15)',
+                    color: checkinFilter === 'with_shirt' ? '#ffffff' : '#3b82f6',
+                    letterSpacing: '0.3px',
+                  }}
+                >
+                  {checkinFilter === 'with_shirt' ? '✓ Ativo' : 'Filtrar'}
+                </span>
               </div>
               <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', marginTop: '0.3rem' }}>
                 {selectedEventForCheckin.registrations.filter((r) => r.includeShirt).length}
@@ -795,7 +979,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
             </div>
           )}
 
-          {/* Card 5: Média de Idade */}
+          {/* Card 6: Média de Idade */}
           {avgAge !== null && (
             <div
               style={{
@@ -912,6 +1096,22 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                   }}
                 >
                   ⏳ Pendentes ({pendingPaymentsCount})
+                </button>
+              )}
+              {selectedEventForCheckin.hasShirt && (
+                <button
+                  type="button"
+                  onClick={() => setCheckinFilter((prev) => (prev === 'with_shirt' ? 'all' : 'with_shirt'))}
+                  className={`btn btn-sm ${checkinFilter === 'with_shirt' ? 'btn-primary' : 'btn-ghost'}`}
+                  style={{
+                    padding: '0.45rem 0.9rem',
+                    fontSize: '0.85rem',
+                    borderRadius: '6px',
+                    color: checkinFilter === 'with_shirt' ? '#ffffff' : '#3b82f6',
+                    fontWeight: 700,
+                  }}
+                >
+                  👕 Camisas ({selectedEventForCheckin.registrations.filter((r) => r.includeShirt).length})
                 </button>
               )}
             </div>
@@ -1764,15 +1964,163 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         </button>
       </div>
 
+      {/* Cards de Resumo & Filtros Interativos de Eventos */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+          gap: '1rem',
+          marginBottom: '1.5rem',
+        }}
+      >
+        {/* Total de Eventos */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setMainEventFilter('all')}
+          style={{
+            background: mainEventFilter === 'all' ? 'var(--accent-gold-soft)' : 'var(--bg-secondary)',
+            border: mainEventFilter === 'all' ? '2px solid var(--accent-gold)' : '1px solid var(--border-medium)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '1.25rem 1.4rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: mainEventFilter === 'all' ? '0 4px 16px var(--accent-gold-glow)' : 'var(--shadow-sm)',
+            userSelect: 'none',
+          }}
+          title="Clique para exibir todos os eventos"
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', color: mainEventFilter === 'all' ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
+              Todos os Eventos
+            </div>
+            <span
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                padding: '0.15rem 0.45rem',
+                borderRadius: 'var(--radius-full)',
+                background: mainEventFilter === 'all' ? 'var(--accent-gold)' : 'var(--bg-tertiary)',
+                color: mainEventFilter === 'all' ? '#000' : 'var(--text-muted)',
+              }}
+            >
+              {mainEventFilter === 'all' ? '✓ Ativo' : 'Filtrar'}
+            </span>
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', marginTop: '0.3rem' }}>
+            {events.length}
+          </div>
+        </div>
+
+        {/* Eventos Pagos */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setMainEventFilter((prev) => (prev === 'paid' ? 'all' : 'paid'))}
+          style={{
+            background: mainEventFilter === 'paid' ? 'rgba(59, 130, 246, 0.18)' : 'var(--bg-secondary)',
+            border: mainEventFilter === 'paid' ? '2px solid #3b82f6' : '1px solid var(--border-medium)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '1.25rem 1.4rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: mainEventFilter === 'paid' ? '0 4px 16px rgba(59, 130, 246, 0.25)' : 'var(--shadow-sm)',
+            userSelect: 'none',
+          }}
+          title="Clique para filtrar apenas eventos pagos com inscrição"
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', color: '#3b82f6' }}>
+              Eventos Pagos
+            </div>
+            <span
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                padding: '0.15rem 0.45rem',
+                borderRadius: 'var(--radius-full)',
+                background: mainEventFilter === 'paid' ? '#3b82f6' : 'rgba(59, 130, 246, 0.12)',
+                color: mainEventFilter === 'paid' ? '#ffffff' : '#3b82f6',
+              }}
+            >
+              {mainEventFilter === 'paid' ? '✓ Ativo' : 'Filtrar'}
+            </span>
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 900, color: '#3b82f6', marginTop: '0.3rem' }}>
+            {events.filter((e) => !e.isFree).length}
+          </div>
+        </div>
+
+        {/* Eventos Gratuitos */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setMainEventFilter((prev) => (prev === 'free' ? 'all' : 'free'))}
+          style={{
+            background: mainEventFilter === 'free' ? 'rgba(16, 185, 129, 0.18)' : 'var(--bg-secondary)',
+            border: mainEventFilter === 'free' ? '2px solid var(--status-success)' : '1px solid var(--border-medium)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '1.25rem 1.4rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: mainEventFilter === 'free' ? '0 4px 16px rgba(16, 185, 129, 0.25)' : 'var(--shadow-sm)',
+            userSelect: 'none',
+          }}
+          title="Clique para filtrar apenas eventos gratuitos"
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--status-success)' }}>
+              Eventos Gratuitos
+            </div>
+            <span
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                padding: '0.15rem 0.45rem',
+                borderRadius: 'var(--radius-full)',
+                background: mainEventFilter === 'free' ? 'var(--status-success)' : 'rgba(16, 185, 129, 0.12)',
+                color: mainEventFilter === 'free' ? '#ffffff' : 'var(--status-success)',
+              }}
+            >
+              {mainEventFilter === 'free' ? '✓ Ativo' : 'Filtrar'}
+            </span>
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--status-success)', marginTop: '0.3rem' }}>
+            {events.filter((e) => e.isFree).length}
+          </div>
+        </div>
+
+        {/* Total Geral de Inscritos */}
+        <div
+          style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-medium)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '1.25rem 1.4rem',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
+          <div style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-gold)' }}>
+            Total de Inscritos Global
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--accent-gold)', marginTop: '0.3rem' }}>
+            {events.reduce((acc, e) => acc + (e.registrations?.length || 0), 0)}
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginLeft: '0.45rem' }}>
+              participantes
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Events List / Grid */}
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div>
             <h4 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-              Eventos Cadastrados ({events.length})
+              Eventos Cadastrados ({events.filter((evt) => (mainEventFilter === 'paid' ? !evt.isFree : (mainEventFilter === 'free' ? evt.isFree : true))).length})
             </h4>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-              Gerencie inscrições, check-in e detalhes dos eventos da igreja
+              {mainEventFilter === 'paid' ? 'Filtrando apenas eventos pagos com inscrição' : (mainEventFilter === 'free' ? 'Filtrando apenas eventos gratuitos' : 'Gerencie inscrições, check-in e detalhes dos eventos da igreja')}
             </p>
           </div>
 
@@ -1802,7 +2150,9 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         {eventViewMode === 'list' ? (
           /* ==================== MODO LISTA (HORIZONTAL) ==================== */
           <div key="list-mode" className="animate-fade-scale" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {events.map((evt) => {
+            {events
+              .filter((evt) => (mainEventFilter === 'paid' ? !evt.isFree : (mainEventFilter === 'free' ? evt.isFree : true)))
+              .map((evt) => {
               const checkedInCount = evt.registrations.filter((r) => r.checkedIn).length;
               const percentage = Math.round((evt.registeredCount / Math.max(1, evt.totalCapacity)) * 100);
 
@@ -2022,7 +2372,9 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
               gap: '1.5rem',
             }}
           >
-            {events.map((evt) => {
+            {events
+              .filter((evt) => (mainEventFilter === 'paid' ? !evt.isFree : (mainEventFilter === 'free' ? evt.isFree : true)))
+              .map((evt) => {
               const checkedInCount = evt.registrations.filter((r) => r.checkedIn).length;
               const percentage = Math.round((evt.registeredCount / Math.max(1, evt.totalCapacity)) * 100);
 
