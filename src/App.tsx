@@ -5,6 +5,7 @@ import { getCurrentUser, switchUserRole, isUserAuthenticated, logoutUser } from 
 import { formatDate } from './utils/formatters';
 import { pullDatabaseFromSupabase, pushDatabaseToSupabase, subscribeToSupabaseRealtime } from './services/supabaseSync';
 import { isSupabaseConfigured } from './services/supabase';
+import { applyThemeColors } from './utils/themeColors';
 
 // Common Components
 import { Navbar } from './components/common/Navbar';
@@ -154,7 +155,8 @@ export function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
     localStorage.setItem('igreja_theme', isDarkMode ? 'dark' : 'light');
-  }, [isDarkMode]);
+    applyThemeColors(db.churchSettings?.themeColors, isDarkMode);
+  }, [isDarkMode, db.churchSettings?.themeColors]);
 
   // Listen to DB updates across application
   useEffect(() => {

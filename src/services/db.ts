@@ -56,6 +56,10 @@ export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
     receiver: 'Ministério Apostólico Caçadores da Presença',
     bank: 'Bradesco / NuBank',
   },
+  themeColors: {
+    primaryColor: '#f59e0b',
+    secondaryColor: '#3b82f6',
+  },
 };
 
 // Seed initial data
@@ -2020,6 +2024,10 @@ export function updateChurchSettings(settings: Partial<ChurchSettings>): ChurchS
     pix: {
       ...current.pix,
       ...(settings.pix || {}),
+    },
+    themeColors: {
+      ...(current.themeColors || { primaryColor: '#f59e0b', secondaryColor: '#3b82f6' }),
+      ...(settings.themeColors || {}),
     },
   };
   db.churchSettings = updated;

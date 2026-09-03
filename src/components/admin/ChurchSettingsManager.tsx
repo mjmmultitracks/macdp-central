@@ -18,7 +18,10 @@ import {
   Sparkles,
   Info,
   Check,
+  Palette,
+  RefreshCw,
 } from 'lucide-react';
+import { COLOR_PRESETS, DEFAULT_THEME_COLORS, applyThemeColors } from '../../utils/themeColors';
 
 interface ChurchSettingsManagerProps {
   churchSettings?: ChurchSettings;
@@ -62,11 +65,50 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
       receiver: currentSettings.pix?.receiver || '',
       bank: currentSettings.pix?.bank || '',
     },
+    themeColors: {
+      primaryColor: currentSettings.themeColors?.primaryColor || DEFAULT_THEME_COLORS.primaryColor,
+      secondaryColor: currentSettings.themeColors?.secondaryColor || DEFAULT_THEME_COLORS.secondaryColor,
+    },
   });
 
-  const [activeTab, setActiveTab] = useState<'brand' | 'contact' | 'address' | 'social'>('brand');
+  const [activeTab, setActiveTab] = useState<'brand' | 'colors' | 'contact' | 'address' | 'social'>('brand');
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Live Color Handlers
+  const handleColorChange = (key: 'primaryColor' | 'secondaryColor', val: string) => {
+    const updatedTheme = {
+      ...(form.themeColors || DEFAULT_THEME_COLORS),
+      [key]: val,
+    };
+    setForm((prev) => ({
+      ...prev,
+      themeColors: updatedTheme,
+    }));
+    applyThemeColors(updatedTheme);
+  };
+
+  const handleSelectPreset = (preset: { primary: string; secondary: string; name: string }) => {
+    const updatedTheme = {
+      primaryColor: preset.primary,
+      secondaryColor: preset.secondary,
+    };
+    setForm((prev) => ({
+      ...prev,
+      themeColors: updatedTheme,
+    }));
+    applyThemeColors(updatedTheme);
+    onNotify('info', `Paleta "${preset.name}" aplicada ao vivo!`);
+  };
+
+  const handleResetColors = () => {
+    setForm((prev) => ({
+      ...prev,
+      themeColors: DEFAULT_THEME_COLORS,
+    }));
+    applyThemeColors(DEFAULT_THEME_COLORS);
+    onNotify('info', 'Cores redefinidas para o padrão oficial MACDP.');
+  };
 
   // Handle local file upload for church logo
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -370,6 +412,28 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
 
         <button
           type="button"
+          onClick={() => setActiveTab('colors')}
+          style={{
+            padding: '0.75rem 1.25rem',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'colors' ? '2px solid var(--accent-gold)' : '2px solid transparent',
+            color: activeTab === 'colors' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <Palette size={16} />
+          <span>Cores do Tema & Painel</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('contact')}
           style={{
             padding: '0.75rem 1.25rem',
@@ -595,6 +659,348 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
+            </div>
+          </div>
+        )}
+
+        {/* ==================== TAB 2: CORES DO TEMA & PAINEL ==================== */}
+        {activeTab === 'colors' && (
+          <div className="animate-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* Header Info */}
+            <div
+              style={{
+                background: 'var(--bg-tertiary)',
+                border: '1px solid var(--border-medium)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '1.25rem 1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1.15rem',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div
+                style={{
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '12px',
+                  background: 'var(--accent-gold-soft)',
+                  color: 'var(--accent-gold)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  border: '1px solid var(--accent-gold-glow)',
+                }}
+              >
+                <Palette size={26} />
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  Personalização de Cores do Site e Painel de Controle
+                </h4>
+                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+                  Defina as cores primárias e secundárias do design system. Todos os botões, títulos, selos, destaques, cartões e a navegação do painel administrativo se adaptam em tempo real.
+                </p>
+              </div>
+            </div>
+
+            {/* Custom Color Pickers */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
+              {/* Primary Color Card */}
+              <div
+                className="card"
+                style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1.5px solid var(--border-medium)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1.4rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <label style={{ fontSize: '0.84rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-gold)', letterSpacing: '0.5px', display: 'block' }}>
+                      Cor Primária (Destaque Principal)
+                    </label>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      Botões principais, títulos, bordas ativas e brilhos
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: form.themeColors?.primaryColor || DEFAULT_THEME_COLORS.primaryColor,
+                      border: '2px solid rgba(255, 255, 255, 0.5)',
+                      boxShadow: '0 3px 10px rgba(0, 0, 0, 0.25)',
+                      flexShrink: 0,
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  <input
+                    type="color"
+                    value={form.themeColors?.primaryColor || DEFAULT_THEME_COLORS.primaryColor}
+                    onChange={(e) => handleColorChange('primaryColor', e.target.value)}
+                    style={{
+                      width: '56px',
+                      height: '46px',
+                      padding: '2px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-medium)',
+                      cursor: 'pointer',
+                      background: 'var(--bg-tertiary)',
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="#f59e0b"
+                      value={form.themeColors?.primaryColor || DEFAULT_THEME_COLORS.primaryColor}
+                      onChange={(e) => handleColorChange('primaryColor', e.target.value)}
+                      style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.98rem' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Secondary Color Card */}
+              <div
+                className="card"
+                style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1.5px solid var(--border-medium)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1.4rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <label style={{ fontSize: '0.84rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-blue-light)', letterSpacing: '0.5px', display: 'block' }}>
+                      Cor Secundária (Apoio & Contraste)
+                    </label>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      Badges secundárias, links e ícones de apoio
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '10px',
+                      background: form.themeColors?.secondaryColor || DEFAULT_THEME_COLORS.secondaryColor,
+                      border: '2px solid rgba(255, 255, 255, 0.5)',
+                      boxShadow: '0 3px 10px rgba(0, 0, 0, 0.25)',
+                      flexShrink: 0,
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  <input
+                    type="color"
+                    value={form.themeColors?.secondaryColor || DEFAULT_THEME_COLORS.secondaryColor}
+                    onChange={(e) => handleColorChange('secondaryColor', e.target.value)}
+                    style={{
+                      width: '56px',
+                      height: '46px',
+                      padding: '2px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-medium)',
+                      cursor: 'pointer',
+                      background: 'var(--bg-tertiary)',
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="#3b82f6"
+                      value={form.themeColors?.secondaryColor || DEFAULT_THEME_COLORS.secondaryColor}
+                      onChange={(e) => handleColorChange('secondaryColor', e.target.value)}
+                      style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.98rem' }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Presets Gallery */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                    Paletas Harmoniosas Prontas
+                  </h4>
+                  <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Clique em qualquer paleta para aplicar instantaneamente em todo o site e painel:
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleResetColors}
+                  className="btn btn-secondary btn-sm"
+                  style={{ gap: '0.4rem', fontSize: '0.8rem' }}
+                >
+                  <RotateCcw size={14} />
+                  <span>Restaurar Padrão MACDP</span>
+                </button>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                  gap: '0.9rem',
+                }}
+              >
+                {COLOR_PRESETS.map((p) => {
+                  const currentPrimary = (form.themeColors?.primaryColor || DEFAULT_THEME_COLORS.primaryColor).toLowerCase();
+                  const currentSecondary = (form.themeColors?.secondaryColor || DEFAULT_THEME_COLORS.secondaryColor).toLowerCase();
+                  const isSelected = currentPrimary === p.primary.toLowerCase() && currentSecondary === p.secondary.toLowerCase();
+
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => handleSelectPreset(p)}
+                      style={{
+                        background: isSelected ? 'var(--bg-elevated)' : 'var(--bg-secondary)',
+                        border: isSelected ? '2px solid var(--accent-gold)' : '1px solid var(--border-medium)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '1rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.65rem',
+                        boxShadow: isSelected ? '0 4px 18px var(--accent-gold-glow)' : 'var(--shadow-sm)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <div
+                            style={{
+                              width: '26px',
+                              height: '26px',
+                              borderRadius: '50%',
+                              background: p.primary,
+                              border: '2px solid #ffffff',
+                              boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                            }}
+                          />
+                          <div
+                            style={{
+                              width: '26px',
+                              height: '26px',
+                              borderRadius: '50%',
+                              background: p.secondary,
+                              border: '2px solid #ffffff',
+                              boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                              marginLeft: '-10px',
+                            }}
+                          />
+                        </div>
+
+                        {isSelected && (
+                          <span
+                            style={{
+                              fontSize: '0.72rem',
+                              fontWeight: 800,
+                              background: 'var(--accent-gold-soft)',
+                              color: 'var(--accent-gold)',
+                              padding: '0.2rem 0.55rem',
+                              borderRadius: 'var(--radius-full)',
+                              border: '1px solid var(--accent-gold)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                            }}
+                          >
+                            <Check size={11} />
+                            <span>Ativo</span>
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                          {p.name}
+                        </div>
+                        <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.35 }}>
+                          {p.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Elements Interactive Preview Box */}
+            <div
+              style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-medium)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '1.4rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+              }}
+            >
+              <div style={{ fontSize: '0.82rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-gold)', letterSpacing: '0.5px' }}>
+                Demonstração de Elementos com as Cores Escolhidas
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <button type="button" className="btn btn-primary">
+                  Botão Primário
+                </button>
+                <button type="button" className="btn btn-outline">
+                  Botão Contorno
+                </button>
+                <button type="button" className="btn btn-secondary">
+                  Botão Secundário
+                </button>
+                <span
+                  style={{
+                    background: 'var(--accent-gold-soft)',
+                    color: 'var(--accent-gold)',
+                    border: '1px solid var(--accent-gold)',
+                    padding: '0.4rem 0.85rem',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.82rem',
+                    fontWeight: 800,
+                  }}
+                >
+                  Selo Destaque (Primária)
+                </span>
+                <span
+                  style={{
+                    background: 'var(--accent-blue-soft)',
+                    color: 'var(--accent-blue-light)',
+                    border: '1px solid var(--accent-blue-light)',
+                    padding: '0.4rem 0.85rem',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.82rem',
+                    fontWeight: 800,
+                  }}
+                >
+                  Selo Apoio (Secundária)
+                </span>
+              </div>
             </div>
           </div>
         )}

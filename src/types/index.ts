@@ -393,6 +393,10 @@ export interface ChurchSettings {
     receiver: string; // Nome do favorecido
     bank?: string; // Banco / Instituição
   };
+  themeColors?: {
+    primaryColor: string; // Cor primária (ex: #f59e0b)
+    secondaryColor: string; // Cor secundária (ex: #3b82f6)
+  };
 }
 
 export interface DatabaseSchema {
