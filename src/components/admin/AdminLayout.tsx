@@ -27,6 +27,10 @@ import {
   Building2,
   Menu,
   X,
+  FileText,
+  Landmark,
+  Tag,
+  Ticket,
 } from 'lucide-react';
 import { ChurchSettings } from '../../types';
 
@@ -59,6 +63,21 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isFinanceDropdownOpen, setIsFinanceDropdownOpen] = useState(() => {
+    return currentTab.startsWith('financeiro');
+  });
+
+  const financialSubItems: Array<{
+    id: string;
+    subTab: 'fluxo' | 'contas' | 'categorias' | 'eventos_caixa';
+    label: string;
+    icon: any;
+  }> = [
+    { id: 'financeiro_fluxo', subTab: 'fluxo', label: 'Lançamentos & Fluxo Geral', icon: FileText },
+    { id: 'financeiro_contas', subTab: 'contas', label: 'Contas Bancárias & Caixas', icon: Landmark },
+    { id: 'financeiro_categorias', subTab: 'categorias', label: 'Plano de Contas / Categorias', icon: Tag },
+    { id: 'financeiro_eventos', subTab: 'eventos_caixa', label: 'Caixa dos Eventos', icon: Ticket },
+  ];
 
   const menuItems: Array<{ id: string; label: string; icon: any; permission: PermissionFeature }> = [
     { id: 'dashboard', label: 'Dashboard Geral', icon: LayoutDashboard, permission: 'dashboard_full' },
@@ -83,9 +102,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     }
   };
 
-  const userHasCurrentTabPermission = menuItems.find((m) => m.id === currentTab)
+  const activeFinancialSub = financialSubItems.find((s) => s.id === currentTab);
+  const userHasCurrentTabPermission = currentTab.startsWith('financeiro')
+    ? hasPermission(currentUser.role, 'finance_manage')
+    : menuItems.find((m) => m.id === currentTab)
     ? hasPermission(currentUser.role, menuItems.find((m) => m.id === currentTab)!.permission)
     : true;
+
+  const currentTabTitle = currentTab.startsWith('financeiro')
+    ? (activeFinancialSub ? `Gestão Financeira • ${activeFinancialSub.label}` : 'Gestão Financeira')
+    : (menuItems.find((m) => m.id === currentTab)?.label || 'Painel Administrativo');
 
   return (
     <div className="admin-main-wrapper" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)', position: 'relative' }}>
@@ -210,8 +236,119 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         <nav style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, overflowY: 'auto' }}>
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentTab === item.id;
             const allowed = hasPermission(currentUser.role, item.permission);
+
+            // Item Especial: Gestão Financeira com Dropdown
+            if (item.id === 'financeiro') {
+              const isFinanceActive = currentTab.startsWith('financeiro');
+
+              return (
+                <div key={item.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsFinanceDropdownOpen((prev) => !prev);
+                      if (!currentTab.startsWith('financeiro')) {
+                        onTabChange('financeiro_fluxo');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0.75rem 1rem',
+                      borderRadius: 'var(--radius-md)',
+                      background: isFinanceActive ? 'var(--accent-gold-soft)' : 'transparent',
+                      color: isFinanceActive
+                        ? 'var(--accent-gold)'
+                        : allowed
+                        ? 'var(--text-primary)'
+                        : 'var(--text-muted)',
+                      border: 'none',
+                      fontSize: '0.88rem',
+                      fontWeight: isFinanceActive ? 700 : 500,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.15s',
+                      opacity: allowed ? 1 : 0.6,
+                    }}
+                    title="Clique para abrir ou recolher os sub-menus de Gestão Financeira"
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <Icon size={18} />
+                      <span>{item.label}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      {!allowed && (
+                        <span style={{ fontSize: '0.65rem', padding: '0.1rem 0.4rem', borderRadius: '4px', background: 'var(--bg-tertiary)' }}>
+                          Restrito
+                        </span>
+                      )}
+                      <ChevronDown
+                        size={15}
+                        style={{
+                          transform: isFinanceDropdownOpen ? 'rotate(180deg)' : 'none',
+                          transition: 'transform 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
+                          color: isFinanceActive ? 'var(--accent-gold)' : 'var(--text-muted)',
+                        }}
+                      />
+                    </div>
+                  </button>
+
+                  {/* Sub-menus em Dropdown */}
+                  {isFinanceDropdownOpen && allowed && (
+                    <div
+                      className="animate-tab-content"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.2rem',
+                        marginLeft: '1.25rem',
+                        paddingLeft: '0.75rem',
+                        borderLeft: '2px solid var(--border-medium)',
+                        marginTop: '0.25rem',
+                        marginBottom: '0.35rem',
+                      }}
+                    >
+                      {financialSubItems.map((sub) => {
+                        const SubIcon = sub.icon;
+                        const isSubActive = currentTab === sub.id || (currentTab === 'financeiro' && sub.subTab === 'fluxo');
+                        return (
+                          <button
+                            key={sub.id}
+                            type="button"
+                            onClick={() => {
+                              onTabChange(sub.id);
+                              setMobileSidebarOpen(false);
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.65rem',
+                              padding: '0.55rem 0.75rem',
+                              borderRadius: 'var(--radius-md)',
+                              background: isSubActive ? 'var(--accent-gold-soft)' : 'transparent',
+                              color: isSubActive ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                              border: isSubActive ? '1px solid var(--accent-gold)' : '1px solid transparent',
+                              fontSize: '0.82rem',
+                              fontWeight: isSubActive ? 800 : 500,
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              transition: 'all 0.15s ease',
+                            }}
+                          >
+                            <SubIcon size={14} />
+                            <span>{sub.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            const isActive = currentTab === item.id;
 
             return (
               <button
@@ -342,7 +479,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <Menu size={20} />
             </button>
             <h2 style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 800, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {menuItems.find((m) => m.id === currentTab)?.label || 'Painel Administrativo'}
+              {currentTabTitle}
             </h2>
           </div>
 

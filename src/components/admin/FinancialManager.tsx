@@ -57,6 +57,8 @@ interface FinancialManagerProps {
   bankAccounts?: BankAccount[];
   financialCategories?: FinancialCategory[];
   events?: ChurchEvent[];
+  activeSubTab?: FinancialSubTab;
+  onSubTabChange?: (tab: FinancialSubTab) => void;
   onNotify: (type: 'success' | 'error' | 'info', text: string) => void;
 }
 
@@ -67,10 +69,20 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
   bankAccounts = [],
   financialCategories = [],
   events = [],
+  activeSubTab: activeSubTabExternal,
+  onSubTabChange,
   onNotify,
 }) => {
-  // Sub-menu Navigation State
-  const [activeSubTab, setActiveSubTab] = useState<FinancialSubTab>('fluxo');
+  // Sub-menu Navigation State (sincronizado com Dropdown da Sidebar e Abas)
+  const [internalSubTab, setInternalSubTab] = useState<FinancialSubTab>('fluxo');
+  const activeSubTab = activeSubTabExternal !== undefined ? activeSubTabExternal : internalSubTab;
+
+  const setActiveSubTab = (tab: FinancialSubTab) => {
+    setInternalSubTab(tab);
+    if (onSubTabChange) {
+      onSubTabChange(tab);
+    }
+  };
 
   // Filters for General Ledger (Fluxo)
   const [filterType, setFilterType] = useState<'todos' | 'entrada' | 'saida'>('todos');
