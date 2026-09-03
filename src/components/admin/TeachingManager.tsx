@@ -40,6 +40,7 @@ import {
   Smartphone,
   Check,
   Compass,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface TeachingManagerProps {
@@ -81,9 +82,13 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
   const [classCategory, setClassCategory] = useState<TeachingClass['category']>('Liderança');
   const [classDesc, setClassDesc] = useState('');
 
+  // Confirmação de Exclusão de Turma
+  const [classToDelete, setClassToDelete] = useState<TeachingClass | null>(null);
+
   // ==================== MATERIAL MODAL STATE ====================
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<TeachingMaterial | null>(null);
+  const [materialToDelete, setMaterialToDelete] = useState<TeachingMaterial | null>(null);
   const [matTitle, setMatTitle] = useState('');
   const [matTargetType, setMatTargetType] = useState<TeachingMaterial['targetType']>('celulas');
   const [matTargetAudience, setMatTargetAudience] = useState('Todas as Células');
@@ -160,11 +165,30 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
     setIsClassModalOpen(false);
   };
 
-  const handleDeleteClass = (cls: TeachingClass) => {
-    if (window.confirm(`Deseja remover a turma "${cls.name}"?`)) {
-      deleteTeachingClass(cls.id);
-      onNotify('info', `Turma "${cls.name}" removida.`);
+  const handleConfirmDeleteClass = () => {
+    if (!classToDelete) return;
+    const name = classToDelete.name;
+    const success = deleteTeachingClass(classToDelete.id);
+    if (success) {
+      onNotify('success', `Turma "${name}" excluída com sucesso!`);
+    } else {
+      onNotify('info', `Turma "${name}" removida.`);
     }
+    setClassToDelete(null);
+    setIsClassModalOpen(false);
+  };
+
+  const handleConfirmDeleteMaterial = () => {
+    if (!materialToDelete) return;
+    const title = materialToDelete.title;
+    const success = deleteTeachingMaterial(materialToDelete.id);
+    if (success) {
+      onNotify('success', `Material didático "${title}" excluído com sucesso!`);
+    } else {
+      onNotify('info', `Material "${title}" removido.`);
+    }
+    setMaterialToDelete(null);
+    setIsMaterialModalOpen(false);
   };
 
   // Handlers for Materials
@@ -558,6 +582,7 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => openEditClassModal(cls)}
                     className="btn btn-secondary btn-sm"
                     style={{ gap: '0.35rem', padding: '0.45rem 0.75rem' }}
@@ -567,7 +592,8 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
                     <span>Editar</span>
                   </button>
                   <button
-                    onClick={() => handleDeleteClass(cls)}
+                    type="button"
+                    onClick={() => setClassToDelete(cls)}
                     className="btn btn-secondary btn-sm"
                     style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
                     title="Excluir Turma"
@@ -968,6 +994,7 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => openEditMaterialModal(mat)}
                     className="btn btn-secondary btn-sm"
                     style={{ gap: '0.35rem', padding: '0.45rem 0.75rem' }}
@@ -977,7 +1004,8 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
                     <span>Editar</span>
                   </button>
                   <button
-                    onClick={() => handleDeleteMaterial(mat)}
+                    type="button"
+                    onClick={() => setMaterialToDelete(mat)}
                     className="btn btn-secondary btn-sm"
                     style={{ padding: '0.45rem 0.65rem', color: 'var(--status-error)' }}
                     title="Excluir Material"
@@ -1089,17 +1117,30 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-            <button
-              type="button"
-              onClick={() => setIsClassModalOpen(false)}
-              className="btn btn-secondary"
-            >
-              Cancelar
-            </button>
-            <button type="submit" className="btn btn-primary">
-              {editingClass ? 'Salvar Alterações' : 'Cadastrar Turma'}
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+            {editingClass ? (
+              <button
+                type="button"
+                onClick={() => setClassToDelete(editingClass)}
+                className="btn btn-ghost btn-sm"
+                style={{ color: 'var(--status-error)', gap: '0.4rem' }}
+              >
+                <Trash2 size={15} />
+                <span>Excluir Turma</span>
+              </button>
+            ) : <div />}
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setIsClassModalOpen(false)}
+                className="btn btn-secondary"
+              >
+                Cancelar
+              </button>
+              <button type="submit" className="btn btn-primary">
+                {editingClass ? 'Salvar Alterações' : 'Cadastrar Turma'}
+              </button>
+            </div>
           </div>
         </form>
       </Modal>
@@ -1187,19 +1228,163 @@ export const TeachingManager: React.FC<TeachingManagerProps> = ({
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-            <button
-              type="button"
-              onClick={() => setIsMaterialModalOpen(false)}
-              className="btn btn-secondary"
-            >
-              Cancelar
-            </button>
-            <button type="submit" className="btn btn-primary">
-              {editingMaterial ? 'Salvar Alterações' : 'Cadastrar e Liberar'}
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+            {editingMaterial ? (
+              <button
+                type="button"
+                onClick={() => setMaterialToDelete(editingMaterial)}
+                className="btn btn-ghost btn-sm"
+                style={{ color: 'var(--status-error)', gap: '0.4rem' }}
+              >
+                <Trash2 size={15} />
+                <span>Excluir Material</span>
+              </button>
+            ) : <div />}
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setIsMaterialModalOpen(false)}
+                className="btn btn-secondary"
+              >
+                Cancelar
+              </button>
+              <button type="submit" className="btn btn-primary">
+                {editingMaterial ? 'Salvar Alterações' : 'Cadastrar e Liberar'}
+              </button>
+            </div>
           </div>
         </form>
+      </Modal>
+
+      {/* ==================== MODAL CONFIRMAÇÃO DE EXCLUSÃO DE TURMA ==================== */}
+      <Modal
+        isOpen={!!classToDelete}
+        onClose={() => setClassToDelete(null)}
+        title="Excluir Turma / Curso"
+        maxWidth="480px"
+      >
+        {classToDelete && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+              <div
+                style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '12px',
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  color: 'var(--status-error)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h4 style={{ margin: '0 0 0.4rem 0', fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  Excluir turma "{classToDelete.name}"?
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  Esta ação removerá a turma permanentemente do painel de ensino e discipulado da igreja.
+                </p>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: 'var(--bg-tertiary)',
+                padding: '0.85rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '0.825rem',
+                color: 'var(--text-secondary)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.35rem',
+              }}
+            >
+              <div><strong>Professor:</strong> {classToDelete.teacher}</div>
+              <div><strong>Categoria:</strong> {classToDelete.category} • {classToDelete.studentsCount} alunos</div>
+              <div><strong>Horário / Sala:</strong> {classToDelete.schedule} ({classToDelete.room})</div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => setClassToDelete(null)}
+                className="btn btn-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteClass}
+                className="btn btn-danger"
+                style={{ gap: '0.45rem', background: '#ef4444', color: '#ffffff', fontWeight: 700 }}
+              >
+                <Trash2 size={16} />
+                <span>Sim, Excluir Turma</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* ==================== MODAL CONFIRMAÇÃO DE EXCLUSÃO DE MATERIAL ==================== */}
+      <Modal
+        isOpen={!!materialToDelete}
+        onClose={() => setMaterialToDelete(null)}
+        title="Excluir Material Didático"
+        maxWidth="480px"
+      >
+        {materialToDelete && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+              <div
+                style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '12px',
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  color: 'var(--status-error)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h4 style={{ margin: '0 0 0.4rem 0', fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  Excluir material "{materialToDelete.title}"?
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  Este estudo será excluído permanentemente da biblioteca de materiais da igreja.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => setMaterialToDelete(null)}
+                className="btn btn-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteMaterial}
+                className="btn btn-danger"
+                style={{ gap: '0.45rem', background: '#ef4444', color: '#ffffff', fontWeight: 700 }}
+              >
+                <Trash2 size={16} />
+                <span>Sim, Excluir Material</span>
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

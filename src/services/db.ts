@@ -1283,15 +1283,15 @@ export function getDatabase(): DatabaseSchema {
       return INITIAL_DATABASE;
     }
     const parsed = JSON.parse(raw) as DatabaseSchema;
-    if (!parsed.ministries || parsed.ministries.length === 0) {
+    if (!parsed.ministries) {
       parsed.ministries = INITIAL_DATABASE.ministries;
       saveDatabase(parsed);
     }
-    if (!parsed.teachingClasses || parsed.teachingClasses.length === 0) {
+    if (!parsed.teachingClasses) {
       parsed.teachingClasses = INITIAL_DATABASE.teachingClasses;
       saveDatabase(parsed);
     }
-    if (!parsed.teachingMaterials || parsed.teachingMaterials.length === 0) {
+    if (!parsed.teachingMaterials) {
       parsed.teachingMaterials = INITIAL_DATABASE.teachingMaterials;
       saveDatabase(parsed);
     }
@@ -1299,23 +1299,23 @@ export function getDatabase(): DatabaseSchema {
       parsed.teachingLogs = INITIAL_DATABASE.teachingLogs;
       saveDatabase(parsed);
     }
-    if (!parsed.kidsChildren || parsed.kidsChildren.length === 0) {
+    if (!parsed.kidsChildren) {
       parsed.kidsChildren = INITIAL_DATABASE.kidsChildren;
       saveDatabase(parsed);
     }
-    if (!parsed.kidsLessons || parsed.kidsLessons.length === 0) {
+    if (!parsed.kidsLessons) {
       parsed.kidsLessons = INITIAL_DATABASE.kidsLessons;
       saveDatabase(parsed);
     }
-    if (!parsed.patrimonyAssets || parsed.patrimonyAssets.length === 0) {
+    if (!parsed.patrimonyAssets) {
       parsed.patrimonyAssets = INITIAL_DATABASE.patrimonyAssets;
       saveDatabase(parsed);
     }
-    if (!parsed.pastoralAppointments || parsed.pastoralAppointments.length === 0) {
+    if (!parsed.pastoralAppointments) {
       parsed.pastoralAppointments = INITIAL_DATABASE.pastoralAppointments;
       saveDatabase(parsed);
     }
-    if (!parsed.accessUsers || parsed.accessUsers.length === 0) {
+    if (!parsed.accessUsers) {
       parsed.accessUsers = INITIAL_DATABASE.accessUsers;
       saveDatabase(parsed);
     }
@@ -1323,11 +1323,11 @@ export function getDatabase(): DatabaseSchema {
       parsed.churchSettings = INITIAL_CHURCH_SETTINGS;
       saveDatabase(parsed);
     }
-    if (!parsed.bankAccounts || parsed.bankAccounts.length === 0) {
+    if (!parsed.bankAccounts) {
       parsed.bankAccounts = INITIAL_BANK_ACCOUNTS;
       saveDatabase(parsed);
     }
-    if (!parsed.financialCategories || parsed.financialCategories.length === 0) {
+    if (!parsed.financialCategories) {
       parsed.financialCategories = INITIAL_FINANCIAL_CATEGORIES;
       saveDatabase(parsed);
     }
