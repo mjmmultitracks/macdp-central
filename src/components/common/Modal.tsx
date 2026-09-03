@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -24,17 +25,17 @@ export const Modal: React.FC<ModalProps> = ({
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
-  return (
+  return createPortal(
     <div
       className="modal-backdrop"
       onClick={(e) => {
@@ -44,9 +45,13 @@ export const Modal: React.FC<ModalProps> = ({
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div className="modal-content" style={{ maxWidth }}>
+      <div
+        className="modal-content"
+        style={{ maxWidth, width: '100%' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
-          <h3 id="modal-title" style={{ fontSize: '1.25rem', fontWeight: 700 }}>
+          <h3 id="modal-title" style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
             {title}
           </h3>
           <button
@@ -69,6 +74,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
         <div className="modal-body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
