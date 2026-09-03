@@ -21,6 +21,8 @@ import {
   SystemAccessUser,
   PanelModuleId,
   ChurchSettings,
+  BankAccount,
+  FinancialCategory,
 } from '../types';
 import { pushDatabaseToSupabase } from './supabaseSync';
 
@@ -61,6 +63,66 @@ export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
     secondaryColor: '#3b82f6',
   },
 };
+
+export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [
+  {
+    id: 'acc_1',
+    name: 'Bradesco - Conta Principal',
+    bankName: 'Banco Bradesco (237)',
+    accountType: 'corrente',
+    agency: '3210-4',
+    accountNumber: '12345-6',
+    pixKey: '92991279663',
+    initialBalance: 12500.0,
+    color: '#dc2626',
+    isDefault: true,
+    status: 'ativo',
+    notes: 'Conta oficial para dízimos, ofertas e inscrições de eventos.',
+  },
+  {
+    id: 'acc_2',
+    name: 'Nubank - Reserva & Projetos',
+    bankName: 'Nu Pagamentos S.A. (260)',
+    accountType: 'corrente',
+    agency: '0001',
+    accountNumber: '9876543-2',
+    pixKey: 'contato@macdp.com.br',
+    initialBalance: 5800.0,
+    color: '#8b5cf6',
+    isDefault: false,
+    status: 'ativo',
+    notes: 'Conta reserva para missões e projetos especiais.',
+  },
+  {
+    id: 'acc_3',
+    name: 'Caixa Físico / Tesouraria do Templo',
+    bankName: 'Dinheiro em Espécie',
+    accountType: 'caixa_fisico',
+    initialBalance: 850.0,
+    color: '#10b981',
+    isDefault: false,
+    status: 'ativo',
+    notes: 'Valores em espécie recebidos nos cultos presenciais.',
+  },
+];
+
+export const INITIAL_FINANCIAL_CATEGORIES: FinancialCategory[] = [
+  // Receitas
+  { id: 'cat_in_1', name: 'Dízimo', type: 'entrada', color: '#10b981', description: 'Dízimos fiéis dos membros e líderes.', isSystem: true },
+  { id: 'cat_in_2', name: 'Oferta Alçada', type: 'entrada', color: '#059669', description: 'Ofertas voluntárias levantadas nos cultos.', isSystem: true },
+  { id: 'cat_in_3', name: 'Inscrições de Eventos & Conferências', type: 'entrada', color: '#d97706', description: 'Arrecadação de inscrições e vagas em eventos.', isSystem: true },
+  { id: 'cat_in_4', name: 'Venda de Camisas Oficiais', type: 'entrada', color: '#f59e0b', description: 'Receitas da venda de camisas oficiais dos eventos.', isSystem: true },
+  { id: 'cat_in_5', name: 'Oferta para Missões', type: 'entrada', color: '#2563eb', description: 'Ofertas destinadas ao sustento missionário.' },
+  { id: 'cat_in_6', name: 'Ação Social & Doações', type: 'entrada', color: '#3b82f6', description: 'Doações para cestas básicas e apoio humanitário.' },
+  // Despesas
+  { id: 'cat_out_1', name: 'Aluguel do Templo & Espaços', type: 'saida', color: '#ef4444', description: 'Locação predial do templo e dependências.', isSystem: true },
+  { id: 'cat_out_2', name: 'Contas Fixas (Água/Luz/Net)', type: 'saida', color: '#dc2626', description: 'Serviços públicos essenciais.', isSystem: true },
+  { id: 'cat_out_3', name: 'Equipamentos, Som & Mídia', type: 'saida', color: '#b91c1c', description: 'Instrumentos, sonorização e audiovisual.' },
+  { id: 'cat_out_4', name: 'Despesas de Eventos & Conferências', type: 'saida', color: '#ea580c', description: 'Chácara, buffet, convidados e logística de eventos.', isSystem: true },
+  { id: 'cat_out_5', name: 'Confecção de Camisas & Materiais', type: 'saida', color: '#f97316', description: 'Produção têxtil de camisas e crachás dos eventos.' },
+  { id: 'cat_out_6', name: 'Manutenção Predial & Reformas', type: 'saida', color: '#d97706', description: 'Pintura, elétrica, hidráulica e reparos.' },
+  { id: 'cat_out_7', name: 'Ajuda Missionária & Social', type: 'saida', color: '#7c3aed', description: 'Envio de recursos a missionários e caridade.' },
+];
 
 // Seed initial data
 export const INITIAL_DATABASE: DatabaseSchema = {
@@ -1209,6 +1271,8 @@ export const INITIAL_DATABASE: DatabaseSchema = {
     },
   ],
   churchSettings: INITIAL_CHURCH_SETTINGS,
+  bankAccounts: INITIAL_BANK_ACCOUNTS,
+  financialCategories: INITIAL_FINANCIAL_CATEGORIES,
 };
 
 export function getDatabase(): DatabaseSchema {
@@ -1257,6 +1321,14 @@ export function getDatabase(): DatabaseSchema {
     }
     if (!parsed.churchSettings) {
       parsed.churchSettings = INITIAL_CHURCH_SETTINGS;
+      saveDatabase(parsed);
+    }
+    if (!parsed.bankAccounts || parsed.bankAccounts.length === 0) {
+      parsed.bankAccounts = INITIAL_BANK_ACCOUNTS;
+      saveDatabase(parsed);
+    }
+    if (!parsed.financialCategories || parsed.financialCategories.length === 0) {
+      parsed.financialCategories = INITIAL_FINANCIAL_CATEGORIES;
       saveDatabase(parsed);
     }
     if (parsed.events) {
@@ -1516,6 +1588,29 @@ export function addEventRegistration(
       totalPaid: calculatedTotal,
     };
     evt.registrations.push(newReg);
+
+    // Se a inscrição possui valor e está confirmada, alimenta automaticamente a Gestão Financeira no Caixa do Evento
+    if (calculatedTotal > 0 && newReg.paymentStatus === 'confirmed') {
+      const defaultAcc = (db.bankAccounts || []).find((a) => a.isDefault && a.status === 'ativo') || (db.bankAccounts || [])[0];
+      const newTx: FinancialTransaction = {
+        id: `tx_reg_${newReg.id}`,
+        type: 'entrada',
+        category: 'Inscrições de Eventos & Conferências',
+        description: `Inscrição: ${newReg.name} - ${evt.title}${newReg.includeShirt ? ` (Camisa Tam ${newReg.shirtSize})` : ''}`,
+        amount: calculatedTotal,
+        date: newReg.registeredAt || new Date().toISOString().split('T')[0],
+        paymentMethod: newReg.paymentMethod === 'credit_card' ? 'cartao' : (newReg.paymentMethod === 'manual' ? 'dinheiro' : 'pix'),
+        memberOrVendor: newReg.name,
+        receiptNumber: `REC-EVT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+        status: 'confirmado',
+        bankAccountId: defaultAcc?.id || 'acc_1',
+        eventId: evt.id,
+        eventName: evt.title,
+        registrationId: newReg.id,
+      };
+      db.transactions.unshift(newTx);
+    }
+
     saveDatabase(db);
     return newReg;
   }
@@ -1535,6 +1630,42 @@ export function updateEventRegistrationPayment(
   if (!reg) return false;
   reg.paymentStatus = status;
   if (notes) reg.paymentNotes = notes;
+
+  const shirtCost = reg.includeShirt ? (reg.shirtPrice || evt.shirtPrice || 0) : 0;
+  const ticketCost = evt.isFree ? 0 : (evt.price || 0);
+  const totalAmount = reg.totalPaid !== undefined ? reg.totalPaid : (ticketCost + shirtCost);
+
+  // Sincroniza com a Gestão Financeira no Caixa do Evento
+  const existingTxIndex = db.transactions.findIndex((t) => t.registrationId === registrationId);
+
+  if (status === 'confirmed' && totalAmount > 0) {
+    if (existingTxIndex !== -1) {
+      db.transactions[existingTxIndex].status = 'confirmado';
+      db.transactions[existingTxIndex].amount = totalAmount;
+    } else {
+      const defaultAcc = (db.bankAccounts || []).find((a) => a.isDefault && a.status === 'ativo') || (db.bankAccounts || [])[0];
+      const newTx: FinancialTransaction = {
+        id: `tx_reg_${reg.id}`,
+        type: 'entrada',
+        category: 'Inscrições de Eventos & Conferências',
+        description: `Inscrição: ${reg.name} - ${evt.title}${reg.includeShirt ? ` (Camisa Tam ${reg.shirtSize})` : ''}`,
+        amount: totalAmount,
+        date: new Date().toISOString().split('T')[0],
+        paymentMethod: reg.paymentMethod === 'credit_card' ? 'cartao' : (reg.paymentMethod === 'manual' ? 'dinheiro' : 'pix'),
+        memberOrVendor: reg.name,
+        receiptNumber: `REC-EVT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+        status: 'confirmado',
+        bankAccountId: defaultAcc?.id || 'acc_1',
+        eventId: evt.id,
+        eventName: evt.title,
+        registrationId: reg.id,
+      };
+      db.transactions.unshift(newTx);
+    }
+  } else if (status === 'pending' && existingTxIndex !== -1) {
+    db.transactions[existingTxIndex].status = 'pendente';
+  }
+
   saveDatabase(db);
   return true;
 }
@@ -1681,6 +1812,8 @@ export function deleteEventRegistration(eventId: string, regId: string): boolean
   evt.registrations = evt.registrations.filter((r) => r.id !== regId);
   if (evt.registrations.length < initialLen) {
     evt.registeredCount = Math.max(0, evt.registeredCount - 1);
+    // Remove transação financeira vinculada à inscrição excluída
+    db.transactions = db.transactions.filter((t) => t.registrationId !== regId);
     saveDatabase(db);
     return true;
   }
@@ -2033,6 +2166,82 @@ export function updateChurchSettings(settings: Partial<ChurchSettings>): ChurchS
   db.churchSettings = updated;
   saveDatabase(db);
   return updated;
+}
+
+// ==================== CONTAS BANCÁRIAS CRUD ====================
+export function addBankAccount(account: Omit<BankAccount, 'id'>): BankAccount {
+  const db = getDatabase();
+  if (!db.bankAccounts) db.bankAccounts = [];
+  if (account.isDefault) {
+    db.bankAccounts.forEach((a) => { a.isDefault = false; });
+  }
+  const newAccount: BankAccount = {
+    ...account,
+    id: `acc_${Date.now()}`,
+  };
+  db.bankAccounts.push(newAccount);
+  saveDatabase(db);
+  return newAccount;
+}
+
+export function updateBankAccount(id: string, updates: Partial<BankAccount>): BankAccount | null {
+  const db = getDatabase();
+  if (!db.bankAccounts) db.bankAccounts = [];
+  const index = db.bankAccounts.findIndex((a) => a.id === id);
+  if (index === -1) return null;
+  if (updates.isDefault) {
+    db.bankAccounts.forEach((a) => { if (a.id !== id) a.isDefault = false; });
+  }
+  db.bankAccounts[index] = { ...db.bankAccounts[index], ...updates };
+  saveDatabase(db);
+  return db.bankAccounts[index];
+}
+
+export function deleteBankAccount(id: string): boolean {
+  const db = getDatabase();
+  if (!db.bankAccounts) return false;
+  const initialLen = db.bankAccounts.length;
+  db.bankAccounts = db.bankAccounts.filter((a) => a.id !== id);
+  if (db.bankAccounts.length < initialLen) {
+    saveDatabase(db);
+    return true;
+  }
+  return false;
+}
+
+// ==================== CATEGORIAS FINANCEIRAS CRUD ====================
+export function addFinancialCategory(category: Omit<FinancialCategory, 'id'>): FinancialCategory {
+  const db = getDatabase();
+  if (!db.financialCategories) db.financialCategories = [];
+  const newCategory: FinancialCategory = {
+    ...category,
+    id: `cat_${Date.now()}`,
+  };
+  db.financialCategories.push(newCategory);
+  saveDatabase(db);
+  return newCategory;
+}
+
+export function updateFinancialCategory(id: string, updates: Partial<FinancialCategory>): FinancialCategory | null {
+  const db = getDatabase();
+  if (!db.financialCategories) db.financialCategories = [];
+  const index = db.financialCategories.findIndex((c) => c.id === id);
+  if (index === -1) return null;
+  db.financialCategories[index] = { ...db.financialCategories[index], ...updates };
+  saveDatabase(db);
+  return db.financialCategories[index];
+}
+
+export function deleteFinancialCategory(id: string): boolean {
+  const db = getDatabase();
+  if (!db.financialCategories) return false;
+  const initialLen = db.financialCategories.length;
+  db.financialCategories = db.financialCategories.filter((c) => c.id !== id);
+  if (db.financialCategories.length < initialLen) {
+    saveDatabase(db);
+    return true;
+  }
+  return false;
 }
 
 

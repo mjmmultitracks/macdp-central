@@ -546,6 +546,9 @@ export function App() {
           {adminTab === 'financeiro' && (
             <FinancialManager
               transactions={db.transactions}
+              bankAccounts={db.bankAccounts || []}
+              financialCategories={db.financialCategories || []}
+              events={db.events || []}
               onNotify={addNotification}
             />
           )}

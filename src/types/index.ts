@@ -71,10 +71,34 @@ export type TransactionCategory =
 
 export type PaymentMethod = 'pix' | 'cartao' | 'dinheiro' | 'boleto' | 'transferencia';
 
+export interface BankAccount {
+  id: string;
+  name: string; // Ex: "Bradesco - Conta Corrente Principal", "Nubank - PIX Secretaria", "Caixa Físico / Tesouraria"
+  bankName: string; // Ex: "Bradesco (237)", "Nubank (260)", "Caixa Físico / Espécie", etc.
+  accountType: 'corrente' | 'poupanca' | 'caixa_fisico' | 'investimento';
+  agency?: string;
+  accountNumber?: string;
+  pixKey?: string;
+  initialBalance: number;
+  color?: string; // Para destaque visual e badges
+  isDefault?: boolean;
+  status: 'ativo' | 'inativo';
+  notes?: string;
+}
+
+export interface FinancialCategory {
+  id: string;
+  name: string; // Ex: "Dízimo", "Oferta Alçada", "Inscrições de Eventos", "Venda de Camisas", "Água e Luz", etc.
+  type: 'entrada' | 'saida';
+  color?: string;
+  description?: string;
+  isSystem?: boolean;
+}
+
 export interface FinancialTransaction {
   id: string;
   type: TransactionType;
-  category: TransactionCategory;
+  category: string;
   description: string;
   amount: number;
   date: string;
@@ -82,6 +106,10 @@ export interface FinancialTransaction {
   memberOrVendor: string;
   receiptNumber?: string;
   status: 'confirmado' | 'pendente';
+  bankAccountId?: string; // ID da conta bancária ou caixa
+  eventId?: string; // ID do evento associado (se for do caixa do evento)
+  eventName?: string; // Nome do evento
+  registrationId?: string; // ID da inscrição vinculada
 }
 
 export type VolunteerStatus = 'confirmado' | 'pendente' | 'indisponivel';
@@ -418,6 +446,8 @@ export interface DatabaseSchema {
   pastoralAppointments: PastoralAppointment[];
   accessUsers: SystemAccessUser[];
   churchSettings?: ChurchSettings;
+  bankAccounts?: BankAccount[];
+  financialCategories?: FinancialCategory[];
 }
 
 
