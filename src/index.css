@@ -644,25 +644,87 @@ button, input, select, textarea {
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
-/* Print Styles for Official Church Financial Reports and Receipts */
+/* Print Styles for Official Church Financial Reports, Receipts and Patrimony */
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  .printable-area, .printable-area * {
-    visibility: visible;
-  }
-  .printable-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+  html, body {
+    visibility: visible !important;
     background: #ffffff !important;
     color: #000000 !important;
-    padding: 2cm;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
+
+  /* Oculta layout do painel, cabeçalho, navegação e botões */
+  #root > *:not(.modal-backdrop),
+  .admin-header,
+  .admin-sidebar,
+  .admin-main-wrapper > aside,
+  .admin-main-wrapper > header,
+  .navbar,
+  .btn,
+  button,
   .no-print {
     display: none !important;
+  }
+
+  /* Desativa limitações do modal durante a impressão */
+  .modal-backdrop {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    overflow: visible !important;
+    width: 100% !important;
+    height: auto !important;
+    inset: auto !important;
+  }
+
+  .modal-content {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    max-height: none !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    animation: none !important;
+    transform: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .modal-header,
+  .modal-footer {
+    display: none !important;
+  }
+
+  /* Garante visibilidade e posicionamento dos elementos imprimíveis */
+  .printable-area,
+  #printable-receipt,
+  #printable-asset-tag {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 720px !important;
+    margin: 0 auto !important;
+    padding: 1.5cm 1cm !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  .printable-area *,
+  #printable-receipt *,
+  #printable-asset-tag * {
+    visibility: visible !important;
   }
 }
 

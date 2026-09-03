@@ -426,6 +426,362 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
     onNotify('info', `Categoria "${cat.name}" removida com sucesso.`);
   };
 
+  // ========================================================
+  // MOTOR DE IMPRESSÃO EM ALTA DEFINIÇÃO PARA RECIBO & PDF
+  // ========================================================
+  const generateReceiptHtml = (tx: FinancialTransaction) => {
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Recibo Financeiro #${tx.receiptNumber || '0000'} - MACDP Central</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 1.5cm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      padding: 1.5cm;
+      line-height: 1.6;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .receipt-box {
+      max-width: 720px;
+      margin: 0 auto;
+      border: 2px solid #0f172a;
+      border-radius: 8px;
+      padding: 2.25rem 2.5rem;
+      background: #ffffff;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .church-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.5px;
+    }
+    .church-sub {
+      font-size: 0.78rem;
+      color: #475569;
+      margin-top: 0.35rem;
+    }
+    .rec-num-box {
+      text-align: right;
+    }
+    .rec-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #d97706;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+    }
+    .rec-num {
+      font-size: 1.25rem;
+      font-weight: 900;
+      font-family: monospace;
+      color: #0f172a;
+    }
+    .value-banner {
+      background: #f0fdf4;
+      border: 1.5px solid #16a34a;
+      border-radius: 6px;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .value-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #166534;
+      text-transform: uppercase;
+    }
+    .value-num {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: #15803d;
+    }
+    .content {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: #1e293b;
+      margin-bottom: 1.5rem;
+    }
+    .event-badge {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+      padding: 0.5rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+    .auth-block {
+      background: #f8fafc;
+      border: 1px dashed #94a3b8;
+      border-radius: 6px;
+      padding: 0.85rem 1.15rem;
+      margin: 1.75rem 0;
+      font-size: 0.78rem;
+    }
+    .auth-top {
+      display: flex;
+      justify-content: space-between;
+      font-family: monospace;
+      font-weight: 700;
+      color: #334155;
+    }
+    .auth-bottom {
+      color: #64748b;
+      font-size: 0.72rem;
+      margin-top: 0.25rem;
+    }
+    .signatures {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 3.5rem;
+      padding-top: 1rem;
+    }
+    .date-place {
+      font-size: 0.85rem;
+      color: #475569;
+    }
+    .sign-box {
+      text-align: center;
+      width: 230px;
+      border-top: 1.5px solid #0f172a;
+      padding-top: 0.4rem;
+    }
+    .sign-title {
+      font-size: 0.825rem;
+      font-weight: 700;
+      display: block;
+      color: #0f172a;
+    }
+    .sign-sub {
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="receipt-box">
+    <div class="header">
+      <div>
+        <h3 class="church-name">MINISTÉRIO APOSTÓLICO CAÇADORES DA PRESENÇA (MACDP)</h3>
+        <p class="church-sub">Rua Lagoa Grande, 382 - Canaranas, Manaus/AM • Tel/Pix: (92) 99127-9663</p>
+      </div>
+      <div class="rec-num-box">
+        <span class="rec-label">RECIBO Nº</span>
+        <strong class="rec-num">${tx.receiptNumber || '0000'}</strong>
+      </div>
+    </div>
+
+    <div class="value-banner">
+      <span class="value-title">Valor do Recebimento</span>
+      <span class="value-num">${formatCurrency(tx.amount)}</span>
+    </div>
+
+    <p class="content">
+      Recebemos de <strong>${tx.memberOrVendor}</strong> a importância de 
+      <strong style="color: #059669;">${formatCurrency(tx.amount)}</strong>, 
+      referente a <strong>${tx.category} (${tx.description})</strong>, 
+      efetuada via <strong>${tx.paymentMethod.toUpperCase()}</strong> na data de 
+      <strong>${formatDate(tx.date)}</strong>.
+    </p>
+
+    ${tx.eventName ? `
+      <div class="event-badge">
+        🎪 <strong>Evento Vinculado:</strong> ${tx.eventName}
+      </div>
+    ` : ''}
+
+    <div class="auth-block">
+      <div class="auth-top">
+        <span>Código de Autenticação Digital:</span>
+        <span>SHA256-${Math.random().toString(36).substring(2, 12).toUpperCase()}</span>
+      </div>
+      <div class="auth-bottom">
+        Documento emitido para fins de comprovação eclesiástica perante a tesouraria.
+      </div>
+    </div>
+
+    <div class="signatures">
+      <div class="date-place">
+        Manaus - AM, ${formatDate(tx.date)}
+      </div>
+      <div class="sign-box">
+        <strong class="sign-title">Diretoria de Tesouraria</strong>
+        <span class="sign-sub">MACDP Central</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+  };
+
+  const handlePrintReceipt = (tx: FinancialTransaction) => {
+    onNotify('info', 'Gerando pré-visualização do recibo em PDF...');
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    doc.open();
+    doc.write(generateReceiptHtml(tx));
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 2500);
+    }, 250);
+  };
+
+  const handleOpenReceiptInNewTab = (tx: FinancialTransaction) => {
+    const win = window.open('', '_blank');
+    if (!win) {
+      onNotify('error', 'Por favor, permita pop-ups para visualizar o recibo em uma nova guia.');
+      return;
+    }
+    win.document.open();
+    win.document.write(generateReceiptHtml(tx));
+    win.document.close();
+  };
+
+  const handlePrintFinancialReport = () => {
+    onNotify('info', 'Gerando pré-visualização do demonstrativo financeiro em PDF...');
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    const reportHtml = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Demonstrativo Financeiro Consolidado - MACDP</title>
+  <style>
+    @page { size: A4 portrait; margin: 1.5cm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      padding: 1.5cm;
+      line-height: 1.6;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .report-box { max-width: 720px; margin: 0 auto; }
+    .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
+    .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .kpi-card { padding: 1.25rem; border-radius: 8px; border: 1px solid #cbd5e1; }
+    .account-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .account-table th, .account-table td { padding: 0.65rem 0.85rem; border-bottom: 1px solid #e2e8f0; text-align: left; }
+  </style>
+</head>
+<body>
+  <div class="report-box">
+    <div class="header">
+      <h2 style="font-size: 1.35rem; font-weight: 800;">MINISTÉRIO APOSTÓLICO CAÇADORES DA PRESENÇA</h2>
+      <h3 style="font-size: 1.1rem; color: #475569; margin-top: 0.25rem;">Demonstrativo Financeiro Consolidado — Exercício 2026</h3>
+      <p style="font-size: 0.78rem; color: #64748b; margin-top: 0.25rem;">Manaus/AM • Emitido em ${new Date().toLocaleDateString('pt-BR')}</p>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card" style="background: #f0fdf4; border-color: #22c55e;">
+        <span style="color: #166534; font-size: 0.825rem; font-weight: 700; text-transform: uppercase;">Total de Entradas</span>
+        <h3 style="font-size: 1.6rem; color: #15803d; font-weight: 900; margin-top: 0.35rem;">${formatCurrency(totalInflow)}</h3>
+      </div>
+      <div class="kpi-card" style="background: #fef2f2; border-color: #ef4444;">
+        <span style="color: #991b1b; font-size: 0.825rem; font-weight: 700; text-transform: uppercase;">Total de Saídas</span>
+        <h3 style="font-size: 1.6rem; color: #b91c1c; font-weight: 900; margin-top: 0.35rem;">${formatCurrency(totalOutflow)}</h3>
+      </div>
+    </div>
+
+    <h4 style="font-size: 1rem; font-weight: 800; margin: 1.5rem 0 0.5rem 0;">Saldos por Conta Bancária:</h4>
+    <table class="account-table">
+      <thead>
+        <tr style="background: #f8fafc; font-size: 0.8rem;">
+          <th>CONTA / CAIXA</th>
+          <th>BANCO / TIPO</th>
+          <th style="text-align: right;">SALDO CONCILIADO</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${bankAccounts.map((acc) => {
+          const bal = getAccountLiveBalance(acc);
+          return `<tr>
+            <td><strong>${acc.name}</strong></td>
+            <td>${acc.bankName} (${acc.accountType})</td>
+            <td style="text-align: right; font-weight: 800; color: ${bal >= 0 ? '#15803d' : '#b91c1c'};">${formatCurrency(bal)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>`;
+
+    doc.open();
+    doc.write(reportHtml);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 2500);
+    }, 250);
+  };
+
   return (
     <div className="animate-page-enter" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem', width: '100%', minHeight: '85vh', paddingBottom: '3rem' }}>
       {/* Module Title and Sub-menus */}
@@ -2155,6 +2511,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div
               id="printable-receipt"
+              className="printable-area"
               style={{
                 background: '#ffffff',
                 color: '#0f172a',
@@ -2250,7 +2607,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 onClick={() => setReceiptTx(null)}
@@ -2260,12 +2617,22 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={() => handleOpenReceiptInNewTab(receiptTx)}
+                className="btn btn-secondary"
+                style={{ gap: '0.4rem' }}
+                title="Visualizar em uma nova guia para salvar ou inspecionar"
+              >
+                <ExternalLink size={15} />
+                <span>Ver em Nova Guia</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePrintReceipt(receiptTx)}
                 className="btn btn-primary"
                 style={{ gap: '0.4rem' }}
               >
                 <Printer size={16} />
-                <span>Imprimir Recibo</span>
+                <span>Imprimir / Salvar PDF</span>
               </button>
             </div>
           </div>
@@ -2321,7 +2688,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             <button onClick={() => setIsReportModalOpen(false)} className="btn btn-secondary">
               Fechar
             </button>
-            <button onClick={() => window.print()} className="btn btn-primary" style={{ gap: '0.4rem' }}>
+            <button onClick={handlePrintFinancialReport} className="btn btn-primary" style={{ gap: '0.4rem' }}>
               <Printer size={16} />
               <span>Imprimir Relatório</span>
             </button>
