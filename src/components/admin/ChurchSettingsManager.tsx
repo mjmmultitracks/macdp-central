@@ -187,13 +187,15 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
       <div
         className="card"
         style={{
-          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%)',
-          border: '1px solid rgba(245, 158, 11, 0.25)',
+          background: 'var(--bg-secondary)',
+          backgroundImage: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)',
+          border: '1px solid var(--accent-gold-glow)',
+          borderLeft: '4px solid var(--accent-gold)',
           borderRadius: 'var(--radius-lg)',
           padding: '1.5rem',
           position: 'relative',
           overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          boxShadow: 'var(--shadow-md)',
         }}
       >
         <div
@@ -201,16 +203,16 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
             position: 'absolute',
             top: '-30px',
             right: '-30px',
-            width: '120px',
-            height: '120px',
-            background: 'radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%)',
+            width: '140px',
+            height: '140px',
+            background: 'radial-gradient(circle, var(--accent-gold-glow) 0%, transparent 70%)',
             pointerEvents: 'none',
           }}
         />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '1rem', color: 'var(--accent-gold)' }}>
-          <Sparkles size={15} />
-          <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '1.15rem', color: 'var(--accent-gold)' }}>
+          <Sparkles size={16} />
+          <span style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
             Pré-visualização em Tempo Real da Marca
           </span>
         </div>
@@ -228,16 +230,16 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
             {/* Logo box */}
             <div
               style={{
-                width: '72px',
-                height: '72px',
+                width: '74px',
+                height: '74px',
                 borderRadius: '16px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '2px solid rgba(245, 158, 11, 0.4)',
+                background: 'var(--bg-elevated)',
+                border: '2px solid var(--accent-gold-glow)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '6px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+                boxShadow: 'var(--shadow-sm)',
                 overflow: 'hidden',
                 flexShrink: 0,
               }}
@@ -309,17 +311,18 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
               gap: '0.4rem',
               fontSize: '0.82rem',
               color: 'var(--text-secondary)',
-              background: 'rgba(0, 0, 0, 0.25)',
+              background: 'var(--bg-tertiary)',
               padding: '0.85rem 1.15rem',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border-subtle)',
               minWidth: '240px',
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
             {form.pastorPresident && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                 <span style={{ color: 'var(--accent-gold)' }}>👑</span>
-                <span>{form.pastorPresident}</span>
+                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{form.pastorPresident}</span>
               </div>
             )}
             {form.phone && (
@@ -455,8 +458,9 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                   width: '90px',
                   height: '90px',
                   borderRadius: '16px',
-                  background: 'rgba(0, 0, 0, 0.4)',
+                  background: 'var(--bg-elevated)',
                   border: '1px solid var(--border-medium)',
+                  boxShadow: 'var(--shadow-sm)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
