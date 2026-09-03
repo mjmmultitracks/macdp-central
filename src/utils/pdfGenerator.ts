@@ -91,8 +91,12 @@ export async function generateEventVoucherPDF(params: GenerateVoucherPDFParams):
   doc.text(registration.id || `EVT-${Date.now()}`, 15, 67);
 
   // Status Badge on the right
-  const isFree = event.isFree;
+  const isFree = event.isFree && !registration.includeShirt;
   const isPending = registration.paymentStatus === 'pending' || registration.paymentMethod === 'manual';
+  const totalPaid = registration.totalPaid !== undefined
+    ? registration.totalPaid
+    : (event.isFree ? 0 : (event.price || 0)) + (registration.includeShirt ? (registration.shirtPrice || event.shirtPrice || 0) : 0);
+
   if (isFree) {
     doc.setFillColor(16, 185, 129);
     doc.roundedRect(120, 57, 75, 12, 2, 2, 'F');
@@ -106,14 +110,14 @@ export async function generateEventVoucherPDF(params: GenerateVoucherPDFParams):
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.text(`PAGAMENTO PENDENTE (MANUAL) • R$ ${event.price?.toFixed(2)}`, 145, 64.5, { align: 'center' });
+    doc.text(`PAGAMENTO PENDENTE (MANUAL) • R$ ${totalPaid.toFixed(2)}`, 145, 64.5, { align: 'center' });
   } else {
     doc.setFillColor(16, 185, 129);
     doc.roundedRect(110, 57, 85, 12, 2, 2, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
-    doc.text(`PAGAMENTO CONFIRMADO • R$ ${event.price?.toFixed(2)}`, 152.5, 64.5, { align: 'center' });
+    doc.text(`PAGAMENTO CONFIRMADO • R$ ${totalPaid.toFixed(2)}`, 152.5, 64.5, { align: 'center' });
   }
 
   // 3. Left Column: Event & Participant Details (w: 125)
@@ -215,6 +219,15 @@ export async function generateEventVoucherPDF(params: GenerateVoucherPDFParams):
   doc.setFont('helvetica', 'bold');
   doc.text(participantEmail || 'Não informado', 30, currentY);
   currentY += 7;
+
+  if (registration.includeShirt) {
+    doc.setTextColor(217, 119, 6);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Camisa Oficial:', 16, currentY);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`Sim (Tam: ${registration.shirtSize || 'M'}) • R$ ${(registration.shirtPrice || event.shirtPrice || 0).toFixed(2)}`, 42, currentY);
+    currentY += 6;
+  }
 
   // Custom Answers Section
   if (customAnswers && Object.keys(customAnswers).length > 0 && event.customQuestions) {
@@ -407,7 +420,7 @@ export function generateEventRegistrationsListPDF(event: ChurchEvent): void {
     doc.setTextColor(71, 85, 105);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    const dateLocText = `Data: ${formatEventDateRange(event.date, event.endDate)} às ${event.time}  |  Local: ${event.location}${event.roomReserved ? ` (${event.roomReserved})` : ''}  |  Entrada: ${event.isFree ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}`;
+    const dateLocText = `Data: ${formatEventDateRange(event.date, event.endDate)} às ${event.time}  |  Local: ${event.location}${event.roomReserved ? ` (${event.roomReserved})` : ''}  |  Entrada: ${event.isFree ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}${event.hasShirt && event.shirtPrice ? `  |  Camisa: R$ ${event.shirtPrice.toFixed(2)}` : ''}`;
     doc.text(dateLocText, margin + 5, 47);
 
     // Summary stats on right
@@ -527,8 +540,11 @@ export function generateEventRegistrationsListPDF(event: ChurchEvent): void {
         doc.text('—', colX.age + 2, currentY + 6.2);
       }
 
-      // 5. Custom Answers
+      // 5. Custom Answers & Shirt
       const answersList: string[] = [];
+      if (reg.includeShirt) {
+        answersList.push(`Camisa: Tam ${reg.shirtSize || 'M'}`);
+      }
       if (reg.customAnswers) {
         for (const [k, v] of Object.entries(reg.customAnswers)) {
           const qFound = event.customQuestions?.find((q) => q.id === k);

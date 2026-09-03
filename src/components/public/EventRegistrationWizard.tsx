@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ChurchEvent, EventRegistration } from '../../types';
 import { addEventRegistration } from '../../services/db';
-import { formatDate, calculateAge, formatEventDateRange } from '../../utils/formatters';
 import {
   CheckCircle2,
   Calendar,
@@ -23,7 +22,9 @@ import {
   Download,
   FileText,
   Eye,
+  Shirt,
 } from 'lucide-react';
+import { formatCurrency, formatDate, calculateAge, formatEventDateRange } from '../../utils/formatters';
 import confetti from 'canvas-confetti';
 import { generateEventVoucherPDF } from '../../utils/pdfGenerator';
 import { sendEventConfirmationEmail, SentEmailRecord } from '../../services/emailService';
@@ -48,8 +49,10 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
 
-  // Step 2: Custom Answers (questionId -> answer)
+  // Step 2: Custom Answers & Camisa Oficial
   const [customAnswers, setCustomAnswers] = useState<Record<string, any>>({});
+  const [includeShirt, setIncludeShirt] = useState(false);
+  const [shirtSize, setShirtSize] = useState('M');
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'manual'>('pix');
 
   // Step 4: Success Result
@@ -64,6 +67,15 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   const questions = event.customQuestions || [];
   const hasCustomQuestions = questions.length > 0;
 
+  const availableShirtSizes =
+    event.shirtSizes && event.shirtSizes.length > 0
+      ? event.shirtSizes
+      : ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'Infantil 8', 'Infantil 12'];
+
+  const eventTicketCost = event.isFree ? 0 : (event.price || 0);
+  const shirtCost = event.hasShirt && includeShirt && event.shirtPrice ? event.shirtPrice : 0;
+  const totalAmount = eventTicketCost + shirtCost;
+
   // Validation handlers
   const isValidEmail = (val: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
@@ -75,14 +87,18 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
     isValidEmail(email);
 
   const canProceedStep2 = () => {
-    if (!hasCustomQuestions) return true;
-    for (const q of questions) {
-      if (q.required) {
-        const ans = customAnswers[q.id];
-        if (!ans || (Array.isArray(ans) && ans.length === 0) || String(ans).trim() === '') {
-          return false;
+    if (hasCustomQuestions) {
+      for (const q of questions) {
+        if (q.required) {
+          const ans = customAnswers[q.id];
+          if (!ans || (Array.isArray(ans) && ans.length === 0) || String(ans).trim() === '') {
+            return false;
+          }
         }
       }
+    }
+    if (event.hasShirt && includeShirt && !shirtSize) {
+      return false;
     }
     return true;
   };
@@ -102,15 +118,19 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
 
   const handleFinalSubmit = async () => {
     const finalEmail = email.trim();
-    const isManual = !event.isFree && paymentMethod === 'manual';
+    const isManual = totalAmount > 0 && paymentMethod === 'manual';
     const reg = addEventRegistration(event.id, {
       name: name.trim(),
       phone: phone.trim(),
       email: finalEmail,
-      paymentMethod: event.isFree ? 'free' : paymentMethod,
-      paymentStatus: event.isFree ? 'free' : isManual ? 'pending' : 'confirmed',
+      paymentMethod: totalAmount === 0 ? 'free' : paymentMethod,
+      paymentStatus: totalAmount === 0 ? 'free' : isManual ? 'pending' : 'confirmed',
       paymentNotes: isManual ? 'Pagamento manual presencial / a combinar com secretaria' : undefined,
       customAnswers,
+      includeShirt,
+      shirtSize: includeShirt ? shirtSize : undefined,
+      shirtPrice: includeShirt ? event.shirtPrice : undefined,
+      totalPaid: totalAmount,
     });
 
     if (reg) {
@@ -162,7 +182,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
     }
   };
 
-  const whatsAppVoucherText = `Graça e Paz! Minha inscrição na *${event.title}* no MACDP foi confirmada com sucesso! 🏛️✨\n\n🎟️ *Comprovante de Inscrição:* ${confirmedRegistration?.id || ''}\n👤 *Participante:* ${name}\n📅 *Data:* ${formatEventDateRange(event.date, event.endDate)} às ${event.time}\n📍 *Local:* ${event.location}\n\nNos vemos lá na Presença de Deus!`;
+  const whatsAppVoucherText = `Graça e Paz! Minha inscrição na *${event.title}* no MACDP foi confirmada com sucesso! 🏛️✨\n\n🎟️ *Comprovante de Inscrição:* ${confirmedRegistration?.id || ''}\n👤 *Participante:* ${name}\n📅 *Data:* ${formatEventDateRange(event.date, event.endDate)} às ${event.time}\n📍 *Local:* ${event.location}${includeShirt ? `\n👕 *Camisa Oficial:* Sim (Tamanho: ${shirtSize})` : ''}\n💰 *Valor Total:* ${totalAmount > 0 ? `R$ ${totalAmount.toFixed(2)}` : 'Gratuito'}\n\nNos vemos lá na Presença de Deus!`;
 
   return (
     <div
@@ -554,7 +574,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                     ))}
                   </div>
                 </>
-              ) : (
+              ) : !event.hasShirt ? (
                 <div
                   style={{
                     background: 'var(--bg-tertiary)',
@@ -568,6 +588,133 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                   <p style={{ margin: 0 }}>
                     Este evento não requer perguntas adicionais! Você já pode avançar para a confirmação final da vaga.
                   </p>
+                </div>
+              ) : null}
+
+              {/* ==================== CARD DE VENDA DE CAMISA OFICIAL ==================== */}
+              {event.hasShirt && event.shirtPrice && (
+                <div
+                  style={{
+                    background: includeShirt ? 'rgba(245, 158, 11, 0.09)' : 'var(--bg-tertiary)',
+                    border: `1.5px solid ${includeShirt ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
+                    borderRadius: 'var(--radius-lg)',
+                    padding: '1.25rem 1.4rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                    transition: 'all 0.2s ease',
+                    boxShadow: includeShirt ? '0 4px 20px rgba(245, 158, 11, 0.15)' : 'var(--shadow-sm)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'center' }}>
+                      <div
+                        style={{
+                          width: '46px',
+                          height: '46px',
+                          borderRadius: '12px',
+                          background: 'rgba(245, 158, 11, 0.18)',
+                          color: 'var(--accent-gold)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '1px solid rgba(245, 158, 11, 0.35)',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Shirt size={24} />
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
+                            Camisa Oficial do Evento
+                          </span>
+                          <span
+                            style={{
+                              background: 'var(--accent-gold)',
+                              color: '#0f172a',
+                              fontWeight: 900,
+                              fontSize: '0.78rem',
+                              padding: '0.2rem 0.6rem',
+                              borderRadius: 'var(--radius-full)',
+                            }}
+                          >
+                            + {formatCurrency(event.shirtPrice)}
+                          </span>
+                        </div>
+                        <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                          Adquira a camiseta comemorativa oficial e retire na recepção no dia do credenciamento!
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIncludeShirt(!includeShirt)}
+                      className={`btn ${includeShirt ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{
+                        padding: '0.55rem 1.15rem',
+                        fontSize: '0.86rem',
+                        fontWeight: 800,
+                        gap: '0.45rem',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      {includeShirt ? (
+                        <>
+                          <CheckCircle2 size={16} />
+                          <span>Camisa Inclusa</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Quero Adicionar (+ {formatCurrency(event.shirtPrice)})</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Seletor de Tamanhos quando a camisa for incluída */}
+                  {includeShirt && (
+                    <div
+                      style={{
+                        borderTop: '1px solid rgba(245, 158, 11, 0.25)',
+                        paddingTop: '0.9rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.65rem',
+                      }}
+                    >
+                      <label style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span>Escolha o seu tamanho:</span>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: 900 }}>({shirtSize})</span>
+                      </label>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {availableShirtSizes.map((sz) => (
+                          <button
+                            key={sz}
+                            type="button"
+                            onClick={() => setShirtSize(sz)}
+                            style={{
+                              padding: '0.45rem 0.95rem',
+                              borderRadius: '6px',
+                              fontWeight: 800,
+                              fontSize: '0.85rem',
+                              border: shirtSize === sz ? '2px solid var(--accent-gold)' : '1px solid var(--border-medium)',
+                              background: shirtSize === sz ? 'var(--accent-gold)' : 'var(--bg-secondary)',
+                              color: shirtSize === sz ? '#0f172a' : 'var(--text-primary)',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                            }}
+                          >
+                            {sz}
+                          </button>
+                        ))}
+                      </div>
+                      <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                        ✓ O valor de {formatCurrency(event.shirtPrice)} será somado ao valor total a ser pago.
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -664,26 +811,55 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                   </div>
                 )}
 
-                <div
-                  style={{
-                    borderTop: '1px solid var(--border-subtle)',
-                    paddingTop: '0.75rem',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <span style={{ fontWeight: 700 }}>Valor da Inscrição:</span>
-                  <span style={{ fontSize: '1.15rem', fontWeight: 900, color: event.isFree ? 'var(--status-success)' : 'var(--accent-gold)' }}>
-                    {event.isFree ? 'Gratuito' : `R$ ${event.price?.toFixed(2)}`}
-                  </span>
+                {/* Detalhamento de Valores */}
+                <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.88rem' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Ingresso / Vaga do Evento:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {event.isFree ? 'Gratuito (R$ 0,00)' : formatCurrency(event.price || 0)}
+                    </span>
+                  </div>
+
+                  {event.hasShirt && includeShirt && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.88rem' }}>
+                      <span style={{ color: 'var(--accent-gold)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Shirt size={15} /> Camisa Oficial (Tam: {shirtSize}):
+                      </span>
+                      <span style={{ fontWeight: 700, color: 'var(--accent-gold)' }}>
+                        + {formatCurrency(event.shirtPrice || 0)}
+                      </span>
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      borderTop: '1px dashed var(--border-subtle)',
+                      paddingTop: '0.65rem',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
+                      VALOR TOTAL A PAGAR:
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '1.35rem',
+                        fontWeight: 900,
+                        color: totalAmount === 0 ? 'var(--status-success)' : 'var(--accent-gold)',
+                      }}
+                    >
+                      {totalAmount === 0 ? 'Gratuito' : formatCurrency(totalAmount)}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Payment Method Selector for Paid Events */}
-                {!event.isFree && (
+                {/* Payment Method Selector quando houver valor a ser cobrado */}
+                {totalAmount > 0 && (
                   <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.9rem' }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-gold)', display: 'block', marginBottom: '0.65rem' }}>
-                      Forma de Pagamento:
+                      Forma de Pagamento (Total: {formatCurrency(totalAmount)}):
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                       {/* PIX Option */}
@@ -742,7 +918,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                           lineHeight: 1.45,
                         }}
                       >
-                        ⏳ <strong>Atenção:</strong> Ao optar pelo Pagamento Manual, sua inscrição ficará registrada com status <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato com você via WhatsApp (<strong>{phone}</strong>) para orientar sobre o pagamento e validar seu credenciamento.
+                        ⏳ <strong>Atenção:</strong> Ao optar pelo Pagamento Manual, sua inscrição ficará registrada com status <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato com você via WhatsApp (<strong>{phone}</strong>) para orientar sobre o pagamento de <strong>{formatCurrency(totalAmount)}</strong> e validar seu credenciamento.
                       </div>
                     )}
                   </div>
@@ -766,7 +942,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                   style={{ gap: '0.45rem', padding: '0.65rem 1.5rem', fontWeight: 900 }}
                 >
                   <CheckCircle2 size={18} />
-                  <span>{paymentMethod === 'manual' && !event.isFree ? 'Concluir Inscrição (Pagamento Manual)' : 'Confirmar Minha Vaga'}</span>
+                  <span>{paymentMethod === 'manual' && totalAmount > 0 ? 'Concluir Inscrição (Pagamento Manual)' : 'Confirmar Minha Vaga'}</span>
                 </button>
               </div>
             </div>
@@ -1006,6 +1182,17 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                   <div style={{ color: 'var(--text-secondary)' }}>
                     {name}
                   </div>
+                  {confirmedRegistration?.includeShirt && (
+                    <div style={{ color: 'var(--accent-gold)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Shirt size={14} />
+                      <span>Camisa Oficial: Tam {confirmedRegistration.shirtSize || 'M'}</span>
+                    </div>
+                  )}
+                  {confirmedRegistration?.totalPaid !== undefined && confirmedRegistration.totalPaid > 0 && (
+                    <div style={{ color: 'var(--text-primary)', fontWeight: 800 }}>
+                      Total Pago: {formatCurrency(confirmedRegistration.totalPaid)}
+                    </div>
+                  )}
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     Apresente este QR Code ou o PDF na portaria para entrada no templo.
                   </div>

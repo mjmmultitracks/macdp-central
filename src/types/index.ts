@@ -168,6 +168,10 @@ export interface EventRegistration {
   paymentStatus?: 'confirmed' | 'pending' | 'free';
   paymentNotes?: string;
   customAnswers?: Record<string, string | string[]>;
+  includeShirt?: boolean;
+  shirtSize?: string;
+  shirtPrice?: number;
+  totalPaid?: number;
 }
 
 export interface EventLocationDetails {
@@ -196,6 +200,9 @@ export interface ChurchEvent {
   imageUrl: string;
   isFree: boolean;
   price?: number;
+  hasShirt?: boolean; // Opção de venda de camisa oficial
+  shirtPrice?: number; // Valor unitário da camisa (R$)
+  shirtSizes?: string[]; // Tamanhos disponíveis (ex: ['PP', 'P', 'M', 'G', 'GG', 'XGG'])
   totalCapacity: number;
   registeredCount: number;
   speakerName?: string;

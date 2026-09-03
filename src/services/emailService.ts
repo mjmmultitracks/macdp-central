@@ -26,14 +26,18 @@ export function sendEventConfirmationEmail(params: {
 }): SentEmailRecord {
   const { event, registration, participantName, participantEmail, participantPhone, customAnswers } = params;
 
-  const isFree = event.isFree;
+  const isFree = event.isFree && !registration.includeShirt;
   const isPending = registration.paymentStatus === 'pending' || registration.paymentMethod === 'manual';
   const paymentStatusText = isFree
     ? 'Inscrição Gratuita Confirmada'
     : isPending
     ? 'Inscrição Pré-Registrada • Pagamento Pendente (Manual)'
     : 'Pagamento Confirmado com Sucesso';
-  const paymentAmountText = isFree ? 'Gratuito (R$ 0,00)' : `R$ ${event.price?.toFixed(2)}`;
+
+  const calculatedTotal = registration.totalPaid !== undefined
+    ? registration.totalPaid
+    : (event.isFree ? 0 : (event.price || 0)) + (registration.includeShirt ? (registration.shirtPrice || event.shirtPrice || 0) : 0);
+  const paymentAmountText = calculatedTotal === 0 ? 'Gratuito (R$ 0,00)' : `R$ ${calculatedTotal.toFixed(2)}`;
 
   const pendingNoticeHtml = isPending
     ? `
@@ -148,6 +152,12 @@ export function sendEventConfirmationEmail(params: {
         <tr>
           <td style="padding: 8px 0; color: #64748b;"><strong>Preletores:</strong></td>
           <td style="padding: 8px 0; color: #0f172a; font-weight: 600;">${event.speakerName}</td>
+        </tr>
+        ` : ''}
+        ${registration.includeShirt ? `
+        <tr>
+          <td style="padding: 8px 0; color: #d97706;"><strong>Camisa Oficial:</strong></td>
+          <td style="padding: 8px 0; color: #b45309; font-weight: bold;">Sim • Tamanho ${registration.shirtSize || 'M'} (+ R$ ${(registration.shirtPrice || event.shirtPrice || 0).toFixed(2)})</td>
         </tr>
         ` : ''}
         <tr>

@@ -43,6 +43,7 @@ import {
   ArrowLeft,
   Eye,
   CalendarRange,
+  Shirt,
 } from 'lucide-react';
 
 interface RoomItem {
@@ -86,6 +87,9 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
   const [imageUrl, setImageUrl] = useState('/images/hero.jpg');
   const [isFree, setIsFree] = useState(true);
   const [price, setPrice] = useState<number>(0);
+  const [hasShirt, setHasShirt] = useState(false);
+  const [shirtPrice, setShirtPrice] = useState<number>(50);
+  const [shirtSizesStr, setShirtSizesStr] = useState('PP, P, M, G, GG, XGG, Infantil 8, Infantil 12');
   const [totalCapacity, setTotalCapacity] = useState<number>(300);
   const [speakerName, setSpeakerName] = useState('');
   const [detailedSchedule, setDetailedSchedule] = useState('');
@@ -143,6 +147,9 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setImageUrl('/images/hero.jpg');
     setIsFree(true);
     setPrice(0);
+    setHasShirt(false);
+    setShirtPrice(50);
+    setShirtSizesStr('PP, P, M, G, GG, XGG, Infantil 8, Infantil 12');
     setTotalCapacity(300);
     setSpeakerName('Pr. Oziel Gomes Maduro & Preletores Convidados');
     setDetailedSchedule('');
@@ -176,6 +183,9 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setImageUrl(evt.imageUrl);
     setIsFree(evt.isFree);
     setPrice(evt.price || 0);
+    setHasShirt(evt.hasShirt || false);
+    setShirtPrice(evt.shirtPrice || 50);
+    setShirtSizesStr((evt.shirtSizes && evt.shirtSizes.length > 0 ? evt.shirtSizes : ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'Infantil 8', 'Infantil 12']).join(', '));
     setTotalCapacity(evt.totalCapacity);
     setSpeakerName(evt.speakerName || '');
     setDetailedSchedule(evt.detailedSchedule || '');
@@ -338,6 +348,9 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         imageUrl,
         isFree,
         price: isFree ? 0 : Number(price),
+        hasShirt: !isFree && hasShirt,
+        shirtPrice: !isFree && hasShirt ? Number(shirtPrice) || 0 : undefined,
+        shirtSizes: !isFree && hasShirt ? shirtSizesStr.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
         totalCapacity: Number(totalCapacity) || 100,
         registeredCount: editingEvent.registrations.length,
         speakerName,
@@ -359,6 +372,9 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         imageUrl,
         isFree,
         price: isFree ? 0 : Number(price),
+        hasShirt: !isFree && hasShirt,
+        shirtPrice: !isFree && hasShirt ? Number(shirtPrice) || 0 : undefined,
+        shirtSizes: !isFree && hasShirt ? shirtSizesStr.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
         totalCapacity: Number(totalCapacity) || 100,
         speakerName,
         detailedSchedule,
@@ -751,6 +767,33 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
             </div>
           )}
 
+          {/* Card 5: Camisas Vendidas */}
+          {selectedEventForCheckin.hasShirt && (
+            <div
+              style={{
+                background: 'var(--bg-secondary)',
+                borderRadius: 'var(--radius-xl)',
+                padding: '1.25rem 1.4rem',
+                border: '1.5px solid rgba(245, 158, 11, 0.4)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', textTransform: 'uppercase', fontWeight: 800 }}>
+                👕 Camisas Vendidas
+              </div>
+              <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', marginTop: '0.3rem' }}>
+                {selectedEventForCheckin.registrations.filter((r) => r.includeShirt).length}
+                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', marginLeft: '0.45rem' }}>
+                  ({formatCurrency(
+                    selectedEventForCheckin.registrations
+                      .filter((r) => r.includeShirt)
+                      .reduce((acc, r) => acc + (r.shirtPrice || selectedEventForCheckin.shirtPrice || 0), 0)
+                  )})
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Card 5: Média de Idade */}
           {avgAge !== null && (
             <div
@@ -1135,30 +1178,66 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                         )}
                       </div>
 
-                      {/* Status de Pagamento & Ações */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        {selectedEventForCheckin.isFree ? (
-                          <span className="badge badge-success" style={{ fontSize: '0.88rem', padding: '0.45rem 0.9rem' }}>
-                            Entrada Gratuita
-                          </span>
-                        ) : isPendingPayment ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                        {/* Status de Pagamento & Camisa */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                          {reg.includeShirt && (
                             <span
                               style={{
-                                background: 'rgba(245, 158, 11, 0.18)',
+                                background: 'rgba(245, 158, 11, 0.14)',
                                 color: 'var(--accent-gold)',
-                                border: '1px solid var(--accent-gold)',
+                                border: '1px solid rgba(245, 158, 11, 0.4)',
                                 borderRadius: '6px',
                                 padding: '0.45rem 0.85rem',
-                                fontSize: '0.88rem',
+                                fontSize: '0.85rem',
                                 fontWeight: 800,
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '0.4rem',
                               }}
                             >
-                              <Clock size={16} /> Pagamento Pendente (Manual)
+                              <Shirt size={15} />
+                              <span>Camisa: Tam {reg.shirtSize || 'M'} ({formatCurrency(reg.shirtPrice || selectedEventForCheckin.shirtPrice || 0)})</span>
                             </span>
+                          )}
+
+                          {!selectedEventForCheckin.isFree && (
+                            <span
+                              style={{
+                                fontSize: '0.88rem',
+                                fontWeight: 800,
+                                color: 'var(--text-primary)',
+                                background: 'var(--bg-tertiary)',
+                                padding: '0.45rem 0.75rem',
+                                borderRadius: '6px',
+                                border: '1px solid var(--border-subtle)',
+                              }}
+                            >
+                              Total: {formatCurrency(reg.totalPaid || ((selectedEventForCheckin.price || 0) + (reg.includeShirt ? (reg.shirtPrice || selectedEventForCheckin.shirtPrice || 0) : 0)))}
+                            </span>
+                          )}
+
+                          {selectedEventForCheckin.isFree ? (
+                            <span className="badge badge-success" style={{ fontSize: '0.88rem', padding: '0.45rem 0.9rem' }}>
+                              Entrada Gratuita
+                            </span>
+                          ) : isPendingPayment ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                              <span
+                                style={{
+                                  background: 'rgba(245, 158, 11, 0.18)',
+                                  color: 'var(--accent-gold)',
+                                  border: '1px solid var(--accent-gold)',
+                                  borderRadius: '6px',
+                                  padding: '0.45rem 0.85rem',
+                                  fontSize: '0.88rem',
+                                  fontWeight: 800,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.4rem',
+                                }}
+                              >
+                                <Clock size={16} /> Pagamento Pendente (Manual)
+                              </span>
 
                             <button
                               type="button"
@@ -1796,6 +1875,25 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                       <h4 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
                         {evt.title}
                       </h4>
+                      {evt.hasShirt && evt.shirtPrice && (
+                        <span
+                          style={{
+                            fontSize: '0.7rem',
+                            background: 'rgba(245, 158, 11, 0.12)',
+                            color: 'var(--accent-gold)',
+                            padding: '0.15rem 0.5rem',
+                            borderRadius: '4px',
+                            fontWeight: 700,
+                            border: '1px solid rgba(245, 158, 11, 0.25)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                          }}
+                        >
+                          <Shirt size={12} />
+                          <span>Camisa: {formatCurrency(evt.shirtPrice)}</span>
+                        </span>
+                      )}
                       {evt.customQuestions && evt.customQuestions.length > 0 && (
                         <span
                           style={{
@@ -2345,7 +2443,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
 
             {!isFree && (
               <div className="form-group">
-                <label className="form-label">Valor (R$) *</label>
+                <label className="form-label">Valor da Inscrição (R$) *</label>
                 <input
                   type="number"
                   min={1}
@@ -2357,6 +2455,79 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
               </div>
             )}
           </div>
+
+          {/* Opção de Camisa para Eventos Pagos */}
+          {!isFree && (
+            <div
+              style={{
+                background: 'var(--bg-tertiary)',
+                border: '1px solid var(--border-medium)',
+                borderRadius: 'var(--radius-md)',
+                padding: '1.15rem',
+                marginBottom: '1.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.85rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <Shirt size={20} color="var(--accent-gold)" />
+                  <div>
+                    <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+                      Venda de Camisa Oficial do Evento
+                    </span>
+                    <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                      Disponibilize a compra da camisa comemorativa na inscrição online. O valor será somado ao total da inscrição.
+                    </p>
+                  </div>
+                </div>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', userSelect: 'none' }}>
+                  <input
+                    type="checkbox"
+                    checked={hasShirt}
+                    onChange={(e) => setHasShirt(e.target.checked)}
+                    style={{ width: '18px', height: '18px', accentColor: 'var(--accent-gold)' }}
+                  />
+                  <span style={{ fontWeight: 700, fontSize: '0.88rem', color: hasShirt ? 'var(--accent-gold)' : 'var(--text-secondary)' }}>
+                    {hasShirt ? 'Venda Ativada' : 'Sem Camisa'}
+                  </span>
+                </label>
+              </div>
+
+              {hasShirt && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.82rem' }}>
+                      Valor da Camisa (R$) *
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      step="0.01"
+                      required={hasShirt}
+                      className="form-input"
+                      placeholder="Ex: 50.00"
+                      value={shirtPrice}
+                      onChange={(e) => setShirtPrice(Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.82rem' }}>
+                      Tamanhos Disponíveis (separados por vírgula)
+                    </label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="PP, P, M, G, GG, XGG, Infantil"
+                      value={shirtSizesStr}
+                      onChange={(e) => setShirtSizesStr(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="form-group">
             <label className="form-label">Descrição do Evento *</label>

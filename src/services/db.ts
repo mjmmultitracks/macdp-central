@@ -509,6 +509,9 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       imageUrl: '/images/hero.jpg',
       isFree: false,
       price: 60.0,
+      hasShirt: true,
+      shirtPrice: 50.0,
+      shirtSizes: ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'Infantil 8', 'Infantil 12'],
       totalCapacity: 200,
       registeredCount: 0,
       speakerName: 'Pr. Oziel Gomes Maduro & Preletores Convidados',
@@ -1273,6 +1276,12 @@ export function getDatabase(): DatabaseSchema {
               e.description = 'Três dias inesquecíveis de louvor profético, ministração da Palavra e capacitação espiritual para toda a família na Chácara Paraiso Verde.';
               updatedEvts = true;
             }
+            if (e.hasShirt === undefined) {
+              e.hasShirt = true;
+              e.shirtPrice = 50.0;
+              e.shirtSizes = ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'Infantil 8', 'Infantil 12'];
+              updatedEvts = true;
+            }
           }
           if (initEvt.endDate && !e.endDate) {
             e.endDate = initEvt.endDate;
@@ -1472,12 +1481,20 @@ export function addEventRegistration(
     paymentStatus?: 'confirmed' | 'pending' | 'free';
     paymentNotes?: string;
     customAnswers?: Record<string, string | string[]>;
+    includeShirt?: boolean;
+    shirtSize?: string;
+    shirtPrice?: number;
+    totalPaid?: number;
   }
 ): EventRegistration | null {
   const db = getDatabase();
   const evt = db.events.find((e) => e.id === eventId);
   if (evt) {
     evt.registeredCount += 1;
+    const shirtCost = registration.includeShirt ? (registration.shirtPrice || evt.shirtPrice || 0) : 0;
+    const ticketCost = evt.isFree ? 0 : (evt.price || 0);
+    const calculatedTotal = registration.totalPaid !== undefined ? registration.totalPaid : (ticketCost + shirtCost);
+
     const newReg: EventRegistration = {
       id: `reg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       name: registration.name,
@@ -1485,10 +1502,14 @@ export function addEventRegistration(
       phone: registration.phone,
       checkedIn: false,
       registeredAt: new Date().toISOString().split('T')[0],
-      paymentMethod: registration.paymentMethod || (evt.isFree ? 'free' : 'pix'),
-      paymentStatus: registration.paymentStatus || (evt.isFree ? 'free' : 'confirmed'),
+      paymentMethod: registration.paymentMethod || (evt.isFree && !registration.includeShirt ? 'free' : 'pix'),
+      paymentStatus: registration.paymentStatus || (evt.isFree && !registration.includeShirt ? 'free' : 'confirmed'),
       paymentNotes: registration.paymentNotes,
       customAnswers: registration.customAnswers || {},
+      includeShirt: !!registration.includeShirt,
+      shirtSize: registration.includeShirt ? registration.shirtSize : undefined,
+      shirtPrice: registration.includeShirt ? shirtCost : undefined,
+      totalPaid: calculatedTotal,
     };
     evt.registrations.push(newReg);
     saveDatabase(db);

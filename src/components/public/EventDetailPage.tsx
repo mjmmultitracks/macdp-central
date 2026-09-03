@@ -19,6 +19,7 @@ import {
   Check,
   HelpCircle,
   Sparkles,
+  Shirt,
 } from 'lucide-react';
 import { getGoogleMapsEmbedUrl, getGoogleMapsDirectionsUrl } from '../../services/googleMapsService';
 
@@ -607,6 +608,26 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
                 <div style={{ fontSize: '2.2rem', fontWeight: 900, color: event.isFree ? 'var(--status-success)' : 'var(--accent-gold)', marginTop: '0.2rem' }}>
                   {event.isFree ? 'Entrada Gratuita' : `R$ ${event.price?.toFixed(2)}`}
                 </div>
+                {event.hasShirt && event.shirtPrice && (
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.45rem',
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.35)',
+                      borderRadius: '6px',
+                      padding: '0.35rem 0.65rem',
+                      fontSize: '0.78rem',
+                      color: 'var(--accent-gold)',
+                      fontWeight: 700,
+                      marginTop: '0.5rem',
+                    }}
+                  >
+                    <Shirt size={14} />
+                    <span>Camisa Oficial disponível por R$ {event.shirtPrice.toFixed(2)} (opcional na inscrição)</span>
+                  </div>
+                )}
               </div>
 
               {/* Barra de Progresso de Ocupação */}
