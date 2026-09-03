@@ -1793,7 +1793,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                   {/* Information Details */}
                   <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
-                      <h4 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>
+                      <h4 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
                         {evt.title}
                       </h4>
                       {evt.customQuestions && evt.customQuestions.length > 0 && (
