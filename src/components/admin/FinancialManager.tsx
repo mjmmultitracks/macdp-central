@@ -58,7 +58,6 @@ interface FinancialManagerProps {
   financialCategories?: FinancialCategory[];
   events?: ChurchEvent[];
   activeSubTab?: FinancialSubTab;
-  onSubTabChange?: (tab: FinancialSubTab) => void;
   onNotify: (type: 'success' | 'error' | 'info', text: string) => void;
 }
 
@@ -69,20 +68,9 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
   bankAccounts = [],
   financialCategories = [],
   events = [],
-  activeSubTab: activeSubTabExternal,
-  onSubTabChange,
+  activeSubTab = 'fluxo',
   onNotify,
 }) => {
-  // Sub-menu Navigation State (sincronizado com Dropdown da Sidebar e Abas)
-  const [internalSubTab, setInternalSubTab] = useState<FinancialSubTab>('fluxo');
-  const activeSubTab = activeSubTabExternal !== undefined ? activeSubTabExternal : internalSubTab;
-
-  const setActiveSubTab = (tab: FinancialSubTab) => {
-    setInternalSubTab(tab);
-    if (onSubTabChange) {
-      onSubTabChange(tab);
-    }
-  };
 
   // Filters for General Ledger (Fluxo)
   const [filterType, setFilterType] = useState<'todos' | 'entrada' | 'saida'>('todos');
@@ -816,10 +804,22 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
               </div>
               <div>
                 <h2 style={{ fontSize: '1.45rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-                  Gestão Financeira & Tesouraria
+                  {activeSubTab === 'contas'
+                    ? 'Contas Bancárias & Caixas'
+                    : activeSubTab === 'categorias'
+                    ? 'Plano de Contas / Categorias'
+                    : activeSubTab === 'eventos_caixa'
+                    ? 'Caixa dos Eventos'
+                    : 'Gestão Financeira & Tesouraria'}
                 </h2>
                 <span style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
-                  Controle de receitas, despesas, contas bancárias, plano de contas e caixa específico de eventos
+                  {activeSubTab === 'contas'
+                    ? `Gestão de contas correntes, caixas físicos e conciliação bancária (${bankAccounts.length} cadastradas)`
+                    : activeSubTab === 'categorias'
+                    ? `Centros de custos e categorias de receitas e despesas (${financialCategories.length} cadastradas)`
+                    : activeSubTab === 'eventos_caixa'
+                    ? `Controle financeiro isolado e arrecadação das inscrições e camisetas dos eventos`
+                    : 'Fluxo de caixa geral, entradas de dízimos/ofertas e saídas operacionais da igreja'}
                 </span>
               </div>
             </div>
@@ -844,109 +844,6 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
               <span>Novo Lançamento</span>
             </button>
           </div>
-        </div>
-
-        {/* Sub-menu Navigation Tabs */}
-        <div
-          className="scrollable-tabs-bar"
-          style={{
-            display: 'flex',
-            borderTop: '1px solid var(--border-subtle)',
-            paddingTop: '0.75rem',
-            gap: '0.5rem',
-            overflowX: 'auto',
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'none',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('fluxo')}
-            style={{
-              padding: '0.65rem 1.15rem',
-              background: activeSubTab === 'fluxo' ? 'var(--accent-gold-soft)' : 'transparent',
-              border: activeSubTab === 'fluxo' ? '1px solid var(--accent-gold)' : '1px solid transparent',
-              borderRadius: 'var(--radius-md)',
-              color: activeSubTab === 'fluxo' ? 'var(--accent-gold)' : 'var(--text-secondary)',
-              fontWeight: 700,
-              fontSize: '0.88rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            <FileText size={16} />
-            <span>Lançamentos & Fluxo Geral</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('contas')}
-            style={{
-              padding: '0.65rem 1.15rem',
-              background: activeSubTab === 'contas' ? 'var(--accent-gold-soft)' : 'transparent',
-              border: activeSubTab === 'contas' ? '1px solid var(--accent-gold)' : '1px solid transparent',
-              borderRadius: 'var(--radius-md)',
-              color: activeSubTab === 'contas' ? 'var(--accent-gold)' : 'var(--text-secondary)',
-              fontWeight: 700,
-              fontSize: '0.88rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            <Building size={16} />
-            <span>Contas Bancárias & Caixas ({bankAccounts.length})</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('categorias')}
-            style={{
-              padding: '0.65rem 1.15rem',
-              background: activeSubTab === 'categorias' ? 'var(--accent-gold-soft)' : 'transparent',
-              border: activeSubTab === 'categorias' ? '1px solid var(--accent-gold)' : '1px solid transparent',
-              borderRadius: 'var(--radius-md)',
-              color: activeSubTab === 'categorias' ? 'var(--accent-gold)' : 'var(--text-secondary)',
-              fontWeight: 700,
-              fontSize: '0.88rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            <Tag size={16} />
-            <span>Plano de Contas / Categorias ({financialCategories.length})</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('eventos_caixa')}
-            style={{
-              padding: '0.65rem 1.15rem',
-              background: activeSubTab === 'eventos_caixa' ? 'var(--accent-gold-soft)' : 'transparent',
-              border: activeSubTab === 'eventos_caixa' ? '1px solid var(--accent-gold)' : '1px solid transparent',
-              borderRadius: 'var(--radius-md)',
-              color: activeSubTab === 'eventos_caixa' ? 'var(--accent-gold)' : 'var(--text-secondary)',
-              fontWeight: 700,
-              fontSize: '0.88rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            <Ticket size={16} />
-            <span>Caixa dos Eventos ({events.length})</span>
-          </button>
         </div>
       </div>
 
