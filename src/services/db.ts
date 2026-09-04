@@ -23,10 +23,74 @@ import {
   ChurchSettings,
   BankAccount,
   FinancialCategory,
+  ChurchAppSettings,
+  AppNotification,
+  AppModuleId,
 } from '../types';
 import { pushDatabaseToSupabase } from './supabaseSync';
 
 const DB_STORAGE_KEY = 'macdp_db_data_v3';
+
+export const INITIAL_APP_SETTINGS: ChurchAppSettings = {
+  appName: 'MACDP Oficial',
+  appShortName: 'MACDP App',
+  appSlogan: 'Proibido a Entrada de Pessoas Perfeitas.',
+  appLogoUrl: '/images/logo.png',
+  liveStreamUrl: 'https://www.youtube.com/@_macdp/live',
+  isLiveNow: true,
+  liveTitle: 'Culto da Família & Presença de Deus',
+  liveSubtitle: 'Transmissão Ao Vivo Oficial • Direto do Templo Central',
+  bannerText: 'Bem-vindo ao aplicativo da MACDP! Acesse a Bíblia, cultos ao vivo, ministérios e avisos da igreja.',
+  bannerImageUrl: '/images/hero.jpg',
+  devotionalOfTheDay: {
+    verse: 'Buscai ao Senhor enquanto se pode achar, invocai-o enquanto está perto.',
+    reference: 'Isaías 55:6',
+    thought: 'A presença manifesta de Deus transforma corações. Dedique o seu dia para buscar intimidade no secreto com o Pai.',
+    author: 'Pr. Oziel Gomes Maduro',
+  },
+  enabledModules: {
+    biblia: true,
+    live: true,
+    midias: true,
+    ministerios: true,
+    celulas: true,
+    eventos: true,
+    oracao: true,
+    contribuir: true,
+    carteirinha: true,
+    anotacoes: true,
+  },
+};
+
+export const INITIAL_APP_NOTIFICATIONS: AppNotification[] = [
+  {
+    id: 'notif_1',
+    title: '🔴 Culto da Família Ao Vivo',
+    message: 'Nossa transmissão oficial já começou! Conecte-se e receba uma palavra profética para o seu lar.',
+    date: '2026-09-03 19:30',
+    type: 'live',
+    read: false,
+    actionUrl: '#live',
+  },
+  {
+    id: 'notif_2',
+    title: '🔥 Conferência Caçadores da Presença 2026',
+    message: 'Inscrições abertas com lote especial e camisa oficial disponível! Garanta sua vaga com sua célula.',
+    date: '2026-09-02 10:00',
+    type: 'evento',
+    read: false,
+    actionUrl: '#eventos',
+  },
+  {
+    id: 'notif_3',
+    title: '📖 Devocional da Semana',
+    message: 'Nova reflexão bíblica e estudo para as reuniões nas casas já disponível na Bíblia do app.',
+    date: '2026-09-01 08:00',
+    type: 'pastoral',
+    read: true,
+    actionUrl: '#biblia',
+  },
+];
 
 export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
   name: 'Ministério Apostólico Caçadores da Presença',
@@ -62,6 +126,7 @@ export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
     primaryColor: '#f59e0b',
     secondaryColor: '#3b82f6',
   },
+  appSettings: INITIAL_APP_SETTINGS,
 };
 
 export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [
@@ -1275,6 +1340,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
   churchSettings: INITIAL_CHURCH_SETTINGS,
   bankAccounts: INITIAL_BANK_ACCOUNTS,
   financialCategories: INITIAL_FINANCIAL_CATEGORIES,
+  appNotifications: INITIAL_APP_NOTIFICATIONS,
 };
 
 export function getDatabase(): DatabaseSchema {
@@ -1285,70 +1351,75 @@ export function getDatabase(): DatabaseSchema {
       return INITIAL_DATABASE;
     }
     const parsed = JSON.parse(raw) as DatabaseSchema;
+    let needsSave = false;
     if (!parsed.ministries) {
       parsed.ministries = INITIAL_DATABASE.ministries;
-      saveDatabase(parsed);
+      needsSave = true;
     }
     if (!parsed.teachingClasses) {
       parsed.teachingClasses = INITIAL_DATABASE.teachingClasses;
-      saveDatabase(parsed);
+      needsSave = true;
     }
     if (!parsed.teachingMaterials) {
       parsed.teachingMaterials = INITIAL_DATABASE.teachingMaterials;
-      saveDatabase(parsed);
+      needsSave = true;
     }
     if (!parsed.teachingLogs) {
       parsed.teachingLogs = INITIAL_DATABASE.teachingLogs;
-      saveDatabase(parsed);
+      needsSave = true;
     }
     if (!parsed.kidsChildren) {
       parsed.kidsChildren = INITIAL_DATABASE.kidsChildren;
-      saveDatabase(parsed);
+      needsSave = true;
     }
     if (!parsed.kidsLessons) {
       parsed.kidsLessons = INITIAL_DATABASE.kidsLessons;
-      saveDatabase(parsed);
+      needsSave = true;
     }
     if (!parsed.patrimonyAssets) {
       parsed.patrimonyAssets = INITIAL_DATABASE.patrimonyAssets;
-      saveDatabase(parsed);
+      needsSave = true;
     }
     if (!parsed.pastoralAppointments) {
       parsed.pastoralAppointments = INITIAL_DATABASE.pastoralAppointments;
-      saveDatabase(parsed);
+      needsSave = true;
     }
     if (!parsed.accessUsers) {
       parsed.accessUsers = INITIAL_DATABASE.accessUsers;
-      saveDatabase(parsed);
+      needsSave = true;
     }
     if (!parsed.churchSettings) {
       parsed.churchSettings = INITIAL_CHURCH_SETTINGS;
-      saveDatabase(parsed);
+      needsSave = true;
+    } else if (!parsed.churchSettings.appSettings) {
+      parsed.churchSettings.appSettings = INITIAL_APP_SETTINGS;
+      needsSave = true;
+    }
+    if (!parsed.appNotifications || parsed.appNotifications.length === 0) {
+      parsed.appNotifications = INITIAL_APP_NOTIFICATIONS;
+      needsSave = true;
     }
     if (!parsed.bankAccounts) {
       parsed.bankAccounts = INITIAL_BANK_ACCOUNTS;
-      saveDatabase(parsed);
+      needsSave = true;
     } else {
-      let updatedAccs = false;
       parsed.bankAccounts.forEach((acc) => {
         if (!acc.logoUrl) {
           if (acc.id === 'acc_1' || acc.name?.toLowerCase().includes('bradesco') || acc.bankName?.toLowerCase().includes('bradesco')) {
             acc.logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Banco_Bradesco_logo.svg/512px-Banco_Bradesco_logo.svg.png';
-            updatedAccs = true;
+            needsSave = true;
           } else if (acc.id === 'acc_2' || acc.name?.toLowerCase().includes('nubank') || acc.bankName?.toLowerCase().includes('nu')) {
             acc.logoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Nubank_logo_2021.svg/512px-Nubank_logo_2021.svg.png';
-            updatedAccs = true;
+            needsSave = true;
           }
         }
       });
-      if (updatedAccs) saveDatabase(parsed);
     }
     if (!parsed.financialCategories) {
       parsed.financialCategories = INITIAL_FINANCIAL_CATEGORIES;
-      saveDatabase(parsed);
+      needsSave = true;
     }
     if (parsed.events) {
-      let updatedEvts = false;
       parsed.events.forEach((e) => {
         const initEvt = INITIAL_DATABASE.events.find((ie) => ie.id === e.id);
         if (initEvt) {
@@ -1366,35 +1437,42 @@ export function getDatabase(): DatabaseSchema {
               e.roomReserved = 'Área de Eventos & Salão Campestre';
               e.totalCapacity = 200;
               e.description = 'Três dias inesquecíveis de louvor profético, ministração da Palavra e capacitação espiritual para toda a família na Chácara Paraiso Verde.';
-              updatedEvts = true;
+              needsSave = true;
             }
             if (e.hasShirt === undefined) {
               e.hasShirt = true;
               e.shirtPrice = 50.0;
               e.shirtSizes = ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'Infantil 8', 'Infantil 12'];
-              updatedEvts = true;
+              needsSave = true;
             }
           }
           if (initEvt.endDate && !e.endDate) {
             e.endDate = initEvt.endDate;
-            updatedEvts = true;
+            needsSave = true;
           }
           if (!e.customQuestions || e.customQuestions.length === 0) {
             e.customQuestions = initEvt.customQuestions;
             e.speakerName = e.speakerName || initEvt.speakerName;
             e.detailedSchedule = e.detailedSchedule || initEvt.detailedSchedule;
-            updatedEvts = true;
+            needsSave = true;
           }
         }
         // Always ensure registeredCount is strictly synced with actual registrations
         if (e.registrations) {
           if (e.registeredCount !== e.registrations.length) {
             e.registeredCount = e.registrations.length;
-            updatedEvts = true;
+            needsSave = true;
           }
         }
       });
-      if (updatedEvts) saveDatabase(parsed);
+    }
+
+    if (needsSave) {
+      try {
+        localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(parsed));
+      } catch (e) {
+        // ignore
+      }
     }
     return parsed;
   } catch (err) {
@@ -2259,6 +2337,122 @@ export function deleteFinancialCategory(id: string): boolean {
   }
   return false;
 }
+
+// ==================== CONFIGURAÇÕES DO APP DA IGREJA & NOTIFICAÇÕES ====================
+
+export function updateChurchAppSettings(updates: Partial<ChurchAppSettings>): ChurchAppSettings {
+  const db = getDatabase();
+  if (!db.churchSettings) {
+    db.churchSettings = INITIAL_CHURCH_SETTINGS;
+  }
+  const currentApp = db.churchSettings.appSettings || INITIAL_APP_SETTINGS;
+  const updatedApp: ChurchAppSettings = {
+    ...currentApp,
+    ...updates,
+    enabledModules: {
+      ...currentApp.enabledModules,
+      ...(updates.enabledModules || {}),
+    },
+    devotionalOfTheDay: updates.devotionalOfTheDay
+      ? {
+          verse: updates.devotionalOfTheDay.verse ?? currentApp.devotionalOfTheDay?.verse ?? '',
+          reference: updates.devotionalOfTheDay.reference ?? currentApp.devotionalOfTheDay?.reference ?? '',
+          thought: updates.devotionalOfTheDay.thought ?? currentApp.devotionalOfTheDay?.thought ?? '',
+          author: updates.devotionalOfTheDay.author ?? currentApp.devotionalOfTheDay?.author ?? '',
+        }
+      : currentApp.devotionalOfTheDay,
+  };
+
+  db.churchSettings.appSettings = updatedApp;
+  saveDatabase(db);
+  return updatedApp;
+}
+
+export function getAppNotifications(): AppNotification[] {
+  const db = getDatabase();
+  return db.appNotifications || INITIAL_APP_NOTIFICATIONS;
+}
+
+export function sendAppNotification(
+  notification: Omit<AppNotification, 'id' | 'date' | 'read'>
+): AppNotification {
+  const db = getDatabase();
+  if (!db.appNotifications) {
+    db.appNotifications = [];
+  }
+
+  const now = new Date();
+  const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+    now.getDate()
+  ).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  const newNotif: AppNotification = {
+    ...notification,
+    id: `notif_${Date.now()}`,
+    date: formattedDate,
+    read: false,
+  };
+
+  db.appNotifications.unshift(newNotif);
+  saveDatabase(db);
+
+  // Dispara evento customizado para o app atualizar na hora
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('app_notification_received', { detail: newNotif }));
+  }
+
+  return newNotif;
+}
+
+export function markAppNotificationAsRead(id: string): void {
+  const db = getDatabase();
+  if (!db.appNotifications) return;
+  const found = db.appNotifications.find((n) => n.id === id);
+  if (found) {
+    found.read = true;
+    saveDatabase(db);
+  }
+}
+
+export function deleteAppNotification(id: string): boolean {
+  const db = getDatabase();
+  if (!db.appNotifications) return false;
+  const initLen = db.appNotifications.length;
+  db.appNotifications = db.appNotifications.filter((n) => n.id !== id);
+  if (db.appNotifications.length < initLen) {
+    saveDatabase(db);
+    return true;
+  }
+  return false;
+}
+
+export function toggleAppLiveStatus(isLive: boolean, title?: string, liveUrl?: string): boolean {
+  const db = getDatabase();
+  if (!db.churchSettings) {
+    db.churchSettings = INITIAL_CHURCH_SETTINGS;
+  }
+  const currentApp = db.churchSettings.appSettings || INITIAL_APP_SETTINGS;
+  const updatedApp: ChurchAppSettings = {
+    ...currentApp,
+    isLiveNow: isLive,
+    ...(title ? { liveTitle: title } : {}),
+    ...(liveUrl ? { liveStreamUrl: liveUrl } : {}),
+  };
+  db.churchSettings.appSettings = updatedApp;
+  saveDatabase(db);
+
+  if (isLive) {
+    sendAppNotification({
+      title: `🔴 Culto Ao Vivo: ${updatedApp.liveTitle}`,
+      message: 'A transmissão ao vivo do culto acabou de iniciar! Conecte-se agora pelo app.',
+      type: 'live',
+      actionUrl: '#live',
+    });
+  }
+
+  return isLive;
+}
+
 
 
 

@@ -13,6 +13,8 @@ import {
   Sparkles,
   Shield,
   MessageCircle,
+  Smartphone,
+  QrCode,
 } from 'lucide-react';
 import { ChurchSettings } from '../../types';
 
@@ -20,6 +22,8 @@ interface NavbarProps {
   currentSection: string;
   onNavigate: (section: string) => void;
   onOpenAdmin?: () => void;
+  onOpenApp?: () => void;
+  onOpenDeviceTester?: () => void;
   isAuthenticated?: boolean;
   isDarkMode: boolean;
   onToggleTheme: () => void;
@@ -31,6 +35,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentSection,
   onNavigate,
   onOpenAdmin,
+  onOpenApp,
+  onOpenDeviceTester,
   isAuthenticated = false,
   isDarkMode,
   onToggleTheme,
@@ -196,8 +202,27 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
         </nav>
 
-        {/* Actions (Theme toggle + Admin Entry) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {/* Actions (App button + Theme toggle + Admin Entry) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          {onOpenApp && (
+            <button
+              type="button"
+              onClick={onOpenApp}
+              className="btn btn-primary btn-sm"
+              style={{
+                gap: '0.4rem',
+                borderRadius: '12px',
+                padding: '0.45rem 0.95rem',
+                fontSize: '0.825rem',
+                fontWeight: 800,
+                boxShadow: '0 4px 14px rgba(245, 158, 11, 0.35)',
+              }}
+            >
+              <Smartphone size={15} />
+              <span>📱 Abrir App</span>
+            </button>
+          )}
+
           {/* Theme Toggle */}
           <button
             onClick={onToggleTheme}
@@ -291,6 +316,49 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Quick Admin & Contact Actions inside Mobile Drawer */}
           <div style={{ marginTop: '0.75rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            {onOpenApp && (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenApp();
+                  setMobileMenuOpen(false);
+                }}
+                className="btn btn-primary"
+                style={{
+                  width: '100%',
+                  gap: '0.5rem',
+                  padding: '0.8rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, var(--accent-gold) 0%, #d97706 100%)',
+                  color: '#0B1120',
+                }}
+              >
+                <Smartphone size={18} />
+                <span>📱 Abrir Aplicativo da Igreja</span>
+              </button>
+            )}
+
+            {onOpenDeviceTester && (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenDeviceTester();
+                  setMobileMenuOpen(false);
+                }}
+                className="btn btn-secondary"
+                style={{
+                  width: '100%',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  fontSize: '0.9rem',
+                }}
+              >
+                <QrCode size={17} color="var(--accent-gold)" />
+                <span>📲 Testar no Celular Real (QR Code)</span>
+              </button>
+            )}
+
             {onOpenAdmin && (
               <button
                 type="button"
@@ -298,13 +366,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   onOpenAdmin();
                   setMobileMenuOpen(false);
                 }}
-                className="btn btn-primary"
+                className="btn btn-secondary"
                 style={{
                   width: '100%',
                   gap: '0.5rem',
                   padding: '0.75rem',
                   fontSize: '0.92rem',
-                  fontWeight: 800,
                 }}
               >
                 <Shield size={17} />

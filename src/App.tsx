@@ -42,9 +42,11 @@ import { EventDetailPage } from './components/public/EventDetailPage';
 import { EventRegistrationWizard } from './components/public/EventRegistrationWizard';
 import { ConferenceCountdown } from './components/public/ConferenceCountdown';
 import { AdminLogin } from './components/admin/AdminLogin';
+import { ChurchApp } from './components/app/ChurchApp';
+import { AppDeviceTesterModal } from './components/app/AppDeviceTesterModal';
 
 // Icons for Modals
-import { Play, Headphones, Share2, BookOpen, CheckCircle2, Calendar, Radio, Users } from 'lucide-react';
+import { Play, Headphones, Share2, BookOpen, CheckCircle2, Calendar, Radio, Users, Smartphone } from 'lucide-react';
 
 export function App() {
   // Verificação de rota administrativa segura (/admin, /painel, #admin, ?admin=true)
@@ -66,10 +68,35 @@ export function App() {
     );
   };
 
+  // Verificação de rota do aplicativo mobile (/app, /aplicativo, #app, ?app=true)
+  const isAppRoute = () => {
+    const path = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    const search = new URLSearchParams(window.location.search);
+    return (
+      path === '/app' ||
+      path === '/app/' ||
+      path === '/aplicativo' ||
+      path === '/aplicativo/' ||
+      hash === '#app' ||
+      hash === '#aplicativo' ||
+      hash.startsWith('#live') ||
+      hash.startsWith('#biblia') ||
+      hash.startsWith('#midias') ||
+      search.get('app') === 'true' ||
+      search.get('aplicativo') === 'true'
+    );
+  };
+
   // Navigation State
-  const [view, setView] = useState<'public' | 'admin'>(() => (isAdminRoute() ? 'admin' : 'public'));
+  const [view, setView] = useState<'public' | 'admin' | 'app'>(() => {
+    if (isAdminRoute()) return 'admin';
+    if (isAppRoute()) return 'app';
+    return 'public';
+  });
   const [publicSection, setPublicSection] = useState('home');
   const [adminTab, setAdminTab] = useState('dashboard');
+  const [isDeviceTesterModalOpen, setIsDeviceTesterModalOpen] = useState(false);
 
   // DB State
   const [db, setDb] = useState<DatabaseSchema>(getDatabase);
@@ -205,12 +232,20 @@ export function App() {
     };
   }, []);
 
-  // Listener de rotas de URL (/admin, /painel, #admin, ?admin=true) e atalho secreto de teclado
+  // Listener de rotas de URL (/admin, /app, /painel, #admin, #app, ?app=true) e atalho secreto de teclado
   useEffect(() => {
     const handleUrlChange = () => {
       if (isAdminRoute()) {
         setView('admin');
-      } else if (window.location.pathname === '/' && window.location.hash !== '#admin' && !new URLSearchParams(window.location.search).get('admin')) {
+      } else if (isAppRoute()) {
+        setView('app');
+      } else if (
+        window.location.pathname === '/' &&
+        window.location.hash !== '#admin' &&
+        window.location.hash !== '#app' &&
+        !new URLSearchParams(window.location.search).get('admin') &&
+        !new URLSearchParams(window.location.search).get('app')
+      ) {
         setView('public');
       }
     };
@@ -254,13 +289,24 @@ export function App() {
     }
   };
 
+  // Navegação para o aplicativo mobile (/app ou ?app=true)
+  const navigateToApp = () => {
+    setView('app');
+    if (!window.location.search.includes('app=true') && window.location.pathname !== '/app') {
+      window.history.pushState(null, '', '/?app=true');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Retorno para o site público restaurando a URL raiz /
   const navigateToPublic = (sectionId = 'home') => {
     setView('public');
     if (
       window.location.pathname.startsWith('/admin') ||
       window.location.pathname.startsWith('/painel') ||
-      window.location.pathname.startsWith('/gestao')
+      window.location.pathname.startsWith('/gestao') ||
+      window.location.pathname.startsWith('/app') ||
+      window.location.search.includes('app=true')
     ) {
       window.history.pushState(null, '', '/');
     }
@@ -378,13 +424,32 @@ export function App() {
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 
       {/* VIEW ROUTER */}
-      {view === 'public' ? (
+      {view === 'app' ? (
+        <ChurchApp
+          db={db}
+          currentUser={currentUser}
+          isDarkMode={isDarkMode}
+          onToggleTheme={handleToggleTheme}
+          onOpenAdminPanel={navigateToAdmin}
+          onBackToWebsite={() => navigateToPublic('home')}
+          onLoginMember={(user) => {
+            setCurrentUser(user);
+            setIsAuthenticated(true);
+            addNotification('success', `Bem-vindo(a) ao aplicativo, ${user.name}!`);
+          }}
+          onLogout={handleLogout}
+          onOpenEventDetail={handleOpenEventPage}
+          onNotify={addNotification}
+        />
+      ) : view === 'public' ? (
         <div key="public-view" className="animate-page-enter" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           {/* Public Navbar */}
           <Navbar
             currentSection={selectedEventForDetail ? 'eventos' : publicSection}
             onNavigate={handlePublicNavigate}
             onOpenAdmin={navigateToAdmin}
+            onOpenApp={navigateToApp}
+            onOpenDeviceTester={() => setIsDeviceTesterModalOpen(true)}
             isAuthenticated={isAuthenticated}
             isDarkMode={isDarkMode}
             onToggleTheme={handleToggleTheme}
@@ -468,6 +533,8 @@ export function App() {
             onTabChange={setAdminTab}
             onBackToPublic={() => navigateToPublic('home')}
             onLogout={handleLogout}
+            onOpenApp={navigateToApp}
+            onOpenDeviceTester={() => setIsDeviceTesterModalOpen(true)}
             currentUser={currentUser}
             onSwitchRole={handleSwitchRole}
             isDarkMode={isDarkMode}
@@ -942,6 +1009,15 @@ export function App() {
           }
         }}
         onSuccessNotification={(msg) => addNotification('success', msg)}
+      />
+
+      {/* Global Device Tester Modal (permite testar em celular real a partir de qualquer tela) */}
+      <AppDeviceTesterModal
+        isOpen={isDeviceTesterModalOpen}
+        onClose={() => setIsDeviceTesterModalOpen(false)}
+        appName={db.churchSettings?.name || 'MACDP App'}
+        isDesktopFrame={true}
+        onToggleDesktopFrame={() => {}}
       />
     </div>
   );

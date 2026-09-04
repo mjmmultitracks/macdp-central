@@ -392,6 +392,70 @@ export interface SystemAccessUser {
   notes?: string;
 }
 
+export type AppModuleId =
+  | 'home'
+  | 'biblia'
+  | 'live'
+  | 'midias'
+  | 'ministerios'
+  | 'celulas'
+  | 'eventos'
+  | 'oracao'
+  | 'contribuir'
+  | 'carteirinha'
+  | 'anotacoes';
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  date: string;
+  type: 'live' | 'evento' | 'pastoral' | 'geral';
+  read: boolean;
+  actionUrl?: string;
+}
+
+export interface SermonNote {
+  id: string;
+  title: string;
+  preacher?: string;
+  date: string;
+  passage?: string;
+  content: string;
+  updatedAt: string;
+}
+
+export interface ChurchAppSettings {
+  appName: string; // Ex: MACDP App
+  appShortName: string; // Ex: MACDP
+  appSlogan: string; // Ex: Proibido a Entrada de Pessoas Perfeitas
+  appLogoUrl?: string; // Logo específico do app (ou herda de churchSettings)
+  liveStreamUrl: string; // Link da live (YouTube ou stream)
+  isLiveNow: boolean; // Transmissão ao vivo ativada no momento?
+  liveTitle: string; // Ex: Culto da Presença Ao Vivo
+  liveSubtitle: string; // Ex: Transmissão direta do Templo Central
+  bannerText: string; // Destaque na home do app
+  bannerImageUrl?: string;
+  devotionalOfTheDay?: {
+    verse: string;
+    reference: string;
+    thought: string;
+    author: string;
+  };
+  enabledModules: {
+    biblia: boolean;
+    live: boolean;
+    midias: boolean;
+    ministerios: boolean;
+    celulas: boolean;
+    eventos: boolean;
+    oracao: boolean;
+    contribuir: boolean;
+    carteirinha: boolean;
+    anotacoes: boolean;
+  };
+}
+
 export interface ChurchSettings {
   name: string; // Nome oficial completo (Ex: Ministério Apostólico Caçadores da Presença)
   shortName: string; // Sigla / Nome Curto (Ex: MACDP Central)
@@ -426,6 +490,7 @@ export interface ChurchSettings {
     primaryColor: string; // Cor primária (ex: #f59e0b)
     secondaryColor: string; // Cor secundária (ex: #3b82f6)
   };
+  appSettings?: ChurchAppSettings;
 }
 
 export interface DatabaseSchema {
@@ -449,6 +514,7 @@ export interface DatabaseSchema {
   churchSettings?: ChurchSettings;
   bankAccounts?: BankAccount[];
   financialCategories?: FinancialCategory[];
+  appNotifications?: AppNotification[];
 }
 
 

@@ -31,6 +31,8 @@ import {
   Landmark,
   Tag,
   Ticket,
+  Smartphone,
+  QrCode,
 } from 'lucide-react';
 import { ChurchSettings } from '../../types';
 
@@ -39,6 +41,8 @@ interface AdminLayoutProps {
   onTabChange: (tab: string) => void;
   onBackToPublic: () => void;
   onLogout?: () => void;
+  onOpenApp?: () => void;
+  onOpenDeviceTester?: () => void;
   currentUser: UserSession;
   onSwitchRole: (role: UserRole) => void;
   isDarkMode: boolean;
@@ -53,6 +57,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   onTabChange,
   onBackToPublic,
   onLogout,
+  onOpenApp,
+  onOpenDeviceTester,
   currentUser,
   onSwitchRole,
   isDarkMode,
@@ -388,8 +394,39 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           })}
         </nav>
 
-        {/* Back to Public Site */}
+        {/* Back to Public Site & Open App */}
         <div style={{ padding: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
+          {onOpenApp && (
+            <button
+              type="button"
+              onClick={onOpenApp}
+              className="btn btn-primary btn-sm"
+              style={{
+                width: '100%',
+                gap: '0.5rem',
+                marginBottom: '0.5rem',
+                background: 'linear-gradient(135deg, var(--accent-gold) 0%, #d97706 100%)',
+                color: '#0B1120',
+                fontWeight: 800,
+              }}
+            >
+              <Smartphone size={16} />
+              <span>📱 Abrir Aplicativo</span>
+            </button>
+          )}
+
+          {onOpenDeviceTester && (
+            <button
+              type="button"
+              onClick={onOpenDeviceTester}
+              className="btn btn-secondary btn-sm"
+              style={{ width: '100%', gap: '0.5rem', marginBottom: '0.5rem' }}
+            >
+              <QrCode size={15} color="var(--accent-gold)" />
+              <span>📲 Testar no Celular</span>
+            </button>
+          )}
+
           <button
             onClick={onBackToPublic}
             className="btn btn-secondary btn-sm"
@@ -483,8 +520,34 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </h2>
           </div>
 
-          {/* Right Header Actions: Role Switcher & Theme */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {/* Right Header Actions: App, Role Switcher & Theme */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            {onOpenApp && (
+              <button
+                type="button"
+                onClick={onOpenApp}
+                className="btn btn-secondary btn-sm"
+                style={{ gap: '0.4rem', border: '1px solid var(--accent-gold)', borderRadius: '10px' }}
+                title="Abrir o Aplicativo Mobile da Igreja"
+              >
+                <Smartphone size={15} color="var(--accent-gold)" />
+                <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>Abrir App</span>
+              </button>
+            )}
+
+            {onOpenDeviceTester && (
+              <button
+                type="button"
+                onClick={onOpenDeviceTester}
+                className="btn btn-secondary btn-sm"
+                style={{ gap: '0.35rem', borderRadius: '10px' }}
+                title="Testar no Celular Real via QR Code"
+              >
+                <QrCode size={15} color="var(--accent-gold)" />
+                <span style={{ fontSize: '0.8rem' }}>Testar no Celular</span>
+              </button>
+            )}
+
             {/* Theme Toggle */}
             <button
               onClick={onToggleTheme}

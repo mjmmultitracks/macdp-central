@@ -1,6 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { ChurchSettings } from '../../types';
-import { updateChurchSettings, INITIAL_CHURCH_SETTINGS } from '../../services/db';
+import { ChurchSettings, ChurchAppSettings, AppModuleId } from '../../types';
+import {
+  updateChurchSettings,
+  INITIAL_CHURCH_SETTINGS,
+  INITIAL_APP_SETTINGS,
+  sendAppNotification,
+  toggleAppLiveStatus,
+} from '../../services/db';
+import { sendNativePushNotification } from '../../services/notificationService';
 import {
   Building2,
   Image as ImageIcon,
@@ -20,6 +27,11 @@ import {
   Check,
   Palette,
   RefreshCw,
+  Smartphone,
+  Radio,
+  Bell,
+  Send,
+  Lock,
 } from 'lucide-react';
 import { COLOR_PRESETS, DEFAULT_THEME_COLORS, applyThemeColors } from '../../utils/themeColors';
 
@@ -69,10 +81,17 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
       primaryColor: currentSettings.themeColors?.primaryColor || DEFAULT_THEME_COLORS.primaryColor,
       secondaryColor: currentSettings.themeColors?.secondaryColor || DEFAULT_THEME_COLORS.secondaryColor,
     },
+    appSettings: currentSettings.appSettings || INITIAL_APP_SETTINGS,
   });
 
-  const [activeTab, setActiveTab] = useState<'brand' | 'colors' | 'contact' | 'address' | 'social'>('brand');
+  const [activeTab, setActiveTab] = useState<'brand' | 'colors' | 'app' | 'contact' | 'address' | 'social'>('brand');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Push Notification Dispatcher Form State
+  const [notifTitle, setNotifTitle] = useState('');
+  const [notifMessage, setNotifMessage] = useState('');
+  const [notifType, setNotifType] = useState<'live' | 'evento' | 'pastoral' | 'geral'>('geral');
+  const [isSendingNotif, setIsSendingNotif] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Live Color Handlers
@@ -441,6 +460,28 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
         >
           <Palette size={16} />
           <span>Cores do Tema & Painel</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('app')}
+          style={{
+            padding: '0.75rem 1.25rem',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'app' ? '2px solid var(--accent-gold)' : '2px solid transparent',
+            color: activeTab === 'app' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <Smartphone size={16} />
+          <span>📱 Aplicativo da Igreja & Live</span>
         </button>
 
         <button
@@ -1011,6 +1052,342 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                 >
                   Selo Apoio (Secundária)
                 </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== TAB: APLICATIVO DA IGREJA & LIVE ==================== */}
+        {activeTab === 'app' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* 1. Transmissão Ao Vivo (Live Stream) */}
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <div
+                    style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '10px',
+                      background: 'rgba(239, 68, 68, 0.15)',
+                      color: '#EF4444',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Radio size={20} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                      Controle de Transmissão Ao Vivo (Culto Online)
+                    </h4>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      Ative a sinalização de live e defina o link oficial para os membros assistirem no celular
+                    </span>
+                  </div>
+                </div>
+
+                {/* Botão Liga/Desliga Ao Vivo */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: form.appSettings?.isLiveNow ? '#EF4444' : 'var(--text-muted)' }}>
+                    {form.appSettings?.isLiveNow ? '🔴 CULTO AO VIVO ATIVADO' : '⚪ Transmissão Desligada'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextState = !form.appSettings?.isLiveNow;
+                      setForm((prev) => ({
+                        ...prev,
+                        appSettings: {
+                          ...(prev.appSettings || INITIAL_APP_SETTINGS),
+                          isLiveNow: nextState,
+                        },
+                      }));
+                      toggleAppLiveStatus(nextState, form.appSettings?.liveTitle, form.appSettings?.liveStreamUrl);
+                      onNotify(
+                        nextState ? 'success' : 'info',
+                        nextState
+                          ? 'Transmissão Ao Vivo ativada! Notificação enviada aos membros.'
+                          : 'Status de transmissão ao vivo desativado.'
+                      );
+                    }}
+                    className={form.appSettings?.isLiveNow ? 'btn btn-primary' : 'btn btn-secondary'}
+                    style={{ gap: '0.4rem', padding: '0.5rem 1.1rem' }}
+                  >
+                    <Radio size={16} />
+                    <span>{form.appSettings?.isLiveNow ? 'Desligar Ao Vivo' : 'Ligar Ao Vivo Agora'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Link da Transmissão (YouTube Live ou Vídeo)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="https://www.youtube.com/@_macdp/live ou link de embed"
+                    value={form.appSettings?.liveStreamUrl || ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        appSettings: {
+                          ...(form.appSettings || INITIAL_APP_SETTINGS),
+                          liveStreamUrl: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
+                    Pode ser link de canal, live direta ou vídeo do YouTube.
+                  </span>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Título do Culto Ao Vivo</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Ex: Culto da Família & Presença de Deus"
+                    value={form.appSettings?.liveTitle || ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        appSettings: {
+                          ...(form.appSettings || INITIAL_APP_SETTINGS),
+                          liveTitle: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                  <label className="form-label">Subtítulo / Mensagem da Transmissão</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Ex: Transmissão Oficial Direto do Templo Central • Manaus/AM"
+                    value={form.appSettings?.liveSubtitle || ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        appSettings: {
+                          ...(form.appSettings || INITIAL_APP_SETTINGS),
+                          liveSubtitle: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Disparador de Notificações Push para o App */}
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    color: 'var(--accent-gold)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Bell size={20} />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                    Disparar Notificação Push para os Membros no Celular
+                  </h4>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    Envie alertas imediatos sobre cultos, novos eventos, devocionais ou avisos pastorais urgentes
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Título da Notificação *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Ex: 🔴 Culto da Família Começou!"
+                    value={notifTitle}
+                    onChange={(e) => setNotifTitle(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Tipo de Notificação</label>
+                  <select
+                    className="form-select"
+                    value={notifType}
+                    onChange={(e) => setNotifType(e.target.value as any)}
+                  >
+                    <option value="geral">Geral / Informativo</option>
+                    <option value="live">🔴 Culto Ao Vivo</option>
+                    <option value="evento">🔥 Eventos & Conferências</option>
+                    <option value="pastoral">📖 Mensagem Pastoral / Devocional</option>
+                  </select>
+                </div>
+
+                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                  <label className="form-label">Mensagem do Comunicado *</label>
+                  <textarea
+                    rows={3}
+                    className="form-textarea"
+                    placeholder="Escreva a mensagem que aparecerá no celular dos membros..."
+                    value={notifMessage}
+                    onChange={(e) => setNotifMessage(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  disabled={isSendingNotif || !notifTitle.trim() || !notifMessage.trim()}
+                  onClick={() => {
+                    setIsSendingNotif(true);
+                    try {
+                      sendAppNotification({
+                        title: notifTitle,
+                        message: notifMessage,
+                        type: notifType,
+                        actionUrl: notifType === 'live' ? '#live' : notifType === 'evento' ? '#eventos' : '#biblia',
+                      });
+                      sendNativePushNotification(notifTitle, {
+                        body: notifMessage,
+                        icon: form.logoUrl || '/images/logo.png',
+                      });
+                      onNotify('success', `Notificação push "${notifTitle}" disparada para todos os membros no app!`);
+                      setNotifTitle('');
+                      setNotifMessage('');
+                    } catch (err) {
+                      onNotify('error', 'Erro ao disparar notificação.');
+                    } finally {
+                      setIsSendingNotif(false);
+                    }
+                  }}
+                  className="btn btn-primary"
+                  style={{ gap: '0.4rem', padding: '0.65rem 1.4rem' }}
+                >
+                  <Send size={16} />
+                  <span>{isSendingNotif ? 'Enviando Alerta...' : 'Disparar Notificação Push'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 3. Módulos Ativos no Aplicativo da Igreja */}
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: 'rgba(59, 130, 246, 0.15)',
+                    color: '#3B82F6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Smartphone size={20} />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                    Módulos & Recursos Ativos no App
+                  </h4>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    Ative ou desative seções do aplicativo de acordo com as necessidades da sua congregação
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
+                {[
+                  { key: 'biblia', label: '📖 Bíblia Sagrada (66 Livros)' },
+                  { key: 'live', label: '🔴 Culto Ao Vivo (Live Stream)' },
+                  { key: 'midias', label: '🎬 Mídias & Podcasts de Áudio' },
+                  { key: 'ministerios', label: '🤝 Ministérios & Voluntários' },
+                  { key: 'celulas', label: '👥 Células nas Casas' },
+                  { key: 'contribuir', label: '💰 Dízimos & Doações (PIX)' },
+                  { key: 'oracao', label: '🙏 Central de Oração' },
+                  { key: 'carteirinha', label: '🪪 Carteirinha Digital de Membro' },
+                  { key: 'anotacoes', label: '📝 Caderno de Sermões' },
+                ].map((mod) => {
+                  const isChecked = form.appSettings?.enabledModules?.[mod.key as keyof ChurchAppSettings['enabledModules']] ?? true;
+                  return (
+                    <label
+                      key={mod.key}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.6rem',
+                        padding: '0.75rem 1rem',
+                        borderRadius: '12px',
+                        background: isChecked ? 'rgba(245, 158, 11, 0.08)' : 'var(--bg-tertiary)',
+                        border: isChecked ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid var(--border-subtle)',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        color: isChecked ? 'var(--text-primary)' : 'var(--text-muted)',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          const currentEnabled = form.appSettings?.enabledModules || INITIAL_APP_SETTINGS.enabledModules;
+                          setForm({
+                            ...form,
+                            appSettings: {
+                              ...(form.appSettings || INITIAL_APP_SETTINGS),
+                              enabledModules: {
+                                ...currentEnabled,
+                                [mod.key]: e.target.checked,
+                              },
+                            },
+                          });
+                        }}
+                      />
+                      <span>{mod.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 4. Banner de Boas-Vindas da Tela Inicial do App */}
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                Mensagem & Banner da Home do Aplicativo
+              </h4>
+
+              <div className="form-group">
+                <label className="form-label">Mensagem de Destaque / Boas-Vindas</label>
+                <textarea
+                  rows={3}
+                  className="form-textarea"
+                  value={form.appSettings?.bannerText || ''}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      appSettings: {
+                        ...(form.appSettings || INITIAL_APP_SETTINGS),
+                        bannerText: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="Mensagem inspiradora exibida logo no topo da tela inicial do aplicativo..."
+                />
               </div>
             </div>
           </div>

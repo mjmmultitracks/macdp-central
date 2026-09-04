@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "MACDP • Ministério Apostólico Caçadores da Presença",
+  "short_name": "MACDP App",
+  "description": "Aplicativo oficial do Ministério Apostólico Caçadores da Presença. Bíblia Sagrada, cultos ao vivo, pregações, células, dízimos e avisos da igreja.",
+  "id": "/app",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
+  "background_color": "#0B1120",
+  "theme_color": "#0B1120",
+  "orientation": "portrait",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["lifestyle", "social", "religion", "books"],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ec4e53b7",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "handle_links": "preferred",
+  "edge_side_panel": {
+    "preferred_width": 480
+  },
+  "note_taking": {
+    "new_note_url": "/?app=true#anotacoes"
+  },
+  "scope_extensions": [
+    {
+      "origin": "https://macdp.com.br"
+    }
+  ],
+  "share_target": {
+    "action": "/?app=true",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+macdp",
+      "url": "/?app=true&custom=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/?app=true#anotacoes",
+      "name": "Notas e Estudos Bíblicos",
+      "accept": {
+        "text/plain": [".txt", ".md"],
+        "application/pdf": [".pdf"]
+      },
+      "icons": [
+        {
+          "src": "/images/logo.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "name": "MACDP Palavra do Dia",
+      "short_name": "Palavra do Dia",
+      "description": "Versículo e devocional diário da Igreja MACDP",
+      "tag": "macdp-daily-verse",
+      "template": "widget-verse",
+      "ms_ac_template": "/widgets/verse.json",
+      "data": "/widgets/verse-data.json",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "/images/hero.jpg",
+          "sizes": "1200x630",
+          "label": "Widget Versículo do Dia"
+        }
+      ],
+      "icons": [
+        {
+          "src": "/images/logo.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/hero.jpg",
+      "sizes": "1200x630",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Portal da Igreja MACDP"
+    },
+    {
+      "src": "/images/fellowship.jpg",
+      "sizes": "1080x1080",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Aplicativo Mobile MACDP"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Bíblia Sagrada",
+      "short_name": "Bíblia",
+      "url": "/?app=true#biblia",
+      "description": "Ler a Palavra de Deus",
+      "icons": [{ "src": "/images/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Culto Ao Vivo",
+      "short_name": "Ao Vivo",
+      "url": "/?app=true#live",
+      "description": "Assistir transmissão em tempo real",
+      "icons": [{ "src": "/images/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mídias & Sermões",
+      "short_name": "Mídias",
+      "url": "/?app=true#midias",
+      "description": "Ouvir podcasts e mensagens",
+      "icons": [{ "src": "/images/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dízimos & PIX",
+      "short_name": "Dízimos",
+      "url": "/?app=true#contribuir",
+      "description": "Contribuir com o ministério",
+      "icons": [{ "src": "/images/logo.png", "sizes": "192x192" }]
+    }
+  ]
+}
