@@ -1063,7 +1063,7 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
         {/* ==================== TAB: APLICATIVO DA IGREJA & LIVE ==================== */}
         {activeTab === 'app' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* 0. Link e QR Code de Divulgação da Igreja no App (Hub Multi-Igreja) */}
+            {/* 0. Link e QR Code de Divulgação do Aplicativo Oficial da Igreja */}
             <div
               className="card"
               style={{
@@ -1096,7 +1096,7 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <h4 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-                        Link & QR Code Oficial da Congregação (Hub)
+                        Link & QR Code Oficial do Aplicativo
                       </h4>
                       <span
                         style={{
@@ -1109,11 +1109,11 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                           border: '1px solid rgba(16, 185, 129, 0.3)',
                         }}
                       >
-                        Auto-Seleção Ativa
+                        Aplicativo Oficial
                       </span>
                     </div>
                     <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
-                      Membros que acessarem por este link ou QR Code entram direto na sua igreja, sem precisar pesquisar!
+                      Membros que acessarem por este link ou apontarem a câmera para o QR Code abrem o aplicativo da igreja diretamente no celular!
                     </span>
                   </div>
                 </div>
@@ -1137,7 +1137,7 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                       <input
                         type="text"
                         readOnly
-                        value={typeof window !== 'undefined' ? `${window.location.origin}/app?church=macdp-central` : 'https://macdp.com.br/app?church=macdp-central'}
+                        value={typeof window !== 'undefined' ? `${window.location.origin}/app` : 'https://macdp.com.br/app'}
                         className="form-input"
                         style={{
                           flex: 1,
@@ -1150,11 +1150,11 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                       <button
                         type="button"
                         onClick={() => {
-                          const url = typeof window !== 'undefined' ? `${window.location.origin}/app?church=macdp-central` : 'https://macdp.com.br/app?church=macdp-central';
+                          const url = typeof window !== 'undefined' ? `${window.location.origin}/app` : 'https://macdp.com.br/app';
                           navigator.clipboard.writeText(url);
                           setIsChurchLinkCopied(true);
                           setTimeout(() => setIsChurchLinkCopied(false), 2500);
-                          onNotify('success', 'Link direto copiado para a área de transferência!');
+                          onNotify('success', 'Link direto do app copiado para a área de transferência!');
                         }}
                         className="btn btn-secondary"
                         style={{ gap: '0.4rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
@@ -1179,7 +1179,7 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                     <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '0.2rem' }}>
                       💡 Dica para a Mídia da Igreja:
                     </strong>
-                    Projete este QR Code no telão do santuário antes e depois dos cultos ou imprima no boletim. Ao apontar a câmera do celular, o membro entra instantaneamente no app com a MACDP já selecionada.
+                    Projete este QR Code no telão do santuário antes e depois dos cultos ou imprima no boletim semanal. Os membros abrem o aplicativo na hora e podem instalá-lo no celular.
                   </div>
                 </div>
 
@@ -1199,8 +1199,8 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                   }}
                 >
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(typeof window !== 'undefined' ? `${window.location.origin}/app?church=macdp-central` : 'https://macdp.com.br/app?church=macdp-central')}`}
-                    alt="QR Code da Igreja no App"
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(typeof window !== 'undefined' ? `${window.location.origin}/app` : 'https://macdp.com.br/app')}`}
+                    alt="QR Code do App da Igreja"
                     style={{ width: '160px', height: '160px', display: 'block' }}
                   />
                   <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0F172A', marginTop: '0.5rem', textAlign: 'center' }}>

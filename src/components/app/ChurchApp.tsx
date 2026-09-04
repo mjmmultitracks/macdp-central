@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DatabaseSchema,
   UserSession,
@@ -6,7 +6,6 @@ import {
   ChurchSettings,
   ChurchEvent,
   AppNotification,
-  ChurchProfile,
 } from '../../types';
 import {
   getAppNotifications,
@@ -14,11 +13,6 @@ import {
   deleteAppNotification,
   INITIAL_CHURCH_SETTINGS,
 } from '../../services/db';
-import {
-  getActiveChurchProfile,
-  setSelectedChurchId,
-} from '../../services/churchCatalogService';
-import { applyThemeColors } from '../../utils/themeColors';
 import {
   Home,
   BookOpen,
@@ -32,7 +26,6 @@ import {
   Shield,
   ExternalLink,
   ChevronLeft,
-  ChevronDown,
   Users,
   HeartHandshake,
   DollarSign,
@@ -43,8 +36,6 @@ import {
   X,
   Sparkles,
   ArrowLeft,
-  Building2,
-  MapPin,
 } from 'lucide-react';
 
 // Subviews
@@ -60,7 +51,6 @@ import { AppMembershipCard } from './AppMembershipCard';
 import { AppSermonNotesView } from './AppSermonNotesView';
 import { AppNotificationsModal } from './AppNotificationsModal';
 import { AppDeviceTesterModal } from './AppDeviceTesterModal';
-import { AppChurchSelectorModal } from './AppChurchSelectorModal';
 
 interface ChurchAppProps {
   db: DatabaseSchema;
@@ -91,10 +81,6 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
   const [currentTab, setCurrentTab] = useState<'home' | 'biblia' | 'live' | 'midias' | 'mais'>('home');
   const [activeSubModule, setActiveSubModule] = useState<AppModuleId | null>(null);
 
-  // Active Church in the Multi-Church Hub
-  const [activeChurchProfile, setActiveChurchProfile] = useState<ChurchProfile>(() => getActiveChurchProfile());
-  const [isChurchSelectorOpen, setIsChurchSelectorOpen] = useState(false);
-
   // Modals
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isDeviceTesterOpen, setIsDeviceTesterOpen] = useState(false);
@@ -114,79 +100,19 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
     const handleDbUpdate = () => {
       setNotifications(getAppNotifications());
     };
-    const handleChurchChanged = () => {
-      const updated = getActiveChurchProfile();
-      setActiveChurchProfile(updated);
-      if (updated.themeColors) {
-        applyThemeColors(updated.themeColors, isDarkMode);
-      }
-    };
 
     window.addEventListener('igreja_db_updated', handleDbUpdate);
     window.addEventListener('app_notification_received', handleDbUpdate);
-    window.addEventListener('church_selected_changed', handleChurchChanged);
 
     return () => {
       window.removeEventListener('igreja_db_updated', handleDbUpdate);
       window.removeEventListener('app_notification_received', handleDbUpdate);
-      window.removeEventListener('church_selected_changed', handleChurchChanged);
     };
-  }, [isDarkMode]);
+  }, []);
 
-  // Derived effective church settings (merges db.churchSettings with the selected church profile)
-  const effectiveChurchSettings: ChurchSettings = useMemo(() => {
-    const base: ChurchSettings = db.churchSettings || INITIAL_CHURCH_SETTINGS;
-    return {
-      ...base,
-      name: activeChurchProfile.name || base.name || 'Ministério Apostólico Caçadores da Presença',
-      shortName: activeChurchProfile.shortName || base.shortName || 'MACDP Central',
-      subtitle: activeChurchProfile.subtitle || base.subtitle || 'Ministério Apostólico',
-      slogan: activeChurchProfile.slogan || base.slogan || 'Proibido a Entrada de Pessoas Perfeitas.',
-      logoUrl: activeChurchProfile.logoUrl || base.logoUrl || '/icon-192.png',
-      pastorPresident: activeChurchProfile.pastorPresident || base.pastorPresident || 'Pr. Marcos & Pra. Juliana',
-      address: {
-        street: activeChurchProfile.address || base.address?.street || 'Rua Carlos Lacerda, 45',
-        neighborhood: activeChurchProfile.neighborhood || base.address?.neighborhood || 'Aleixo',
-        city: activeChurchProfile.city || base.address?.city || 'Manaus',
-        state: activeChurchProfile.state || base.address?.state || 'AM',
-        zip: base.address?.zip || '69060-000',
-      },
-      pix: {
-        key: activeChurchProfile.pixKey || base.pix?.key || 'pix@macdp.com.br',
-        receiver: activeChurchProfile.pixReceiver || base.pix?.receiver || activeChurchProfile.name,
-        bank: base.pix?.bank || 'Banco Digital / PIX',
-      },
-      appSettings: {
-        appName: activeChurchProfile.shortName,
-        appShortName: activeChurchProfile.shortName,
-        appSlogan: activeChurchProfile.slogan || base.appSettings?.appSlogan || 'Proibido a Entrada de Pessoas Perfeitas.',
-        appLogoUrl: activeChurchProfile.logoUrl || base.appSettings?.appLogoUrl,
-        liveStreamUrl: activeChurchProfile.liveStreamUrl || base.appSettings?.liveStreamUrl || 'https://www.youtube.com/@cacadordaPresenca',
-        isLiveNow: activeChurchProfile.isLiveNow ?? base.appSettings?.isLiveNow ?? false,
-        liveTitle: `${activeChurchProfile.shortName} Ao Vivo`,
-        liveSubtitle: `Transmissão em tempo real - ${activeChurchProfile.city}`,
-        bannerText: `Bem-vindo à ${activeChurchProfile.shortName}!`,
-        bannerImageUrl: base.appSettings?.bannerImageUrl,
-        devotionalOfTheDay: base.appSettings?.devotionalOfTheDay,
-        enabledModules: base.appSettings?.enabledModules || {
-          biblia: true,
-          live: true,
-          midias: true,
-          ministerios: true,
-          celulas: true,
-          eventos: true,
-          oracao: true,
-          contribuir: true,
-          carteirinha: true,
-          anotacoes: true,
-        },
-      },
-      themeColors: activeChurchProfile.themeColors || base.themeColors,
-    };
-  }, [db.churchSettings, activeChurchProfile]);
-
+  const churchSettings: ChurchSettings = db.churchSettings || INITIAL_CHURCH_SETTINGS;
   const unreadCount = notifications.filter((n) => !n.read).length;
-  const isLive = effectiveChurchSettings.appSettings?.isLiveNow ?? true;
+  const isLive = churchSettings.appSettings?.isLiveNow ?? true;
 
   const handleSelectTab = (tab: 'home' | 'biblia' | 'live' | 'midias' | 'mais') => {
     setCurrentTab(tab);
@@ -219,7 +145,7 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
     if (currentTab === 'home') {
       return (
         <AppHomeView
-          churchSettings={effectiveChurchSettings}
+          churchSettings={churchSettings}
           events={db.events || []}
           sermons={db.sermons || []}
           currentUser={currentUser}
@@ -240,7 +166,7 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
     if (currentTab === 'live') {
       return (
         <AppLiveView
-          churchSettings={effectiveChurchSettings}
+          churchSettings={churchSettings}
           onOpenGiving={() => handleNavigateSubModule('contribuir')}
           onOpenPrayer={() => handleNavigateSubModule('oracao')}
           onNotify={onNotify}
@@ -269,7 +195,7 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
     }
 
     if (activeSubModule === 'contribuir') {
-      return <AppGivingView churchSettings={effectiveChurchSettings} onNotify={onNotify} />;
+      return <AppGivingView churchSettings={churchSettings} onNotify={onNotify} />;
     }
 
     if (activeSubModule === 'oracao') {
@@ -280,7 +206,7 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
       return (
         <AppMembershipCard
           currentUser={currentUser}
-          churchSettings={effectiveChurchSettings}
+          churchSettings={churchSettings}
           members={db.members || []}
           onOpenAdminPanel={onOpenAdminPanel}
           onLoginMember={onLoginMember}
@@ -297,74 +223,6 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
     // Menu Geral 'Mais'
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', paddingBottom: '3.5rem' }}>
-        {/* Card da Congregação Atual no Hub */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, var(--bg-secondary) 100%)',
-            borderRadius: '20px',
-            border: '1.5px solid var(--accent-gold, #f59e0b)',
-            padding: '1.15rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '0.75rem',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <img
-              src={effectiveChurchSettings.logoUrl || '/icon-192.png'}
-              alt={effectiveChurchSettings.shortName}
-              style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '12px',
-                objectFit: 'cover',
-                background: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-              }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/icon-192.png';
-              }}
-            />
-            <div>
-              <span
-                style={{
-                  fontSize: '0.675rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  color: 'var(--accent-gold, #f59e0b)',
-                  fontWeight: 800,
-                  display: 'block',
-                }}
-              >
-                Sua Congregação
-              </span>
-              <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)', display: 'block' }}>
-                {effectiveChurchSettings.shortName}
-              </strong>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                {effectiveChurchSettings.address?.city} - {effectiveChurchSettings.address?.state}
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsChurchSelectorOpen(true)}
-            className="btn btn-secondary btn-sm"
-            style={{
-              fontSize: '0.75rem',
-              gap: '0.35rem',
-              padding: '0.45rem 0.75rem',
-              borderRadius: '10px',
-            }}
-          >
-            <Building2 size={13} />
-            <span>Trocar</span>
-          </button>
-        </div>
-
         <div
           style={{
             background: 'var(--bg-secondary)',
@@ -377,7 +235,7 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
             Mais Recursos & Serviços
           </h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-            Tudo o que você precisa na vida cristã e comunitária na {effectiveChurchSettings?.shortName || 'MACDP'}.
+            Tudo o que você precisa na vida cristã e comunitária na {churchSettings?.shortName || 'MACDP'}.
           </p>
         </div>
 
@@ -684,41 +542,16 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <img
-                src={effectiveChurchSettings?.logoUrl || '/images/logo.png'}
+                src={churchSettings?.logoUrl || '/images/logo.png'}
                 alt="Logo"
-                style={{ width: '34px', height: '34px', objectFit: 'contain', borderRadius: '8px' }}
+                style={{ width: '32px', height: '32px', objectFit: 'contain' }}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = '/images/logo.png';
                 }}
               />
-              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
-                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                  {effectiveChurchSettings?.appSettings?.appShortName || effectiveChurchSettings?.shortName || 'MACDP'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setIsChurchSelectorOpen(true)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    margin: 0,
-                    fontSize: '0.675rem',
-                    color: 'var(--accent-gold, #f59e0b)',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.2rem',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                  }}
-                  title="Trocar congregação no app"
-                >
-                  <MapPin size={10} />
-                  <span>{effectiveChurchSettings.address?.city || 'Trocar igreja'}</span>
-                  <ChevronDown size={11} />
-                </button>
-              </div>
+              <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {churchSettings?.appSettings?.appShortName || churchSettings?.shortName || 'MACDP'}
+              </span>
 
               {isLive && (
                 <div
@@ -947,22 +780,9 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
       <AppDeviceTesterModal
         isOpen={isDeviceTesterOpen}
         onClose={() => setIsDeviceTesterOpen(false)}
-        appName={effectiveChurchSettings?.appSettings?.appName || effectiveChurchSettings?.name || 'MACDP App'}
+        appName={churchSettings?.appSettings?.appName || churchSettings?.name || 'MACDP App'}
         isDesktopFrame={isDesktopFrame}
         onToggleDesktopFrame={() => setIsDesktopFrame(!isDesktopFrame)}
-      />
-
-      {/* Multi-Church Hub Selector Modal */}
-      <AppChurchSelectorModal
-        isOpen={isChurchSelectorOpen}
-        onClose={() => setIsChurchSelectorOpen(false)}
-        onSelectChurch={(church) => {
-          setActiveChurchProfile(church);
-          if (church.themeColors) {
-            applyThemeColors(church.themeColors, isDarkMode);
-          }
-          onNotify('success', `Igreja alterada para ${church.shortName}`);
-        }}
       />
     </div>
   );

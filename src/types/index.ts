@@ -517,35 +517,6 @@ export interface DatabaseSchema {
   appNotifications?: AppNotification[];
 }
 
-export interface ChurchProfile {
-  id: string; // Identificador único (ex: "macdp-central")
-  slug: string; // Slug para URLs (ex: "macdp-central")
-  name: string; // Nome completo da igreja
-  shortName: string; // Sigla ou nome curto (ex: "MACDP Central")
-  subtitle?: string; // Subtítulo ou denominação
-  slogan?: string; // Slogan da igreja
-  logoUrl?: string; // URL do logotipo
-  pastorPresident?: string; // Nome dos pastores
-  city: string; // Cidade
-  state: string; // UF
-  neighborhood?: string; // Bairro
-  address?: string; // Endereço resumido
-  phone?: string;
-  whatsapp?: string;
-  email?: string;
-  pixKey?: string;
-  pixReceiver?: string;
-  liveStreamUrl?: string;
-  isLiveNow?: boolean;
-  themeColors?: {
-    primaryColor: string;
-    secondaryColor: string;
-  };
-  appSettings?: ChurchAppSettings;
-  isVerified?: boolean;
-  isFeatured?: boolean;
-}
-
 
 
 
