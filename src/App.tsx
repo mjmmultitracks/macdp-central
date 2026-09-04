@@ -448,8 +448,6 @@ export function App() {
             currentSection={selectedEventForDetail ? 'eventos' : publicSection}
             onNavigate={handlePublicNavigate}
             onOpenAdmin={navigateToAdmin}
-            onOpenApp={navigateToApp}
-            onOpenDeviceTester={() => setIsDeviceTesterModalOpen(true)}
             isAuthenticated={isAuthenticated}
             isDarkMode={isDarkMode}
             onToggleTheme={handleToggleTheme}
