@@ -32,6 +32,8 @@ import {
   Bell,
   Send,
   Lock,
+  QrCode,
+  Copy,
 } from 'lucide-react';
 import { COLOR_PRESETS, DEFAULT_THEME_COLORS, applyThemeColors } from '../../utils/themeColors';
 
@@ -86,6 +88,7 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
 
   const [activeTab, setActiveTab] = useState<'brand' | 'colors' | 'app' | 'contact' | 'address' | 'social'>('brand');
   const [isSaving, setIsSaving] = useState(false);
+  const [isChurchLinkCopied, setIsChurchLinkCopied] = useState(false);
 
   // Push Notification Dispatcher Form State
   const [notifTitle, setNotifTitle] = useState('');
@@ -1060,6 +1063,156 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
         {/* ==================== TAB: APLICATIVO DA IGREJA & LIVE ==================== */}
         {activeTab === 'app' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* 0. Link e QR Code de Divulgação da Igreja no App (Hub Multi-Igreja) */}
+            <div
+              className="card"
+              style={{
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, var(--bg-secondary) 100%)',
+                border: '1.5px solid var(--accent-gold, #f59e0b)',
+                borderRadius: '24px',
+                padding: '1.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.25rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  <div
+                    style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '14px',
+                      background: 'var(--accent-gold, #f59e0b)',
+                      color: '#0B1120',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 8px 20px rgba(245, 158, 11, 0.25)',
+                    }}
+                  >
+                    <QrCode size={24} />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <h4 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                        Link & QR Code Oficial da Congregação (Hub)
+                      </h4>
+                      <span
+                        style={{
+                          fontSize: '0.7rem',
+                          fontWeight: 800,
+                          padding: '0.15rem 0.6rem',
+                          borderRadius: '999px',
+                          background: 'rgba(16, 185, 129, 0.15)',
+                          color: '#10B981',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                        }}
+                      >
+                        Auto-Seleção Ativa
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)' }}>
+                      Membros que acessarem por este link ou QR Code entram direto na sua igreja, sem precisar pesquisar!
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: '1.25rem',
+                  alignItems: 'center',
+                }}
+              >
+                {/* Left: Link and explanations */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: '0.35rem' }}>
+                      Link Direto do Aplicativo para Membros
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input
+                        type="text"
+                        readOnly
+                        value={typeof window !== 'undefined' ? `${window.location.origin}/app?church=macdp-central` : 'https://macdp.com.br/app?church=macdp-central'}
+                        className="form-input"
+                        style={{
+                          flex: 1,
+                          fontSize: '0.85rem',
+                          fontFamily: 'monospace',
+                          background: 'var(--bg-tertiary)',
+                          color: 'var(--text-primary)',
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = typeof window !== 'undefined' ? `${window.location.origin}/app?church=macdp-central` : 'https://macdp.com.br/app?church=macdp-central';
+                          navigator.clipboard.writeText(url);
+                          setIsChurchLinkCopied(true);
+                          setTimeout(() => setIsChurchLinkCopied(false), 2500);
+                          onNotify('success', 'Link direto copiado para a área de transferência!');
+                        }}
+                        className="btn btn-secondary"
+                        style={{ gap: '0.4rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                      >
+                        {isChurchLinkCopied ? <Check size={15} color="#10B981" /> : <Copy size={15} />}
+                        <span>{isChurchLinkCopied ? 'Copiado!' : 'Copiar'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      background: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '14px',
+                      padding: '0.85rem',
+                      fontSize: '0.78rem',
+                      color: 'var(--text-secondary)',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '0.2rem' }}>
+                      💡 Dica para a Mídia da Igreja:
+                    </strong>
+                    Projete este QR Code no telão do santuário antes e depois dos cultos ou imprima no boletim. Ao apontar a câmera do celular, o membro entra instantaneamente no app com a MACDP já selecionada.
+                  </div>
+                </div>
+
+                {/* Right: Visual QR Code Card */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#FFFFFF',
+                    borderRadius: '20px',
+                    padding: '1.25rem',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                    maxWidth: '220px',
+                    margin: '0 auto',
+                  }}
+                >
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(typeof window !== 'undefined' ? `${window.location.origin}/app?church=macdp-central` : 'https://macdp.com.br/app?church=macdp-central')}`}
+                    alt="QR Code da Igreja no App"
+                    style={{ width: '160px', height: '160px', display: 'block' }}
+                  />
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0F172A', marginTop: '0.5rem', textAlign: 'center' }}>
+                    {form.shortName || 'MACDP Central'}
+                  </span>
+                  <span style={{ fontSize: '0.65rem', color: '#64748B', textAlign: 'center' }}>
+                    Aponte a câmera do celular
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* 1. Transmissão Ao Vivo (Live Stream) */}
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
