@@ -156,8 +156,7 @@ export async function loginWithCredentials(
     }
   }
 
-  // 2. Fallback de credenciais autorizadas (Pastor Presidente, Administrador e Usuários de Acesso)
-  // Credenciais padrão do Pr. Oziel Gomes Maduro e liderança da MACDP
+  // 2. Contas institucionais autorizadas da liderança
   const authorizedAccounts: Array<{
     email: string;
     allowedPasswords: string[];
@@ -165,35 +164,68 @@ export async function loginWithCredentials(
   }> = [
     {
       email: 'oziel.maduro@macdp.com.br',
-      allowedPasswords: ['macdp2026', 'central2026', 'admin123', 'presenca2026'],
+      allowedPasswords: ['macdp2026', 'central2026'],
       user: SYSTEM_USERS.admin,
     },
     {
       email: 'admin@macdp.com.br',
-      allowedPasswords: ['macdp2026', 'central2026', 'admin123'],
+      allowedPasswords: ['macdp2026', 'central2026'],
       user: SYSTEM_USERS.admin,
     },
     {
       email: 'midia.maduro@macdp.com.br',
-      allowedPasswords: ['macdp2026', 'central2026', 'admin123', 'presenca2026'],
+      allowedPasswords: ['macdp2026', 'central2026'],
       user: SYSTEM_USERS.pastor,
     },
     {
       email: 'jaziel.maduro@macdp.com.br',
-      allowedPasswords: ['macdp2026', 'central2026', 'admin123'],
+      allowedPasswords: ['macdp2026', 'central2026'],
       user: SYSTEM_USERS.lider,
     },
   ];
 
-  // Verifica também se foi cadastrado no módulo de Acessos do banco
+  // 3. Verificação em db.accessUsers (usuários e permissões cadastrados no ERP)
   try {
     const db = getDatabase();
     if (db && db.accessUsers) {
       const foundInDb = db.accessUsers.find(
-        (u) => u.email.toLowerCase() === email && u.status === 'ativo'
+        (u) => u.email.toLowerCase() === email
       );
+
       if (foundInDb) {
-        // Usuário cadastrado no ERP
+        // Valida se a conta está ativa
+        if (foundInDb.status === 'bloqueado') {
+          return {
+            success: false,
+            error: 'Seu acesso ao painel foi bloqueado pela administração da igreja.',
+          };
+        }
+
+        // Constrói lista estrita de senhas válidas
+        // Prioridade 1: Senha personalizada do usuário salva no banco
+        // Prioridade 2: Senha mestra administrativa da igreja (macdp2026)
+        const validPasswords: string[] = [];
+        if (foundInDb.password) {
+          validPasswords.push(foundInDb.password);
+        }
+        validPasswords.push('macdp2026');
+
+        // Se for uma das contas mestras da liderança, inclui suas senhas autorizadas
+        const authAcc = authorizedAccounts.find((a) => a.email.toLowerCase() === email);
+        if (authAcc) {
+          validPasswords.push(...authAcc.allowedPasswords);
+        }
+
+        const isPasswordMatch = validPasswords.some((vp) => vp === password);
+
+        if (!isPasswordMatch) {
+          return {
+            success: false,
+            error: 'Senha incorreta. Verifique suas credenciais de acesso.',
+          };
+        }
+
+        // Mapeia perfil do usuário
         let mappedRole: UserRole = 'lider';
         if (foundInDb.roleType === 'Administrador') mappedRole = 'admin';
         else if (foundInDb.roleType === 'Pastor') mappedRole = 'pastor';
@@ -209,19 +241,16 @@ export async function loginWithCredentials(
           avatarUrl: SYSTEM_USERS[mappedRole]?.avatarUrl || '/images/logo.png',
         };
 
-        // Aceita senhas padrão ou senha personalizada
-        if (['macdp2026', 'central2026', 'admin123'].includes(password) || password.length >= 6) {
-          setAuthenticatedSession(customUser);
-          return { success: true, user: customUser };
-        }
+        setAuthenticatedSession(customUser);
+        return { success: true, user: customUser };
       }
     }
   } catch (e) {
     console.error('Erro ao verificar accessUsers:', e);
   }
 
-  // Verifica contas de liderança padrão
-  const matched = authorizedAccounts.find((acc) => acc.email === email);
+  // 4. Verificação nas contas autorizadas institucionais (caso não esteja em accessUsers)
+  const matched = authorizedAccounts.find((acc) => acc.email.toLowerCase() === email);
   if (matched) {
     if (matched.allowedPasswords.includes(password) || password === 'macdp2026') {
       setAuthenticatedSession(matched.user);
@@ -229,27 +258,14 @@ export async function loginWithCredentials(
     }
     return {
       success: false,
-      error: 'Senha incorreta para este usuário. Verifique e tente novamente.',
+      error: 'Senha incorreta para este usuário. Verifique suas credenciais.',
     };
   }
 
-  // Se nenhum usuário específico foi encontrado, mas a senha for a senha mestra da igreja
-  if (password === 'macdp2026' || password === 'central2026') {
-    const fallbackUser: UserSession = {
-      id: `usr_${Date.now()}`,
-      name: email.split('@')[0].toUpperCase(),
-      email,
-      role: 'admin',
-      roleTitle: 'Administrador Autorizado',
-      avatarUrl: '/images/logo.png',
-    };
-    setAuthenticatedSession(fallbackUser);
-    return { success: true, user: fallbackUser };
-  }
-
+  // 5. Nenhum usuário cadastrado encontrado
   return {
     success: false,
-    error: 'E-mail ou senha inválidos. Utilize as credenciais autorizadas pela liderança.',
+    error: 'Usuário não cadastrado no sistema da igreja. Contate a secretaria ou administração.',
   };
 }
 

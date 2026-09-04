@@ -34,6 +34,7 @@ import {
   DollarSign,
   Calendar,
   Eye,
+  EyeOff,
   CheckSquare,
   Square,
   Building2,
@@ -83,6 +84,8 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
   // Form Fields
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
+  const [userPassword, setUserPassword] = useState('macdp2026');
+  const [showPassword, setShowPassword] = useState(false);
   const [userPhone, setUserPhone] = useState('92984509989');
   const [roleTitle, setRoleTitle] = useState('Pastor Auxiliar');
   const [roleType, setRoleType] = useState<SystemAccessUser['roleType']>('Pastor');
@@ -101,6 +104,8 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
     setEditingUser(null);
     setUserName('');
     setUserEmail('');
+    setUserPassword('macdp2026');
+    setShowPassword(false);
     setUserPhone('92984509989');
     setRoleTitle('Pastor Auxiliar');
     setRoleType('Pastor');
@@ -115,6 +120,8 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
     setEditingUser(user);
     setUserName(user.name);
     setUserEmail(user.email);
+    setUserPassword(user.password || 'macdp2026');
+    setShowPassword(false);
     setUserPhone(user.phone || '');
     setRoleTitle(user.roleTitle);
     setRoleType(user.roleType);
@@ -148,6 +155,12 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
       return;
     }
 
+    const trimmedPassword = userPassword.trim() || 'macdp2026';
+    if (trimmedPassword.length < 6) {
+      onNotify('error', 'A senha deve ter no mínimo 6 dígitos para segurança.');
+      return;
+    }
+
     if (allowedModules.length === 0) {
       onNotify('error', 'Selecione ao menos um módulo permitido para este usuário.');
       return;
@@ -157,6 +170,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
       updateAccessUser(editingUser.id, {
         name: userName,
         email: userEmail,
+        password: trimmedPassword,
         phone: userPhone,
         roleTitle,
         roleType,
@@ -165,11 +179,12 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
         canEdit,
         notes: userNotes,
       });
-      onNotify('success', `Acessos de "${userName}" atualizados com sucesso!`);
+      onNotify('success', `Acessos e senha de "${userName}" atualizados com sucesso!`);
     } else {
       addAccessUser({
         name: userName,
         email: userEmail,
+        password: trimmedPassword,
         phone: userPhone,
         roleTitle,
         roleType,
@@ -178,7 +193,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
         canEdit,
         notes: userNotes,
       });
-      onNotify('success', `Usuário "${userName}" cadastrado com suas limitações definidas!`);
+      onNotify('success', `Usuário "${userName}" cadastrado com senha protegida!`);
     }
 
     setIsModalOpen(false);
@@ -495,6 +510,11 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
                     {user.canEdit ? '⚡ Acesso Total' : '👁️ Somente Leitura'}
                   </span>
 
+                  <span style={{ color: 'var(--accent-gold-light)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <KeyRound size={12} />
+                    Senha: {user.password ? 'Protegida' : 'macdp2026 (Padrão)'}
+                  </span>
+
                   {user.lastAccess && (
                     <span style={{ color: 'var(--text-muted)' }}>
                       • Último acesso: {user.lastAccess}
@@ -623,6 +643,84 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
                 onChange={(e) => setUserEmail(e.target.value)}
               />
             </div>
+          </div>
+
+          {/* Senha de Acesso Individual */}
+          <div
+            style={{
+              background: 'rgba(245, 158, 11, 0.07)',
+              border: '1px solid rgba(245, 158, 11, 0.28)',
+              borderRadius: 'var(--radius-md)',
+              padding: '0.85rem 1rem',
+              marginBottom: '1rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
+              <label
+                className="form-label"
+                style={{
+                  color: '#ffffff',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  marginBottom: 0,
+                }}
+              >
+                <KeyRound size={15} color="var(--accent-gold)" />
+                <span>Senha de Acesso ao Painel *</span>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => setUserPassword(`macdp${Math.floor(1000 + Math.random() * 9000)}`)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--accent-gold-light)',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                }}
+              >
+                Gerar Senha Aleatória
+              </button>
+            </div>
+
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                className="form-input"
+                placeholder="Defina uma senha com mínimo 6 dígitos"
+                value={userPassword}
+                onChange={(e) => setUserPassword(e.target.value)}
+                style={{ paddingRight: '2.8rem' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  padding: '0.2rem',
+                }}
+                title={showPassword ? 'Ocultar senha' : 'Exibir senha'}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.73rem', color: 'var(--text-muted)' }}>
+              Apenas esta senha específica concederá acesso a este usuário na tela de login administrativo.
+            </p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>

@@ -381,6 +381,7 @@ export interface SystemAccessUser {
   id: string;
   name: string;
   email: string;
+  password?: string;
   phone?: string;
   roleTitle: string;
   roleType: 'Administrador' | 'Pastor' | 'Secretaria' | 'Liderança' | 'Tesouraria' | 'Voluntário';

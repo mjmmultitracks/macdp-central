@@ -240,7 +240,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
                   width: '100%',
                 }}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errorMessage) setErrorMessage(null);
+                }}
               />
             </div>
           </div>
@@ -289,7 +292,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
                   width: '100%',
                 }}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errorMessage) setErrorMessage(null);
+                }}
               />
               <button
                 type="button"

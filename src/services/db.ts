@@ -1188,6 +1188,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       id: 'acc_1',
       name: 'Pr. Oziel Gomes Maduro',
       email: 'oziel.maduro@macdp.com.br',
+      password: 'macdp2026',
       phone: '92984509989',
       roleTitle: 'Pastor Presidente',
       roleType: 'Administrador',
@@ -1215,6 +1216,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       id: 'acc_2',
       name: 'Pra. Midiã Gomes Maduro',
       email: 'midia.maduro@macdp.com.br',
+      password: 'macdp2026',
       phone: '92984509989',
       roleTitle: 'Pastora Presidente',
       roleType: 'Pastor',
@@ -1239,6 +1241,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       id: 'acc_3',
       name: 'Marcos Vinicius Ribeiro',
       email: 'tesouraria@macdp.com.br',
+      password: 'macdp2026',
       phone: '92984509989',
       roleTitle: 'Diretor Financeiro & Tesouraria',
       roleType: 'Tesouraria',
@@ -1253,6 +1256,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       id: 'acc_4',
       name: 'Pr. Jaziel Maduro & Pra. Abda Maduro',
       email: 'jaziel.maduro@macdp.com.br',
+      password: 'macdp2026',
       phone: '92984509989',
       roleTitle: 'Pastores Auxiliares',
       roleType: 'Pastor',
@@ -1275,6 +1279,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       id: 'acc_5',
       name: 'Pr. Samuel Trindade & Pra. Daniely Trindade',
       email: 'samuel.trindade@macdp.com.br',
+      password: 'macdp2026',
       phone: '92984509989',
       roleTitle: 'Pastores Auxiliares',
       roleType: 'Pastor',
@@ -1298,6 +1303,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       id: 'acc_6',
       name: 'Camila Albuquerque Silva',
       email: 'camila.kids@macdp.com.br',
+      password: 'macdp2026',
       phone: '92984509989',
       roleTitle: 'Coordenadora do Caçadores Kids',
       roleType: 'Liderança',
@@ -1312,6 +1318,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       id: 'acc_7',
       name: 'Raquel Vasconcelos',
       email: 'secretaria@macdp.com.br',
+      password: 'macdp2026',
       phone: '92984509989',
       roleTitle: 'Secretária Executiva',
       roleType: 'Secretaria',
@@ -1326,6 +1333,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       id: 'acc_8',
       name: 'Voluntário de Recepção e Portaria',
       email: 'portaria@macdp.com.br',
+      password: 'macdp2026',
       phone: '92984509989',
       roleTitle: 'Operador de Portaria / Check-in',
       roleType: 'Voluntário',
@@ -1387,6 +1395,13 @@ export function getDatabase(): DatabaseSchema {
     if (!parsed.accessUsers) {
       parsed.accessUsers = INITIAL_DATABASE.accessUsers;
       needsSave = true;
+    } else {
+      parsed.accessUsers.forEach((u) => {
+        if (!u.password) {
+          u.password = 'macdp2026';
+          needsSave = true;
+        }
+      });
     }
     if (!parsed.churchSettings) {
       parsed.churchSettings = INITIAL_CHURCH_SETTINGS;
