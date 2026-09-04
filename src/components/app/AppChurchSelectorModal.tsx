@@ -9,11 +9,9 @@ import {
   Search,
   MapPin,
   CheckCircle2,
-  Sparkles,
   Building2,
   X,
   Radio,
-  ExternalLink,
   QrCode,
   ArrowRight,
   ShieldCheck,
@@ -24,7 +22,7 @@ interface AppChurchSelectorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectChurch?: (church: ChurchProfile) => void;
-  canClose?: boolean; // Se for o primeiro acesso obrigatório, canClose pode ser false
+  canClose?: boolean;
 }
 
 export const AppChurchSelectorModal: React.FC<AppChurchSelectorModalProps> = ({
@@ -96,84 +94,209 @@ export const AppChurchSelectorModal: React.FC<AppChurchSelectorModalProps> = ({
     if (found) {
       handlePickChurch(found);
     } else {
-      setQuickCodeError('Congregação não encontrada com este código. Tente pesquisar pelo nome abaixo.');
+      setQuickCodeError('Congregação não encontrada com este código.');
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl max-h-[92vh] flex flex-col bg-slate-900 border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden text-slate-100">
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 99999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
+        backgroundColor: 'rgba(5, 8, 16, 0.85)',
+        backdropFilter: 'blur(10px)',
+      }}
+      onClick={canClose ? onClose : undefined}
+    >
+      <div
+        className="animate-page-enter"
+        style={{
+          width: '100%',
+          maxWidth: '540px',
+          background: 'var(--bg-secondary)',
+          borderRadius: '24px',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: '90vh',
+          color: 'var(--text-primary)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="relative p-5 sm:p-6 border-b border-slate-800 bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900">
+        <div
+          style={{
+            padding: '1.25rem 1.5rem',
+            background: 'var(--bg-tertiary)',
+            borderBottom: '1px solid var(--border-subtle)',
+            position: 'relative',
+          }}
+        >
           {canClose && (
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                padding: '0.4rem',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
               aria-label="Fechar"
             >
-              <X className="w-5 h-5" />
+              <X size={20} />
             </button>
           )}
 
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
-              <Building2 className="w-5 h-5" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                background: 'rgba(245, 158, 11, 0.15)',
+                color: 'var(--accent-gold, #f59e0b)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Building2 size={22} />
             </div>
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                Encontre sua Igreja
-                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/30">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                  Encontre sua Igreja
+                </h3>
+                <span
+                  style={{
+                    fontSize: '0.65rem',
+                    fontWeight: 800,
+                    padding: '0.1rem 0.45rem',
+                    borderRadius: '999px',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    color: 'var(--accent-gold, #f59e0b)',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                  }}
+                >
                   Hub
                 </span>
-              </h2>
-              <p className="text-xs text-slate-400">
-                Selecione sua congregação para carregar cultos, células e mídias
+              </div>
+              <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', margin: '0.15rem 0 0 0' }}>
+                Selecione sua congregação para ter cultos, células e avisos da sua comunidade
               </p>
             </div>
           </div>
 
-          {/* Quick Search Input */}
-          <div className="mt-4 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          {/* Search Input */}
+          <div style={{ position: 'relative', marginTop: '0.5rem' }}>
+            <Search
+              size={16}
+              style={{
+                position: 'absolute',
+                left: '0.85rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-muted)',
+                pointerEvents: 'none',
+              }}
+            />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por nome, pastor, bairro ou cidade..."
-              className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+              className="form-input"
+              style={{
+                width: '100%',
+                paddingLeft: '2.5rem',
+                paddingRight: searchQuery ? '2.5rem' : '1rem',
+                fontSize: '0.85rem',
+                borderRadius: '14px',
+                background: 'var(--bg-primary)',
+              }}
               autoFocus
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  padding: '0.2rem',
+                }}
               >
-                <X className="w-4 h-4" />
+                <X size={15} />
               </button>
             )}
           </div>
 
-          {/* City Chips */}
-          <div className="flex items-center gap-1.5 mt-3 overflow-x-auto pb-1 scrollbar-none text-xs">
+          {/* City Filter Chips */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.4rem',
+              marginTop: '0.65rem',
+              overflowX: 'auto',
+              paddingBottom: '0.2rem',
+            }}
+          >
             <button
+              type="button"
               onClick={() => setSelectedCityFilter('all')}
-              className={`px-3 py-1 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                selectedCityFilter === 'all'
-                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
-                  : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-750'
-              }`}
+              style={{
+                padding: '0.25rem 0.65rem',
+                borderRadius: '8px',
+                fontSize: '0.75rem',
+                fontWeight: selectedCityFilter === 'all' ? 700 : 500,
+                background: selectedCityFilter === 'all' ? 'var(--accent-gold, #f59e0b)' : 'var(--bg-primary)',
+                color: selectedCityFilter === 'all' ? '#0B1120' : 'var(--text-secondary)',
+                border: '1px solid var(--border-subtle)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s',
+              }}
             >
               Todas as Cidades
             </button>
             {cities.map((city) => (
               <button
                 key={city}
+                type="button"
                 onClick={() => setSelectedCityFilter(city)}
-                className={`px-3 py-1 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                  selectedCityFilter === city
-                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
-                    : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-750'
-                }`}
+                style={{
+                  padding: '0.25rem 0.65rem',
+                  borderRadius: '8px',
+                  fontSize: '0.75rem',
+                  fontWeight: selectedCityFilter === city ? 700 : 500,
+                  background: selectedCityFilter === city ? 'var(--accent-gold, #f59e0b)' : 'var(--bg-primary)',
+                  color: selectedCityFilter === city ? '#0B1120' : 'var(--text-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.15s',
+                }}
               >
                 {city}
               </button>
@@ -181,14 +304,25 @@ export const AppChurchSelectorModal: React.FC<AppChurchSelectorModalProps> = ({
           </div>
         </div>
 
-        {/* Content / Church List */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3">
+        {/* Content: List of churches */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '1rem 1.25rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
+          }}
+        >
           {filteredChurches.length === 0 ? (
-            <div className="text-center py-10 px-4">
-              <Building2 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-              <p className="text-base font-semibold text-slate-300">Nenhuma igreja encontrada</p>
-              <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                Tente buscar por termos mais simples, como &quot;Manaus&quot;, &quot;MACDP&quot; ou o nome do bairro.
+            <div style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
+              <Building2 size={42} style={{ color: 'var(--text-muted)', margin: '0 auto 0.75rem auto' }} />
+              <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                Nenhuma igreja encontrada
+              </p>
+              <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                Tente buscar por &quot;Manaus&quot;, &quot;MACDP&quot; ou o nome do bairro.
               </p>
             </div>
           ) : (
@@ -198,60 +332,106 @@ export const AppChurchSelectorModal: React.FC<AppChurchSelectorModalProps> = ({
                 <div
                   key={church.id}
                   onClick={() => handlePickChurch(church)}
-                  className={`group relative p-4 rounded-2xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                    isSelected
-                      ? 'bg-amber-500/10 border-amber-500/60 ring-1 ring-amber-500/40 shadow-lg shadow-amber-500/5'
-                      : 'bg-slate-950/60 hover:bg-slate-800/80 border-slate-800 hover:border-slate-700'
-                  }`}
+                  style={{
+                    padding: '0.95rem 1rem',
+                    borderRadius: '16px',
+                    border: isSelected ? '1.5px solid var(--accent-gold, #f59e0b)' : '1px solid var(--border-subtle)',
+                    background: isSelected ? 'rgba(245, 158, 11, 0.08)' : 'var(--bg-primary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.85rem',
+                    transition: 'all 0.15s ease',
+                  }}
                 >
-                  <div className="flex items-start gap-3.5">
-                    {/* Logo */}
-                    <div className="relative flex-shrink-0">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', minWidth: 0, flex: 1 }}>
+                    {/* Church Logo */}
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
                       <img
                         src={church.logoUrl || '/icon-192.png'}
                         alt={church.shortName}
-                        className="w-12 h-12 rounded-xl object-cover bg-slate-800 border border-slate-700 p-0.5"
+                        style={{
+                          width: '46px',
+                          height: '46px',
+                          borderRadius: '12px',
+                          objectFit: 'cover',
+                          background: 'var(--bg-tertiary)',
+                          border: '1px solid var(--border-subtle)',
+                        }}
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = '/icon-192.png';
                         }}
                       />
                       {church.isLiveNow && (
-                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 border border-slate-900"></span>
-                        </span>
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '-3px',
+                            right: '-3px',
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '50%',
+                            background: '#EF4444',
+                            border: '2px solid var(--bg-primary)',
+                          }}
+                        />
                       )}
                     </div>
 
-                    {/* Info */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <h3 className="font-bold text-sm sm:text-base text-white group-hover:text-amber-400 transition-colors">
+                    {/* Church Info */}
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+                        <strong style={{ fontSize: '0.925rem', color: 'var(--text-primary)' }}>
                           {church.shortName}
-                        </h3>
+                        </strong>
                         {church.isVerified && (
-                          <span title="Igreja Oficial Verificada" className="inline-flex">
-                            <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                          <span title="Igreja Oficial Verificada" style={{ display: 'inline-flex' }}>
+                            <ShieldCheck size={15} color="#10B981" />
                           </span>
                         )}
                         {church.isLiveNow && (
-                          <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30 flex items-center gap-1">
-                            <Radio className="w-2.5 h-2.5 animate-pulse" /> Ao Vivo
+                          <span
+                            style={{
+                              fontSize: '0.625rem',
+                              fontWeight: 800,
+                              padding: '0.1rem 0.35rem',
+                              borderRadius: '4px',
+                              background: 'rgba(239, 68, 68, 0.15)',
+                              color: '#EF4444',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.2rem',
+                            }}
+                          >
+                            <Radio size={9} /> Ao Vivo
                           </span>
                         )}
                       </div>
 
-                      <p className="text-xs text-slate-400 truncate mt-0.5">{church.name}</p>
+                      <p
+                        style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--text-secondary)',
+                          margin: '0.15rem 0 0.3rem 0',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {church.name}
+                      </p>
 
-                      <div className="flex items-center gap-3 text-xs text-slate-400 mt-2 flex-wrap">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-amber-500" />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.725rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <MapPin size={12} color="var(--accent-gold, #f59e0b)" />
                           {church.neighborhood ? `${church.neighborhood}, ` : ''}
                           {church.city} - {church.state}
                         </span>
                         {church.pastorPresident && (
-                          <span className="flex items-center gap-1 text-slate-500 hidden sm:flex">
-                            <User className="w-3.5 h-3.5" />
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <User size={12} />
                             {church.pastorPresident}
                           </span>
                         )}
@@ -259,20 +439,44 @@ export const AppChurchSelectorModal: React.FC<AppChurchSelectorModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Right Action */}
-                  <div className="flex items-center justify-end sm:flex-shrink-0">
+                  {/* Action */}
+                  <div style={{ flexShrink: 0 }}>
                     {isSelected ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Selecionada
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          padding: '0.4rem 0.75rem',
+                          borderRadius: '10px',
+                          background: 'var(--accent-gold, #f59e0b)',
+                          color: '#0B1120',
+                          fontSize: '0.75rem',
+                          fontWeight: 800,
+                        }}
+                      >
+                        <CheckCircle2 size={13} />
+                        <span>Selecionada</span>
                       </span>
                     ) : (
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-300 text-xs font-semibold transition-all group-hover:border-amber-500/40"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          padding: '0.4rem 0.75rem',
+                          borderRadius: '10px',
+                          background: 'var(--bg-tertiary)',
+                          color: 'var(--text-primary)',
+                          border: '1px solid var(--border-subtle)',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                        }}
                       >
-                        Acessar
-                        <ArrowRight className="w-3 h-3" />
+                        <span>Acessar</span>
+                        <ArrowRight size={12} />
                       </button>
                     )}
                   </div>
@@ -281,40 +485,73 @@ export const AppChurchSelectorModal: React.FC<AppChurchSelectorModalProps> = ({
             })
           )}
 
-          {/* Quick Code / QR section */}
-          <div className="mt-4 p-4 rounded-2xl bg-slate-950/40 border border-slate-800">
-            <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-slate-300">
-              <QrCode className="w-4 h-4 text-amber-400" />
-              <span>Tem o código da congregação?</span>
+          {/* Quick Code Section */}
+          <div
+            style={{
+              marginTop: '0.5rem',
+              padding: '0.85rem 1rem',
+              borderRadius: '16px',
+              background: 'var(--bg-tertiary)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
+              <QrCode size={15} color="var(--accent-gold, #f59e0b)" />
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                Tem o código da congregação?
+              </span>
             </div>
-            <form onSubmit={handleApplyQuickCode} className="flex gap-2">
+            <form onSubmit={handleApplyQuickCode} style={{ display: 'flex', gap: '0.4rem' }}>
               <input
                 type="text"
                 value={quickCode}
                 onChange={(e) => setQuickCode(e.target.value)}
                 placeholder="Ex: macdp-central, macdp-norte..."
-                className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                className="form-input"
+                style={{ flex: 1, fontSize: '0.775rem', padding: '0.4rem 0.65rem' }}
               />
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium transition-colors"
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem' }}
               >
                 Entrar
               </button>
             </form>
             {quickCodeError && (
-              <p className="text-[11px] text-red-400 mt-1.5">{quickCodeError}</p>
+              <p style={{ fontSize: '0.725rem', color: '#EF4444', margin: '0.35rem 0 0 0' }}>
+                {quickCodeError}
+              </p>
             )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-3.5 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between text-[11px] text-slate-500">
+        <div
+          style={{
+            padding: '0.75rem 1.5rem',
+            background: 'var(--bg-tertiary)',
+            borderTop: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.725rem',
+            color: 'var(--text-muted)',
+          }}
+        >
           <span>O app memorizará sua congregação automaticamente.</span>
           {canClose && (
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white underline font-medium"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                fontWeight: 600,
+                textDecoration: 'underline',
+                padding: 0,
+              }}
             >
               Fechar
             </button>
