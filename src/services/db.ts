@@ -132,6 +132,13 @@ export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
     publicKey: 'APP_USR-18bee5ba-a5ca-4dd9-a511-06308a2a2bfe',
     sandbox: false,
   },
+  emailSettings: {
+    enabled: true,
+    provider: 'resend',
+    apiKey: '',
+    fromEmail: 'onboarding@resend.dev',
+    fromName: 'MACDP Central',
+  },
   appSettings: INITIAL_APP_SETTINGS,
 };
 
@@ -1424,6 +1431,10 @@ export function getDatabase(): DatabaseSchema {
           publicKey: INITIAL_CHURCH_SETTINGS.mercadoPago?.publicKey || '',
           sandbox: false,
         };
+        needsSave = true;
+      }
+      if (!parsed.churchSettings.emailSettings) {
+        parsed.churchSettings.emailSettings = INITIAL_CHURCH_SETTINGS.emailSettings;
         needsSave = true;
       }
     }

@@ -89,6 +89,13 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
       publicKey: currentSettings.mercadoPago?.publicKey || '',
       sandbox: currentSettings.mercadoPago?.sandbox || false,
     },
+    emailSettings: {
+      enabled: currentSettings.emailSettings?.enabled !== false,
+      provider: 'resend' as const,
+      apiKey: currentSettings.emailSettings?.apiKey || '',
+      fromEmail: currentSettings.emailSettings?.fromEmail || 'onboarding@resend.dev',
+      fromName: currentSettings.emailSettings?.fromName || currentSettings.shortName || 'MACDP Central',
+    },
     themeColors: {
       primaryColor: currentSettings.themeColors?.primaryColor || DEFAULT_THEME_COLORS.primaryColor,
       secondaryColor: currentSettings.themeColors?.secondaryColor || DEFAULT_THEME_COLORS.secondaryColor,
@@ -96,7 +103,7 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
     appSettings: currentSettings.appSettings || INITIAL_APP_SETTINGS,
   });
 
-  const [activeTab, setActiveTab] = useState<'brand' | 'colors' | 'app' | 'contact' | 'address' | 'social' | 'mercadopago'>('brand');
+  const [activeTab, setActiveTab] = useState<'brand' | 'colors' | 'app' | 'contact' | 'address' | 'social' | 'mercadopago' | 'emails'>('brand');
   const [isSaving, setIsSaving] = useState(false);
   const [isChurchLinkCopied, setIsChurchLinkCopied] = useState(false);
 
@@ -104,6 +111,55 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
   const [isTestingMp, setIsTestingMp] = useState(false);
   const [mpTestResult, setMpTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [showAccessToken, setShowAccessToken] = useState(false);
+
+  // Resend Email Test & Visibility State
+  const [isTestingResend, setIsTestingResend] = useState(false);
+  const [resendTestResult, setResendTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [showResendApiKey, setShowResendApiKey] = useState(false);
+  const [resendTestRecipient, setResendTestRecipient] = useState(currentSettings.email || '');
+
+  const handleTestResend = async () => {
+    if (!form.emailSettings?.apiKey?.trim()) {
+      onNotify('error', 'Digite ou cole a API Key do Resend (re_...) antes de testar.');
+      return;
+    }
+    setIsTestingResend(true);
+    setResendTestResult(null);
+    try {
+      const res = await fetch('/api/resend-test-connection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: form.emailSettings.apiKey.trim(),
+          toEmail: resendTestRecipient.trim() || undefined,
+          fromEmail: form.emailSettings.fromEmail?.trim(),
+          fromName: form.emailSettings.fromName?.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setResendTestResult({
+          success: true,
+          message: data.message || 'Conexão com o Resend validada com sucesso!',
+        });
+        onNotify('success', data.message || 'Resend validado com sucesso!');
+      } else {
+        setResendTestResult({
+          success: false,
+          message: data.error || 'Falha ao validar chave do Resend.',
+        });
+        onNotify('error', data.error || 'Falha ao conectar com o Resend.');
+      }
+    } catch (err: any) {
+      setResendTestResult({
+        success: false,
+        message: err.message || 'Erro de rede ao conectar à API.',
+      });
+      onNotify('error', 'Erro ao testar conexão.');
+    } finally {
+      setIsTestingResend(false);
+    }
+  };
 
   const handleTestMercadoPago = async () => {
     if (!form.mercadoPago?.accessToken?.trim()) {
@@ -624,6 +680,28 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
         >
           <CreditCard size={16} />
           <span>Mercado Pago (Gateway)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('emails')}
+          style={{
+            padding: '0.75rem 1.25rem',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'emails' ? '2px solid var(--accent-gold)' : '2px solid transparent',
+            color: activeTab === 'emails' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <Mail size={16} />
+          <span>E-mails (Resend)</span>
         </button>
       </div>
 
@@ -2123,6 +2201,243 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                 <li>No menu superior, clique em <strong>Suas integrações</strong> &gt; Crie ou selecione sua aplicação.</li>
                 <li>No menu lateral, acesse <strong>Credenciais de produção</strong> (ou Credenciais de teste).</li>
                 <li>Copie o <strong>Access Token</strong> e a <strong>Public Key</strong>, cole nos campos acima e clique em <strong>"Testar Conexão"</strong>.</li>
+              </ol>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== TAB 8: E-MAILS TRANSACIONAIS (RESEND) ==================== */}
+        {activeTab === 'emails' && (
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '10px',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    border: '1px solid rgba(16, 185, 129, 0.4)',
+                    color: '#10b981',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Mail size={22} />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                    Integração Oficial de E-mails (Resend)
+                  </h4>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                    Disparo automático de comprovantes e confirmações de inscrições em tempo real.
+                  </p>
+                </div>
+              </div>
+
+              {/* Master Enable/Disable Toggle */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: form.emailSettings?.enabled ? '#10b981' : 'var(--text-muted)' }}>
+                  {form.emailSettings?.enabled ? 'Envios Ativos' : 'Envios Desativados'}
+                </span>
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.emailSettings?.enabled)}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      emailSettings: {
+                        ...form.emailSettings,
+                        enabled: e.target.checked,
+                        provider: 'resend',
+                      },
+                    })
+                  }
+                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#10b981' }}
+                />
+              </label>
+            </div>
+
+            {/* Form Fields Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+              {/* API Key */}
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 700 }}>
+                  <Lock size={15} color="#10b981" />
+                  <span>Chave de API do Resend (API Key) *</span>
+                </label>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <input
+                    type={showResendApiKey ? 'text' : 'password'}
+                    placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxx"
+                    className="form-input"
+                    style={{ paddingRight: '45px', fontFamily: 'monospace', fontSize: '0.9rem' }}
+                    value={form.emailSettings?.apiKey || ''}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        emailSettings: {
+                          ...form.emailSettings,
+                          enabled: form.emailSettings?.enabled !== false,
+                          provider: 'resend',
+                          apiKey: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowResendApiKey(!showResendApiKey)}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                    title={showResendApiKey ? 'Ocultar chave' : 'Exibir chave'}
+                  >
+                    {showResendApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                  Chave gerada no painel do Resend em <strong>API Keys</strong> (começa com <code>re_</code>).
+                </span>
+              </div>
+
+              {/* Sender Name */}
+              <div className="form-group">
+                <label className="form-label" style={{ fontWeight: 700 }}>Nome do Remetente (De:) *</label>
+                <input
+                  type="text"
+                  placeholder="Ex: MACDP Central"
+                  className="form-input"
+                  value={form.emailSettings?.fromName || ''}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      emailSettings: {
+                        ...form.emailSettings,
+                        enabled: form.emailSettings?.enabled !== false,
+                        provider: 'resend',
+                        fromName: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                  Nome que aparecerá na caixa de entrada do participante.
+                </span>
+              </div>
+
+              {/* Sender Email */}
+              <div className="form-group">
+                <label className="form-label" style={{ fontWeight: 700 }}>E-mail do Remetente *</label>
+                <input
+                  type="email"
+                  placeholder="Ex: eventos@macdp.com.br ou onboarding@resend.dev"
+                  className="form-input"
+                  value={form.emailSettings?.fromEmail || ''}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      emailSettings: {
+                        ...form.emailSettings,
+                        enabled: form.emailSettings?.enabled !== false,
+                        provider: 'resend',
+                        fromEmail: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                  Para domínio próprio verificado (ex: <code>eventos@macdp.com.br</code>) ou <code>onboarding@resend.dev</code> para testes.
+                </span>
+              </div>
+            </div>
+
+            {/* Test Connection Button & Disparo ao Vivo */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.85rem',
+                borderTop: '1px solid var(--border-subtle)',
+                paddingTop: '1rem',
+              }}
+            >
+              <label style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
+                Testar Envio com o Resend:
+              </label>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <input
+                  type="email"
+                  placeholder="Seu e-mail para receber o teste..."
+                  className="form-input"
+                  style={{ maxWidth: '340px' }}
+                  value={resendTestRecipient}
+                  onChange={(e) => setResendTestRecipient(e.target.value)}
+                />
+
+                <button
+                  type="button"
+                  disabled={isTestingResend || !form.emailSettings?.apiKey}
+                  onClick={handleTestResend}
+                  className="btn btn-secondary"
+                  style={{ gap: '0.5rem', fontWeight: 800, borderColor: '#10b981', color: '#10b981' }}
+                >
+                  {isTestingResend ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} />}
+                  <span>{isTestingResend ? 'Enviando Teste...' : 'Disparar E-mail de Teste'}</span>
+                </button>
+              </div>
+
+              {resendTestResult && (
+                <div
+                  style={{
+                    padding: '0.85rem 1rem',
+                    borderRadius: '8px',
+                    fontSize: '0.82rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.6rem',
+                    background: resendTestResult.success ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                    border: `1px solid ${resendTestResult.success ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                    color: resendTestResult.success ? '#10b981' : '#ef4444',
+                  }}
+                >
+                  {resendTestResult.success ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
+                  <span>{resendTestResult.message}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Step-by-step documentation card */}
+            <div
+              style={{
+                background: 'rgba(16, 185, 129, 0.05)',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                borderRadius: '8px',
+                padding: '1rem 1.2rem',
+                fontSize: '0.8rem',
+                color: 'var(--text-secondary)',
+                lineHeight: '1.5',
+              }}
+            >
+              <strong style={{ color: '#10b981', fontSize: '0.88rem', display: 'block', marginBottom: '0.4rem' }}>
+                📖 Como obter sua chave gratuita no Resend:
+              </strong>
+              <ol style={{ margin: 0, paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <li>Acesse <a href="https://resend.com" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>resend.com (Clique para abrir)</a> e crie uma conta gratuita (3.000 e-mails/mês inclusos).</li>
+                <li>No menu lateral, clique em <strong>API Keys</strong> &gt; <strong>Create API Key</strong>.</li>
+                <li>Dê um nome (ex: <code>MACDP Produção</code>) com permissão <strong>Full Access</strong> e copie o token que começa com <code>re_</code>.</li>
+                <li>Cole no campo <strong>Chave de API do Resend</strong> acima e clique em <strong>"Salvar Configurações da Igreja"</strong>.</li>
+                <li><em>Opcional (Domínio Próprio):</em> Para enviar direto de <code>eventos@macdp.com.br</code>, vá em <strong>Domains</strong> no Resend, adicione <code>macdp.com.br</code> e adicione os registros DNS no seu provedor de domínio (Hostinger, Cloudflare ou Registro.br). Enquanto não configurar, use <code>onboarding@resend.dev</code> para testes.</li>
               </ol>
             </div>
           </div>

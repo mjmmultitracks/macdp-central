@@ -507,6 +507,13 @@ export interface ChurchSettings {
     publicKey?: string;
     sandbox?: boolean;
   };
+  emailSettings?: {
+    enabled: boolean;
+    provider: 'resend';
+    apiKey?: string;
+    fromEmail?: string;
+    fromName?: string;
+  };
   appSettings?: ChurchAppSettings;
 }
 

@@ -9,21 +9,23 @@ export interface SentEmailRecord {
   subject: string;
   htmlContent: string;
   sentAt: string;
-  status: 'Entregue' | 'Enviado';
+  status: 'Entregue' | 'Enviado' | 'Erro';
   eventId: string;
   eventTitle: string;
   amount: string;
   registrationCode: string;
+  resendId?: string;
+  error?: string;
 }
 
-export function sendEventConfirmationEmail(params: {
+export async function sendEventConfirmationEmail(params: {
   event: ChurchEvent;
   registration: EventRegistration;
   participantName: string;
   participantEmail: string;
   participantPhone: string;
   customAnswers?: Record<string, any>;
-}): SentEmailRecord {
+}): Promise<SentEmailRecord> {
   const { event, registration, participantName, participantEmail, participantPhone, customAnswers } = params;
 
   const isFree = event.isFree && !registration.includeShirt;
@@ -210,6 +212,45 @@ export function sendEventConfirmationEmail(params: {
 </html>
   `.trim();
 
+  let resendId: string | undefined;
+  let deliveryStatus: 'Entregue' | 'Enviado' | 'Erro' = 'Enviado';
+  let deliveryError: string | undefined;
+
+  // Disparo real via API Serverless do Resend
+  if (participantEmail && participantEmail.includes('@')) {
+    try {
+      const db = getDatabase();
+      const emailConfig = db.churchSettings?.emailSettings;
+
+      if (emailConfig?.enabled !== false) {
+        const response = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: participantEmail.trim(),
+            subject,
+            html: htmlContent,
+            fromName: emailConfig?.fromName || db.churchSettings?.shortName || 'MACDP Central',
+            fromEmail: emailConfig?.fromEmail,
+            apiKey: emailConfig?.apiKey,
+          }),
+        });
+
+        const resData = await response.json();
+        if (response.ok && resData.success) {
+          resendId = resData.id;
+          deliveryStatus = 'Entregue';
+        } else {
+          deliveryError = resData.error || 'Erro no envio';
+          console.warn('Aviso no envio de e-mail via Resend:', deliveryError);
+        }
+      }
+    } catch (err: any) {
+      deliveryError = err.message || 'Falha de rede';
+      console.warn('Falha de rede ao disparar /api/send-email:', err);
+    }
+  }
+
   const emailRecord: SentEmailRecord = {
     id: `email_${Date.now()}`,
     recipientEmail: participantEmail,
@@ -217,11 +258,13 @@ export function sendEventConfirmationEmail(params: {
     subject,
     htmlContent,
     sentAt: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-    status: 'Entregue',
+    status: deliveryStatus,
     eventId: event.id,
     eventTitle: event.title,
     amount: paymentAmountText,
     registrationCode: registration.id,
+    resendId,
+    error: deliveryError,
   };
 
   // Register in Teaching Message Logs for admin traceability
@@ -233,10 +276,10 @@ export function sendEventConfirmationEmail(params: {
         targetClass: `Inscrição Evento: ${event.title}`,
         channel: 'email',
         subject,
-        message: `Comprovante de confirmação e pagamento enviado para ${participantName} (${participantEmail}) com credencial ${registration.id}.`,
+        message: `Comprovante de confirmação e pagamento enviado para ${participantName} (${participantEmail}) com credencial ${registration.id}.${resendId ? ` [Resend ID: ${resendId}]` : ''}`,
         sentAt: emailRecord.sentAt,
         recipientsCount: 1,
-        status: 'enviado',
+        status: deliveryStatus === 'Entregue' ? 'enviado' : 'falha',
       });
       saveDatabase(db);
     }

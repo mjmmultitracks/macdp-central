@@ -384,15 +384,19 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
       }
 
       // 1. Transactional confirmation email
-      const emailRecord = sendEventConfirmationEmail({
-        event,
-        registration: reg,
-        participantName: name.trim(),
-        participantEmail: finalEmail,
-        participantPhone: phone.trim(),
-        customAnswers,
-      });
-      setSentEmail(emailRecord);
+      try {
+        const emailRecord = await sendEventConfirmationEmail({
+          event,
+          registration: reg,
+          participantName: name.trim(),
+          participantEmail: finalEmail,
+          participantPhone: phone.trim(),
+          customAnswers,
+        });
+        setSentEmail(emailRecord);
+      } catch (emailErr) {
+        console.warn('Aviso no envio assíncrono de e-mail:', emailErr);
+      }
 
       // 2. Automatically generate and download PDF voucher
       setIsDownloadingPdf(true);
@@ -2231,7 +2235,12 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                       <span>E-mail & Pagamento</span>
                     </div>
                     <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', margin: '0.35rem 0 0.75rem 0' }}>
-                      Recibo de pagamento enviado para <strong>{sentEmail?.recipientEmail || email}</strong>.
+                      Recibo de confirmação enviado para <strong>{sentEmail?.recipientEmail || email}</strong>.
+                      {sentEmail?.resendId && (
+                        <span style={{ display: 'block', fontSize: '0.7rem', color: '#10b981', marginTop: '0.2rem', fontWeight: 600 }}>
+                          ⚡ Entregue via Resend
+                        </span>
+                      )}
                     </p>
                   </div>
                   <button
