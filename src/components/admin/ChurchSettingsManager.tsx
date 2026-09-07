@@ -34,6 +34,10 @@ import {
   Lock,
   QrCode,
   Copy,
+  CreditCard,
+  Eye,
+  EyeOff,
+  AlertTriangle,
 } from 'lucide-react';
 import { COLOR_PRESETS, DEFAULT_THEME_COLORS, applyThemeColors } from '../../utils/themeColors';
 
@@ -79,6 +83,12 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
       receiver: currentSettings.pix?.receiver || '',
       bank: currentSettings.pix?.bank || '',
     },
+    mercadoPago: {
+      enabled: currentSettings.mercadoPago?.enabled || false,
+      accessToken: currentSettings.mercadoPago?.accessToken || '',
+      publicKey: currentSettings.mercadoPago?.publicKey || '',
+      sandbox: currentSettings.mercadoPago?.sandbox || false,
+    },
     themeColors: {
       primaryColor: currentSettings.themeColors?.primaryColor || DEFAULT_THEME_COLORS.primaryColor,
       secondaryColor: currentSettings.themeColors?.secondaryColor || DEFAULT_THEME_COLORS.secondaryColor,
@@ -86,9 +96,52 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
     appSettings: currentSettings.appSettings || INITIAL_APP_SETTINGS,
   });
 
-  const [activeTab, setActiveTab] = useState<'brand' | 'colors' | 'app' | 'contact' | 'address' | 'social'>('brand');
+  const [activeTab, setActiveTab] = useState<'brand' | 'colors' | 'app' | 'contact' | 'address' | 'social' | 'mercadopago'>('brand');
   const [isSaving, setIsSaving] = useState(false);
   const [isChurchLinkCopied, setIsChurchLinkCopied] = useState(false);
+
+  // Mercado Pago Test & Visibility State
+  const [isTestingMp, setIsTestingMp] = useState(false);
+  const [mpTestResult, setMpTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [showAccessToken, setShowAccessToken] = useState(false);
+
+  const handleTestMercadoPago = async () => {
+    if (!form.mercadoPago?.accessToken?.trim()) {
+      onNotify('error', 'Digite ou cole o Access Token do Mercado Pago antes de testar.');
+      return;
+    }
+    setIsTestingMp(true);
+    setMpTestResult(null);
+    try {
+      const res = await fetch('/api/mercadopago-test-connection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: form.mercadoPago.accessToken.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMpTestResult({
+          success: true,
+          message: data.message || `Conexão bem-sucedida com a conta ${data.account?.nickname || ''}!`,
+        });
+        onNotify('success', 'Conexão com o Mercado Pago validada com sucesso!');
+      } else {
+        setMpTestResult({
+          success: false,
+          message: data.error || 'Não foi possível validar o token do Mercado Pago.',
+        });
+        onNotify('error', data.error || 'Falha ao conectar com o Mercado Pago.');
+      }
+    } catch (err: any) {
+      setMpTestResult({
+        success: false,
+        message: err.message || 'Erro de rede ao conectar à API.',
+      });
+      onNotify('error', 'Erro ao testar conexão.');
+    } finally {
+      setIsTestingMp(false);
+    }
+  };
 
   // Push Notification Dispatcher Form State
   const [notifTitle, setNotifTitle] = useState('');
@@ -544,10 +597,33 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: '0.45rem',
+            whiteSpace: 'nowrap',
           }}
         >
           <Share2 size={16} />
-          <span>Redes Sociais & Contribuições</span>
+          <span>Redes & PIX Geral</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('mercadopago')}
+          style={{
+            padding: '0.75rem 1.25rem',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'mercadopago' ? '2px solid var(--accent-gold)' : '2px solid transparent',
+            color: activeTab === 'mercadopago' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <CreditCard size={16} />
+          <span>Mercado Pago (Gateway)</span>
         </button>
       </div>
 
@@ -1825,6 +1901,229 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
                   }
                 />
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== TAB 7: MERCADO PAGO GATEWAY ==================== */}
+        {activeTab === 'mercadopago' && (
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '10px',
+                    background: 'rgba(0, 158, 227, 0.15)',
+                    border: '1px solid rgba(0, 158, 227, 0.4)',
+                    color: '#009ee3',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <CreditCard size={22} />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                    Integração Oficial Mercado Pago
+                  </h4>
+                  <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    Baixa 100% automática de PIX em tempo real e pagamentos via Cartão de Crédito nas inscrições de eventos.
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Pill */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <span
+                  style={{
+                    padding: '0.35rem 0.85rem',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    background: form.mercadoPago?.enabled ? 'rgba(16, 185, 129, 0.15)' : 'rgba(100, 116, 139, 0.15)',
+                    color: form.mercadoPago?.enabled ? 'var(--status-success)' : 'var(--text-muted)',
+                    border: `1px solid ${form.mercadoPago?.enabled ? 'rgba(16, 185, 129, 0.4)' : 'var(--border-subtle)'}`,
+                  }}
+                >
+                  {form.mercadoPago?.enabled ? '● Ativo nas Inscrições' : '○ Inativo'}
+                </span>
+              </div>
+            </div>
+
+            {/* Ativar/Desativar Switch */}
+            <div
+              style={{
+                background: 'var(--bg-tertiary)',
+                border: '1px solid var(--border-medium)',
+                borderRadius: 'var(--radius-md)',
+                padding: '1rem 1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem',
+              }}
+            >
+              <div>
+                <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)', display: 'block' }}>
+                  Ativar Mercado Pago como Processador Principal
+                </span>
+                <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                  Quando ativado, os eventos pagos gerarão PIX dinâmico com confirmação instantânea na hora do pagamento e permitirão parcelamento no cartão.
+                </p>
+              </div>
+
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={form.mercadoPago?.enabled || false}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      mercadoPago: {
+                        ...(form.mercadoPago || { accessToken: '', publicKey: '' }),
+                        enabled: e.target.checked,
+                      },
+                    })
+                  }
+                  style={{ width: '20px', height: '20px', accentColor: '#009ee3' }}
+                />
+                <span style={{ fontWeight: 700, fontSize: '0.9rem', color: form.mercadoPago?.enabled ? '#009ee3' : 'var(--text-secondary)' }}>
+                  {form.mercadoPago?.enabled ? 'Integração Ativada' : 'Integração Desativada'}
+                </span>
+              </label>
+            </div>
+
+            {/* Credenciais Form */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+              <div className="form-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Access Token (Produção ou Teste) *</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowAccessToken(!showAccessToken)}
+                    className="btn btn-ghost btn-sm"
+                    style={{ padding: '0.15rem 0.45rem', fontSize: '0.72rem', gap: '0.3rem' }}
+                  >
+                    {showAccessToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                    <span>{showAccessToken ? 'Ocultar' : 'Exibir'}</span>
+                  </button>
+                </div>
+                <input
+                  type={showAccessToken ? 'text' : 'password'}
+                  className="form-input"
+                  placeholder="APP_USR-0000000000000000-000000-..."
+                  value={form.mercadoPago?.accessToken || ''}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      mercadoPago: {
+                        ...(form.mercadoPago || { enabled: false, publicKey: '' }),
+                        accessToken: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                  Token privado da aplicação no Mercado Pago. Mantido protegido no servidor.
+                </span>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Public Key (Chave Pública)</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="APP_USR-00000000-0000-0000-0000-000000000000"
+                  value={form.mercadoPago?.publicKey || ''}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      mercadoPago: {
+                        ...(form.mercadoPago || { enabled: false, accessToken: '' }),
+                        publicKey: e.target.value,
+                      },
+                    })
+                  }
+                />
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                  Chave pública do Mercado Pago utilizada pelo frontend.
+                </span>
+              </div>
+            </div>
+
+            {/* Test Connection Button & Result Banner */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.85rem',
+                borderTop: '1px solid var(--border-subtle)',
+                paddingTop: '1rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  disabled={isTestingMp || !form.mercadoPago?.accessToken}
+                  onClick={handleTestMercadoPago}
+                  className="btn btn-secondary"
+                  style={{ gap: '0.5rem', fontWeight: 800, borderColor: '#009ee3', color: '#009ee3' }}
+                >
+                  {isTestingMp ? <RefreshCw size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                  <span>{isTestingMp ? 'Testando Conexão...' : 'Testar Conexão com Mercado Pago'}</span>
+                </button>
+
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  Valida se o Access Token fornecido está ativo e possui permissões na API.
+                </span>
+              </div>
+
+              {mpTestResult && (
+                <div
+                  style={{
+                    padding: '0.85rem 1rem',
+                    borderRadius: '8px',
+                    fontSize: '0.82rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.65rem',
+                    background: mpTestResult.success ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                    border: `1px solid ${mpTestResult.success ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`,
+                    color: mpTestResult.success ? 'var(--status-success)' : '#ef4444',
+                  }}
+                >
+                  {mpTestResult.success ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
+                  <span>{mpTestResult.message}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Instruction Card */}
+            <div
+              style={{
+                background: 'rgba(0, 158, 227, 0.06)',
+                border: '1px solid rgba(0, 158, 227, 0.25)',
+                borderRadius: '8px',
+                padding: '1rem 1.25rem',
+                fontSize: '0.82rem',
+                color: 'var(--text-secondary)',
+                lineHeight: 1.55,
+              }}
+            >
+              <strong style={{ color: '#009ee3', fontSize: '0.88rem', display: 'block', marginBottom: '0.4rem' }}>
+                📖 Como obter suas credenciais no Mercado Pago:
+              </strong>
+              <ol style={{ margin: 0, paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <li>Acesse o portal oficial: <a href="https://www.mercadopago.com.br/developers" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>Mercado Pago Developers (Clique para abrir)</a>.</li>
+                <li>Faça login com a conta da igreja no Mercado Pago.</li>
+                <li>No menu superior, clique em <strong>Suas integrações</strong> &gt; Crie ou selecione sua aplicação.</li>
+                <li>No menu lateral, acesse <strong>Credenciais de produção</strong> (ou Credenciais de teste).</li>
+                <li>Copie o <strong>Access Token</strong> e a <strong>Public Key</strong>, cole nos campos acima e clique em <strong>"Testar Conexão"</strong>.</li>
+              </ol>
             </div>
           </div>
         )}

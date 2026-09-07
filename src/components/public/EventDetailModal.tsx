@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChurchEvent } from '../../types';
-import { formatDate } from '../../utils/formatters';
+import { formatDate, formatCurrency } from '../../utils/formatters';
+import { getChurchSettings } from '../../services/db';
 import {
   Calendar,
   Clock,
@@ -16,6 +17,8 @@ import {
   ExternalLink,
   Mic,
   Navigation,
+  CreditCard,
+  QrCode,
 } from 'lucide-react';
 import { getGoogleMapsEmbedUrl, getGoogleMapsDirectionsUrl } from '../../services/googleMapsService';
 
@@ -36,6 +39,13 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
   const spotsLeft = event.totalCapacity - event.registeredCount;
   const isSoldOut = spotsLeft <= 0;
+
+  const churchSettings = getChurchSettings();
+  const isMpActive = !!(
+    churchSettings.mercadoPago?.enabled &&
+    churchSettings.mercadoPago?.accessToken?.trim() &&
+    event.mercadoPagoEnabled !== false
+  );
 
   const shareEventUrl = `${window.location.origin}/evento/${event.id}`;
   const shareText = `🏛️ *${event.title}* - Ministério Apostólico Caçadores da Presença (MACDP)\n\n📅 *Data:* ${formatDate(event.date)} às ${event.time}\n📍 *Local:* ${event.location}\n🎟️ *Inscrição:* ${event.isFree ? 'Entrada Gratuita' : `R$ ${event.price?.toFixed(2)}`}\n\nGaranta sua vaga no site oficial:\n${shareEventUrl}`;
@@ -279,7 +289,79 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 </div>
               </div>
             </div>
+
+            {!event.isFree && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    color: 'var(--accent-gold)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <CreditCard size={20} />
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Inscrição</span>
+                  <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
+                    {formatCurrency(event.price || 0)} {isMpActive ? '(PIX ou Cartão em até 12x)' : '(via PIX)'}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Informações de Pagamento (PIX & Mercado Pago) se evento pago */}
+          {!event.isFree && (
+            <div
+              style={{
+                background: isMpActive ? 'rgba(0, 158, 227, 0.08)' : 'rgba(245, 158, 11, 0.08)',
+                border: `1px solid ${isMpActive ? 'rgba(0, 158, 227, 0.35)' : 'rgba(245, 158, 11, 0.35)'}`,
+                borderRadius: 'var(--radius-md)',
+                padding: '0.9rem 1.15rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '0.75rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                {isMpActive ? <Sparkles size={20} color="#009ee3" /> : <QrCode size={20} color="var(--accent-gold)" />}
+                <div style={{ fontSize: '0.84rem' }}>
+                  <span style={{ fontWeight: 800, color: 'var(--text-primary)', display: 'block' }}>
+                    {isMpActive
+                      ? '⚡ Pagamento Mercado Pago: PIX Instantâneo ou Cartão em até 12x'
+                      : 'Pagamento via PIX Instantâneo Oficial'}
+                  </span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
+                    {event.paymentInstructions || (isMpActive
+                      ? 'Baixa automática em segundos via PIX ou parcele no cartão com total segurança.'
+                      : 'Gere o QR Code ou use a chave Copia e Cola ao se inscrever para liberação imediata da vaga.')}
+                  </span>
+                </div>
+              </div>
+              <span
+                style={{
+                  background: isMpActive ? 'rgba(0, 158, 227, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                  color: isMpActive ? '#009ee3' : 'var(--accent-gold)',
+                  fontWeight: 800,
+                  fontSize: '0.78rem',
+                  padding: '0.25rem 0.65rem',
+                  borderRadius: 'var(--radius-full)',
+                  border: `1px solid ${isMpActive ? 'rgba(0, 158, 227, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`,
+                }}
+              >
+                {formatCurrency(event.price || 0)}
+              </span>
+            </div>
+          )}
 
           {/* Description Section */}
           <div>

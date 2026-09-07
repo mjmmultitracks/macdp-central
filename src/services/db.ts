@@ -126,6 +126,12 @@ export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
     primaryColor: '#f59e0b',
     secondaryColor: '#3b82f6',
   },
+  mercadoPago: {
+    enabled: false,
+    accessToken: '',
+    publicKey: '',
+    sandbox: false,
+  },
   appSettings: INITIAL_APP_SETTINGS,
 };
 
@@ -1670,6 +1676,9 @@ export function addEventRegistration(
     shirtSize?: string;
     shirtPrice?: number;
     totalPaid?: number;
+    pixCode?: string;
+    mercadoPagoPaymentId?: string;
+    mercadoPagoStatus?: string;
   }
 ): EventRegistration | null {
   const db = getDatabase();
@@ -1695,6 +1704,9 @@ export function addEventRegistration(
       shirtSize: registration.includeShirt ? registration.shirtSize : undefined,
       shirtPrice: registration.includeShirt ? shirtCost : undefined,
       totalPaid: calculatedTotal,
+      pixCode: registration.pixCode,
+      mercadoPagoPaymentId: registration.mercadoPagoPaymentId,
+      mercadoPagoStatus: registration.mercadoPagoStatus,
     };
     evt.registrations.push(newReg);
 
@@ -2270,6 +2282,10 @@ export function updateChurchSettings(settings: Partial<ChurchSettings>): ChurchS
     themeColors: {
       ...(current.themeColors || { primaryColor: '#f59e0b', secondaryColor: '#3b82f6' }),
       ...(settings.themeColors || {}),
+    },
+    mercadoPago: {
+      ...(current.mercadoPago || { enabled: false, accessToken: '', publicKey: '', sandbox: false }),
+      ...(settings.mercadoPago || {}),
     },
   };
   db.churchSettings = updated;

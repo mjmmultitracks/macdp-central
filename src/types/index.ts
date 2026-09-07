@@ -201,6 +201,9 @@ export interface EventRegistration {
   shirtSize?: string;
   shirtPrice?: number;
   totalPaid?: number;
+  pixCode?: string;
+  mercadoPagoPaymentId?: string;
+  mercadoPagoStatus?: string;
 }
 
 export interface EventLocationDetails {
@@ -238,6 +241,13 @@ export interface ChurchEvent {
   detailedSchedule?: string;
   customQuestions?: EventCustomQuestion[];
   registrations: EventRegistration[];
+  // Configurações de Pagamento e PIX
+  pixKey?: string; // Chave PIX específica do evento (opcional, se vazia usa a geral da igreja)
+  pixReceiver?: string; // Nome do favorecido do PIX
+  pixBank?: string; // Nome do banco / instituição do PIX
+  paymentInstructions?: string; // Orientações e observações de pagamento
+  allowedPaymentMethods?: ('pix' | 'manual')[]; // Métodos de pagamento aceitos no evento
+  mercadoPagoEnabled?: boolean; // Permite checkout/PIX automático via Mercado Pago
 }
 
 export type PrayerCategory = 'Saúde' | 'Família' | 'Finanças' | 'Espiritual' | 'Libertação' | 'Gratidão' | 'Outros';
@@ -490,6 +500,12 @@ export interface ChurchSettings {
   themeColors?: {
     primaryColor: string; // Cor primária (ex: #f59e0b)
     secondaryColor: string; // Cor secundária (ex: #3b82f6)
+  };
+  mercadoPago?: {
+    enabled: boolean;
+    accessToken?: string;
+    publicKey?: string;
+    sandbox?: boolean;
   };
   appSettings?: ChurchAppSettings;
 }

@@ -7,6 +7,7 @@ import {
   updateEvent,
   deleteEvent,
   deleteEventRegistration,
+  getChurchSettings,
 } from '../../services/db';
 import { GoogleLocationPicker } from './GoogleLocationPicker';
 import { ChurchEvent, EventCustomQuestion, EventQuestionType, EventLocationDetails, EventRegistration } from '../../types';
@@ -45,6 +46,8 @@ import {
   CalendarRange,
   Shirt,
   Share2,
+  CreditCard,
+  Sparkles,
 } from 'lucide-react';
 
 interface RoomItem {
@@ -95,6 +98,16 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
   const [totalCapacity, setTotalCapacity] = useState<number>(300);
   const [speakerName, setSpeakerName] = useState('');
   const [detailedSchedule, setDetailedSchedule] = useState('');
+
+  // Payment configuration state for paid events
+  const [useCustomPix, setUseCustomPix] = useState(false);
+  const [eventPixKey, setEventPixKey] = useState('');
+  const [eventPixReceiver, setEventPixReceiver] = useState('');
+  const [eventPixBank, setEventPixBank] = useState('');
+  const [paymentInstructions, setPaymentInstructions] = useState('');
+  const [allowPix, setAllowPix] = useState(true);
+  const [allowManual, setAllowManual] = useState(true);
+  const [mercadoPagoEnabled, setMercadoPagoEnabled] = useState(true);
 
   // Custom Questions Builder state
   const [customQuestions, setCustomQuestions] = useState<EventCustomQuestion[]>([]);
@@ -158,6 +171,14 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setCustomQuestions([]);
     setEditingQuestionId(null);
     setIsAddingQuestion(false);
+    setUseCustomPix(false);
+    setEventPixKey('');
+    setEventPixReceiver('');
+    setEventPixBank('');
+    setPaymentInstructions('');
+    setAllowPix(true);
+    setAllowManual(true);
+    setMercadoPagoEnabled(true);
     setIsEventModalOpen(true);
   };
 
@@ -194,6 +215,15 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setCustomQuestions(evt.customQuestions || []);
     setEditingQuestionId(null);
     setIsAddingQuestion(false);
+    setUseCustomPix(!!evt.pixKey);
+    setEventPixKey(evt.pixKey || '');
+    setEventPixReceiver(evt.pixReceiver || '');
+    setEventPixBank(evt.pixBank || '');
+    setPaymentInstructions(evt.paymentInstructions || '');
+    const currentMethods = evt.allowedPaymentMethods || ['pix', 'manual'];
+    setAllowPix(currentMethods.includes('pix'));
+    setAllowManual(currentMethods.includes('manual'));
+    setMercadoPagoEnabled(evt.mercadoPagoEnabled !== false);
     setIsEventModalOpen(true);
   };
 
@@ -336,6 +366,29 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
 
     const finalEndDate = endDate || date;
 
+    const allowedPaymentMethods: ('pix' | 'manual')[] = [];
+    if (allowPix) allowedPaymentMethods.push('pix');
+    if (allowManual) allowedPaymentMethods.push('manual');
+    if (allowedPaymentMethods.length === 0) allowedPaymentMethods.push('pix');
+
+    const paymentConfig = !isFree
+      ? {
+          pixKey: useCustomPix && eventPixKey.trim() ? eventPixKey.trim() : undefined,
+          pixReceiver: useCustomPix && eventPixReceiver.trim() ? eventPixReceiver.trim() : undefined,
+          pixBank: useCustomPix && eventPixBank.trim() ? eventPixBank.trim() : undefined,
+          paymentInstructions: paymentInstructions.trim() || undefined,
+          allowedPaymentMethods,
+          mercadoPagoEnabled,
+        }
+      : {
+          pixKey: undefined,
+          pixReceiver: undefined,
+          pixBank: undefined,
+          paymentInstructions: undefined,
+          allowedPaymentMethods: undefined,
+          mercadoPagoEnabled: undefined,
+        };
+
     if (editingEvent) {
       updateEvent(editingEvent.id, {
         title,
@@ -358,6 +411,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         speakerName,
         detailedSchedule,
         customQuestions,
+        ...paymentConfig,
       });
       onNotify('success', `Evento "${title}" atualizado com sucesso!`);
     } else {
@@ -381,6 +435,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         speakerName,
         detailedSchedule,
         customQuestions,
+        ...paymentConfig,
       });
       onNotify('success', `Evento "${title}" criado com sucesso!`);
     }
@@ -2919,6 +2974,222 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Configuração de Pagamento & PIX para Eventos Pagos */}
+          {!isFree && (
+            <div
+              style={{
+                background: 'var(--bg-tertiary)',
+                border: '1px solid rgba(245, 158, 11, 0.4)',
+                borderRadius: 'var(--radius-md)',
+                padding: '1.25rem',
+                marginBottom: '1.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '8px',
+                      background: 'rgba(245, 158, 11, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--accent-gold)',
+                    }}
+                  >
+                    <CreditCard size={20} />
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)', display: 'block' }}>
+                      Configuração de Pagamento (PIX & Cobrança)
+                    </span>
+                    <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                      Defina como os inscritos pagarão o valor de {formatCurrency(price || 0)} deste evento.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => setUseCustomPix(false)}
+                    className={`btn btn-sm ${!useCustomPix ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: '0.76rem', fontWeight: 700 }}
+                  >
+                    Chave Padrão da Igreja
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUseCustomPix(true)}
+                    className={`btn btn-sm ${useCustomPix ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: '0.76rem', fontWeight: 700 }}
+                  >
+                    Chave Personalizada do Evento
+                  </button>
+                </div>
+              </div>
+
+              {/* Informação sobre a chave PIX selecionada */}
+              {!useCustomPix ? (
+                <div
+                  style={{
+                    background: 'rgba(16, 185, 129, 0.08)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    fontSize: '0.82rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <Sparkles size={18} color="var(--status-success)" style={{ flexShrink: 0 }} />
+                  <div style={{ color: 'var(--text-secondary)' }}>
+                    O sistema utilizará a chave PIX oficial da igreja: <strong style={{ color: 'var(--accent-gold)' }}>{getChurchSettings().pix?.key || '92991279663'}</strong> (Favorecido: <strong>{getChurchSettings().pix?.receiver || 'MACDP Central'}</strong> - Banco: <strong>{getChurchSettings().pix?.bank || 'Bradesco'}</strong>).
+                  </div>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-medium)',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '0.85rem',
+                  }}
+                >
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.8rem' }}>
+                      Chave PIX Específica *
+                    </label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Telefone, CNPJ, E-mail ou Chave Aleatória"
+                      value={eventPixKey}
+                      onChange={(e) => setEventPixKey(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.8rem' }}>
+                      Titular / Favorecido
+                    </label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Ex: MACDP Eventos / Liderança"
+                      value={eventPixReceiver}
+                      onChange={(e) => setEventPixReceiver(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ fontSize: '0.8rem' }}>
+                      Banco / Instituição
+                    </label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Ex: Bradesco / Nubank"
+                      value={eventPixBank}
+                      onChange={(e) => setEventPixBank(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Formas de Pagamento Permitidas */}
+              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem' }}>
+                <label className="form-label" style={{ fontSize: '0.82rem', marginBottom: '0.5rem', display: 'block' }}>
+                  Formas de Pagamento Aceitas neste Evento:
+                </label>
+                <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={allowPix}
+                      onChange={(e) => setAllowPix(e.target.checked)}
+                      style={{ width: '16px', height: '16px', accentColor: 'var(--accent-gold)' }}
+                    />
+                    <span style={{ fontWeight: allowPix ? 700 : 400, color: 'var(--text-primary)' }}>
+                      ⚡ PIX Instantâneo (QR Code & Copia e Cola)
+                    </span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={allowManual}
+                      onChange={(e) => setAllowManual(e.target.checked)}
+                      style={{ width: '16px', height: '16px', accentColor: 'var(--accent-gold)' }}
+                    />
+                    <span style={{ fontWeight: allowManual ? 700 : 400, color: 'var(--text-primary)' }}>
+                      🏛️ Pagamento Presencial / Manual na Secretaria (Status Pendente)
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Gateway Mercado Pago Toggle */}
+              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem' }}>
+                <div
+                  style={{
+                    background: mercadoPagoEnabled ? 'rgba(0, 158, 227, 0.1)' : 'var(--bg-secondary)',
+                    border: `1px solid ${mercadoPagoEnabled ? 'rgba(0, 158, 227, 0.4)' : 'var(--border-subtle)'}`,
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '1rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <Sparkles size={20} color={mercadoPagoEnabled ? '#009ee3' : 'var(--text-muted)'} />
+                    <div>
+                      <span style={{ fontWeight: 800, fontSize: '0.88rem', color: mercadoPagoEnabled ? '#009ee3' : 'var(--text-primary)', display: 'block' }}>
+                        Gateway Mercado Pago (Baixa Automática & Cartão)
+                      </span>
+                      <span style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
+                        {getChurchSettings().mercadoPago?.enabled
+                          ? 'Ativo na igreja: Gera PIX automático e Cartão em até 12x para inscritos deste evento.'
+                          : 'Configure suas credenciais na aba "Mercado Pago" em Configurações da Igreja.'}
+                      </span>
+                    </div>
+                  </div>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={mercadoPagoEnabled}
+                      onChange={(e) => setMercadoPagoEnabled(e.target.checked)}
+                      style={{ width: '18px', height: '18px', accentColor: '#009ee3' }}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Instruções Adicionais de Pagamento */}
+              <div className="form-group" style={{ margin: 0, borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem' }}>
+                <label className="form-label" style={{ fontSize: '0.82rem' }}>
+                  Instruções Adicionais para o Inscrito (Opcional):
+                </label>
+                <textarea
+                  rows={2}
+                  className="form-textarea"
+                  placeholder="Ex: Após pagar via PIX, confirme no botão abaixo ou envie o comprovante no WhatsApp da secretaria..."
+                  value={paymentInstructions}
+                  onChange={(e) => setPaymentInstructions(e.target.value)}
+                />
+              </div>
             </div>
           )}
 

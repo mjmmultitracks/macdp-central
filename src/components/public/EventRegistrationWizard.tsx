@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChurchEvent, EventRegistration } from '../../types';
-import { addEventRegistration } from '../../services/db';
+import { addEventRegistration, getChurchSettings } from '../../services/db';
+import { generatePixCopiaECola } from '../../services/pixService';
 import {
   CheckCircle2,
   Calendar,
@@ -23,6 +24,13 @@ import {
   FileText,
   Eye,
   Shirt,
+  Copy,
+  Check,
+  CreditCard,
+  RefreshCw,
+  AlertCircle,
+  ExternalLink,
+  Lock,
 } from 'lucide-react';
 import { formatCurrency, formatDate, calculateAge, formatEventDateRange } from '../../utils/formatters';
 import confetti from 'canvas-confetti';
@@ -53,7 +61,48 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   const [customAnswers, setCustomAnswers] = useState<Record<string, any>>({});
   const [includeShirt, setIncludeShirt] = useState(false);
   const [shirtSize, setShirtSize] = useState('M');
-  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'manual'>('pix');
+
+  // Allowed Payment Methods & Mercado Pago Integration
+  const churchSettings = getChurchSettings();
+  const isMercadoPagoConfigured = !!(
+    churchSettings.mercadoPago?.enabled &&
+    churchSettings.mercadoPago?.accessToken?.trim()
+  );
+  const isMercadoPagoAvailable = isMercadoPagoConfigured && event.mercadoPagoEnabled !== false;
+
+  const allowedMethods = event.allowedPaymentMethods && event.allowedPaymentMethods.length > 0
+    ? event.allowedPaymentMethods
+    : ['pix', 'manual'];
+
+  const defaultOption = isMercadoPagoAvailable && allowedMethods.includes('pix')
+    ? 'mp_pix'
+    : allowedMethods.includes('pix')
+    ? 'direct_pix'
+    : 'manual';
+
+  const [paymentOption, setPaymentOption] = useState<'mp_pix' | 'mp_card' | 'direct_pix' | 'manual'>(defaultOption);
+
+  // PIX feedback states (Direct PIX)
+  const [copiedPixCode, setCopiedPixCode] = useState(false);
+  const [copiedPixKey, setCopiedPixKey] = useState(false);
+  const [copiedMpPixCode, setCopiedMpPixCode] = useState(false);
+
+  // Mercado Pago States
+  const [mpPayment, setMpPayment] = useState<{
+    paymentId?: number | string;
+    status?: string;
+    statusDetail?: string;
+    qrCode?: string;
+    qrCodeBase64?: string;
+    ticketUrl?: string;
+  } | null>(null);
+  const [isCreatingMpPix, setIsCreatingMpPix] = useState(false);
+  const [isCheckingMpStatus, setIsCheckingMpStatus] = useState(false);
+  const [mpError, setMpError] = useState<string | null>(null);
+  const [isMpApproved, setIsMpApproved] = useState(false);
+  const [isCreatingCardCheckout, setIsCreatingCardCheckout] = useState(false);
+  const [cardCheckoutOpened, setCardCheckoutOpened] = useState(false);
+  const pollingIntervalRef = useRef<any>(null);
 
   // Step 4: Success Result
   const [confirmedRegistration, setConfirmedRegistration] = useState<EventRegistration | null>(null);
@@ -75,6 +124,133 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   const eventTicketCost = event.isFree ? 0 : (event.price || 0);
   const shirtCost = event.hasShirt && includeShirt && event.shirtPrice ? event.shirtPrice : 0;
   const totalAmount = eventTicketCost + shirtCost;
+
+  // Resolve Direct PIX Settings
+  const pixKey = event.pixKey || churchSettings.pix?.key || '92991279663';
+  const pixReceiver = event.pixReceiver || churchSettings.pix?.receiver || churchSettings.name || 'Ministério Apostólico Caçadores da Presença';
+  const pixBank = event.pixBank || churchSettings.pix?.bank || 'Banco Bradesco';
+  const pixCity = churchSettings.address?.city || 'Manaus';
+
+  // Dynamic Direct PIX Copia e Cola Code
+  const pixCode = generatePixCopiaECola({
+    key: pixKey,
+    name: pixReceiver,
+    city: pixCity,
+    amount: totalAmount,
+    description: `Inscricao ${event.title.substring(0, 20)}`,
+    txid: `EVT${event.id.replace(/\D/g, '').slice(-4)}${Math.floor(Math.random() * 899 + 100)}`,
+  });
+
+  const handleCopyPixCode = () => {
+    navigator.clipboard.writeText(pixCode);
+    setCopiedPixCode(true);
+    setTimeout(() => setCopiedPixCode(false), 3000);
+  };
+
+  const handleCopyPixKey = () => {
+    navigator.clipboard.writeText(pixKey);
+    setCopiedPixKey(true);
+    setTimeout(() => setCopiedPixKey(false), 3000);
+  };
+
+  const handleCopyMpPixCode = () => {
+    if (mpPayment?.qrCode) {
+      navigator.clipboard.writeText(mpPayment.qrCode);
+      setCopiedMpPixCode(true);
+      setTimeout(() => setCopiedMpPixCode(false), 3000);
+    }
+  };
+
+  // Generate Mercado Pago PIX
+  const createMercadoPagoPix = async () => {
+    if (!isMercadoPagoAvailable || totalAmount <= 0) return;
+    setIsCreatingMpPix(true);
+    setMpError(null);
+    try {
+      const res = await fetch('/api/mercadopago-create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: totalAmount,
+          title: event.title,
+          name: name.trim() || 'Participante MACDP',
+          email: email.trim(),
+          phone: phone.trim(),
+          eventId: event.id,
+          paymentMethod: 'pix',
+          customAccessToken: churchSettings.mercadoPago?.accessToken,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Não foi possível gerar a cobrança via Mercado Pago.');
+      }
+
+      setMpPayment({
+        paymentId: data.paymentId,
+        status: data.status,
+        statusDetail: data.statusDetail,
+        qrCode: data.qrCode,
+        qrCodeBase64: data.qrCodeBase64,
+        ticketUrl: data.ticketUrl,
+      });
+    } catch (err: any) {
+      console.error('Erro ao gerar PIX Mercado Pago:', err);
+      setMpError(err.message || 'Erro ao conectar com Mercado Pago.');
+    } finally {
+      setIsCreatingMpPix(false);
+    }
+  };
+
+  // Generate Mercado Pago Card Checkout (Preference)
+  const handleOpenCardCheckout = async () => {
+    setIsCreatingCardCheckout(true);
+    setMpError(null);
+    try {
+      const res = await fetch('/api/mercadopago-create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: totalAmount,
+          title: event.title,
+          name: name.trim() || 'Participante MACDP',
+          email: email.trim(),
+          phone: phone.trim(),
+          eventId: event.id,
+          paymentMethod: 'preference',
+          customAccessToken: churchSettings.mercadoPago?.accessToken,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.initPoint) {
+        throw new Error(data.error || 'Erro ao gerar checkout com cartão.');
+      }
+
+      setCardCheckoutOpened(true);
+      window.open(data.initPoint, '_blank');
+    } catch (err: any) {
+      console.error('Erro ao abrir checkout de cartão:', err);
+      setMpError(err.message || 'Erro ao abrir tela de pagamento com cartão.');
+    } finally {
+      setIsCreatingCardCheckout(false);
+    }
+  };
+
+  // Trigger Mercado Pago PIX generation when landing on Step 3
+  useEffect(() => {
+    if (
+      currentStep === 3 &&
+      totalAmount > 0 &&
+      isMercadoPagoAvailable &&
+      paymentOption === 'mp_pix' &&
+      !mpPayment &&
+      !isCreatingMpPix
+    ) {
+      createMercadoPagoPix();
+    }
+  }, [currentStep, totalAmount, isMercadoPagoAvailable, paymentOption]);
 
   // Validation handlers
   const isValidEmail = (val: string) => {
@@ -104,33 +280,50 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   };
 
   const handleTextAnswerChange = (qId: string, val: string) => {
-    setCustomAnswers((prev) => ({ ...prev, [qId]: val }));
+    setCustomAnswers((prev: Record<string, any>) => ({ ...prev, [qId]: val }));
   };
 
   const handleCheckboxToggle = (qId: string, opt: string) => {
     const currentList: string[] = Array.isArray(customAnswers[qId]) ? customAnswers[qId] : [];
     if (currentList.includes(opt)) {
-      setCustomAnswers((prev) => ({ ...prev, [qId]: currentList.filter((item) => item !== opt) }));
+      setCustomAnswers((prev: Record<string, any>) => ({ ...prev, [qId]: currentList.filter((item: string) => item !== opt) }));
     } else {
-      setCustomAnswers((prev) => ({ ...prev, [qId]: [...currentList, opt] }));
+      setCustomAnswers((prev: Record<string, any>) => ({ ...prev, [qId]: [...currentList, opt] }));
     }
   };
 
-  const handleFinalSubmit = async () => {
+  // Execute and persist registration
+  const executeRegistrationSubmit = async ({
+    method,
+    status,
+    notes,
+    mpPaymentId,
+    mpStatus,
+    pixCodeUsed,
+  }: {
+    method: 'pix' | 'credit_card' | 'manual' | 'free';
+    status: 'free' | 'pending' | 'confirmed';
+    notes: string;
+    mpPaymentId?: string;
+    mpStatus?: string;
+    pixCodeUsed?: string;
+  }) => {
     const finalEmail = email.trim();
-    const isManual = totalAmount > 0 && paymentMethod === 'manual';
     const reg = addEventRegistration(event.id, {
       name: name.trim(),
       phone: phone.trim(),
       email: finalEmail,
-      paymentMethod: totalAmount === 0 ? 'free' : paymentMethod,
-      paymentStatus: totalAmount === 0 ? 'free' : isManual ? 'pending' : 'confirmed',
-      paymentNotes: isManual ? 'Pagamento manual presencial / a combinar com secretaria' : undefined,
+      paymentMethod: totalAmount === 0 ? 'free' : method,
+      paymentStatus: totalAmount === 0 ? 'free' : status,
+      paymentNotes: notes,
       customAnswers,
       includeShirt,
       shirtSize: includeShirt ? shirtSize : undefined,
       shirtPrice: includeShirt ? event.shirtPrice : undefined,
       totalPaid: totalAmount,
+      pixCode: pixCodeUsed,
+      mercadoPagoPaymentId: mpPaymentId,
+      mercadoPagoStatus: mpStatus,
     });
 
     if (reg) {
@@ -139,16 +332,16 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
       // Celebration Confetti
       try {
         confetti({
-          particleCount: 110,
-          spread: 80,
+          particleCount: 120,
+          spread: 85,
           origin: { y: 0.6 },
-          colors: ['#F59E0B', '#D97706', '#10B981', '#3B82F6', '#ffffff'],
+          colors: ['#009EE3', '#F59E0B', '#10B981', '#ffffff'],
         });
       } catch (e) {
         console.log(e);
       }
 
-      // 1. Send transactional confirmation and payment email
+      // 1. Transactional confirmation email
       const emailRecord = sendEventConfirmationEmail({
         event,
         registration: reg,
@@ -182,7 +375,131 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
     }
   };
 
-  const whatsAppVoucherText = `Graça e Paz! Minha inscrição na *${event.title}* no MACDP foi confirmada com sucesso! 🏛️✨\n\n🎟️ *Comprovante de Inscrição:* ${confirmedRegistration?.id || ''}\n👤 *Participante:* ${name}\n📅 *Data:* ${formatEventDateRange(event.date, event.endDate)} às ${event.time}\n📍 *Local:* ${event.location}${includeShirt ? `\n👕 *Camisa Oficial:* Sim (Tamanho: ${shirtSize})` : ''}\n💰 *Valor Total:* ${totalAmount > 0 ? `R$ ${totalAmount.toFixed(2)}` : 'Gratuito'}\n\n🔗 *Detalhes do Evento:* ${window.location.origin}/evento/${event.id}\n\nNos vemos lá na Presença de Deus!`;
+  // Real-time status polling for Mercado Pago PIX
+  const checkPaymentStatus = async (silent = true) => {
+    if (!mpPayment?.paymentId || isMpApproved) return;
+    if (!silent) setIsCheckingMpStatus(true);
+    try {
+      const tokenParam = churchSettings.mercadoPago?.accessToken
+        ? `&token=${encodeURIComponent(churchSettings.mercadoPago.accessToken)}`
+        : '';
+      const res = await fetch(`/api/mercadopago-check-status?paymentId=${mpPayment.paymentId}${tokenParam}`);
+      const data = await res.json();
+      if (data.isApproved || data.status === 'approved') {
+        setIsMpApproved(true);
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+        await executeRegistrationSubmit({
+          method: 'pix',
+          status: 'confirmed',
+          notes: `Pago via PIX Mercado Pago (ID: ${data.paymentId}) • Aprovado instantaneamente`,
+          mpPaymentId: String(data.paymentId),
+          mpStatus: 'approved',
+          pixCodeUsed: mpPayment.qrCode,
+        });
+      }
+    } catch (e) {
+      console.error('Erro ao consultar status:', e);
+    } finally {
+      if (!silent) setIsCheckingMpStatus(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentStep === 3 && mpPayment?.paymentId && !isMpApproved && paymentOption === 'mp_pix') {
+      pollingIntervalRef.current = setInterval(() => {
+        checkPaymentStatus(true);
+      }, 3500);
+
+      return () => {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+      };
+    }
+  }, [currentStep, mpPayment?.paymentId, isMpApproved, paymentOption]);
+
+  const handleFinalSubmit = async () => {
+    if (totalAmount === 0) {
+      await executeRegistrationSubmit({
+        method: 'free',
+        status: 'free',
+        notes: 'Inscrição Gratuita Confirmada',
+      });
+      return;
+    }
+
+    if (paymentOption === 'manual') {
+      await executeRegistrationSubmit({
+        method: 'manual',
+        status: 'pending',
+        notes: 'Pagamento manual presencial / a combinar com a secretaria',
+      });
+      return;
+    }
+
+    if (paymentOption === 'direct_pix') {
+      await executeRegistrationSubmit({
+        method: 'pix',
+        status: 'confirmed',
+        notes: `Pago via PIX Direto (Chave: ${pixKey})`,
+        pixCodeUsed: pixCode,
+      });
+      return;
+    }
+
+    if (paymentOption === 'mp_card') {
+      await executeRegistrationSubmit({
+        method: 'credit_card',
+        status: 'pending',
+        notes: 'Pagamento via Cartão de Crédito no Mercado Pago (em processamento)',
+        mpStatus: 'in_process',
+      });
+      return;
+    }
+
+    if (paymentOption === 'mp_pix') {
+      if (mpPayment?.paymentId) {
+        setIsCheckingMpStatus(true);
+        try {
+          const tokenParam = churchSettings.mercadoPago?.accessToken
+            ? `&token=${encodeURIComponent(churchSettings.mercadoPago.accessToken)}`
+            : '';
+          const res = await fetch(`/api/mercadopago-check-status?paymentId=${mpPayment.paymentId}${tokenParam}`);
+          const data = await res.json();
+          if (data.isApproved || data.status === 'approved') {
+            await executeRegistrationSubmit({
+              method: 'pix',
+              status: 'confirmed',
+              notes: `Pago via PIX Mercado Pago (ID: ${data.paymentId}) • Aprovado instantaneamente`,
+              mpPaymentId: String(data.paymentId),
+              mpStatus: 'approved',
+              pixCodeUsed: mpPayment.qrCode,
+            });
+            return;
+          }
+        } catch (err) {
+          console.error('Check status error:', err);
+        } finally {
+          setIsCheckingMpStatus(false);
+        }
+      }
+
+      await executeRegistrationSubmit({
+        method: 'pix',
+        status: 'confirmed',
+        notes: `Pago via PIX Mercado Pago (ID: ${mpPayment?.paymentId || 'gerado'}) • Aguardando conciliação bancária`,
+        mpPaymentId: mpPayment?.paymentId ? String(mpPayment.paymentId) : undefined,
+        mpStatus: mpPayment?.status || 'pending',
+        pixCodeUsed: mpPayment?.qrCode,
+      });
+    }
+  };
+
+  const whatsAppVoucherText = `Graça e Paz! Minha inscrição na *${event.title}* no MACDP foi confirmada com sucesso! 🏛️✨\n\n🎟️ *Comprovante de Inscrição:* ${confirmedRegistration?.id || ''}\n👤 *Participante:* ${name}\n📅 *Data:* ${formatEventDateRange(event.date, event.endDate)} às ${event.time}\n📍 *Local:* ${event.location}${includeShirt ? `\n👕 *Camisa Oficial:* Sim (Tamanho: ${shirtSize})` : ''}\n💰 *Valor Total:* ${totalAmount > 0 ? `R$ ${totalAmount.toFixed(2)}` : 'Gratuito'}${confirmedRegistration?.mercadoPagoPaymentId ? `\n⚡ *Mercado Pago ID:* ${confirmedRegistration.mercadoPagoPaymentId}` : ''}\n\n🔗 *Detalhes do Evento:* ${window.location.origin}/evento/${event.id}\n\nNos vemos lá na Presença de Deus!`;
 
   return (
     <div
@@ -857,68 +1174,761 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
 
                 {/* Payment Method Selector quando houver valor a ser cobrado */}
                 {totalAmount > 0 && (
-                  <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.9rem' }}>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-gold)', display: 'block', marginBottom: '0.65rem' }}>
-                      Forma de Pagamento (Total: {formatCurrency(totalAmount)}):
-                    </label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                      {/* PIX Option */}
+                  <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-gold)', display: 'block', marginBottom: '0.65rem' }}>
+                        Escolha a Forma de Pagamento (Total: {formatCurrency(totalAmount)}):
+                      </label>
                       <div
-                        onClick={() => setPaymentMethod('pix')}
                         style={{
-                          padding: '0.85rem 1rem',
-                          borderRadius: '8px',
-                          border: `2px solid ${paymentMethod === 'pix' ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-                          background: paymentMethod === 'pix' ? 'rgba(245, 158, 11, 0.12)' : 'var(--bg-secondary)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
+                          display: 'grid',
+                          gridTemplateColumns: isMercadoPagoAvailable ? 'repeat(auto-fit, minmax(180px, 1fr))' : 'repeat(auto-fit, minmax(200px, 1fr))',
+                          gap: '0.75rem',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 800, color: paymentMethod === 'pix' ? 'var(--accent-gold)' : 'var(--text-primary)', fontSize: '0.88rem' }}>
-                          <Sparkles size={15} />
-                          <span>PIX Instantâneo</span>
-                        </div>
-                        <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
-                          Confirmação na hora e liberação imediata da credencial.
-                        </p>
-                      </div>
+                        {/* Option 1: Mercado Pago PIX (se ativo) */}
+                        {isMercadoPagoAvailable && (
+                          <div
+                            onClick={() => setPaymentOption('mp_pix')}
+                            style={{
+                              padding: '0.85rem 1rem',
+                              borderRadius: '8px',
+                              border: `2px solid ${paymentOption === 'mp_pix' ? '#009ee3' : 'var(--border-subtle)'}`,
+                              background: paymentOption === 'mp_pix' ? 'rgba(0, 158, 227, 0.12)' : 'var(--bg-secondary)',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 800, color: paymentOption === 'mp_pix' ? '#009ee3' : 'var(--text-primary)', fontSize: '0.88rem' }}>
+                              <Sparkles size={16} />
+                              <span>⚡ PIX Mercado Pago</span>
+                            </div>
+                            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '0.3rem 0 0 0' }}>
+                              Baixa automática em até 5 segundos. Liberação imediata.
+                            </p>
+                          </div>
+                        )}
 
-                      {/* Manual / Presencial Option */}
-                      <div
-                        onClick={() => setPaymentMethod('manual')}
-                        style={{
-                          padding: '0.85rem 1rem',
-                          borderRadius: '8px',
-                          border: `2px solid ${paymentMethod === 'manual' ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-                          background: paymentMethod === 'manual' ? 'rgba(245, 158, 11, 0.12)' : 'var(--bg-secondary)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 800, color: paymentMethod === 'manual' ? 'var(--accent-gold)' : 'var(--text-primary)', fontSize: '0.88rem' }}>
-                          <HelpCircle size={15} />
-                          <span>Pagamento Manual</span>
-                        </div>
-                        <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
-                          A combinar com a secretaria. Inscrição ficará pendente.
-                        </p>
+                        {/* Option 2: Mercado Pago Cartão (se ativo) */}
+                        {isMercadoPagoAvailable && (
+                          <div
+                            onClick={() => setPaymentOption('mp_card')}
+                            style={{
+                              padding: '0.85rem 1rem',
+                              borderRadius: '8px',
+                              border: `2px solid ${paymentOption === 'mp_card' ? '#009ee3' : 'var(--border-subtle)'}`,
+                              background: paymentOption === 'mp_card' ? 'rgba(0, 158, 227, 0.12)' : 'var(--bg-secondary)',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 800, color: paymentOption === 'mp_card' ? '#009ee3' : 'var(--text-primary)', fontSize: '0.88rem' }}>
+                              <CreditCard size={16} />
+                              <span>💳 Cartão de Crédito</span>
+                            </div>
+                            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '0.3rem 0 0 0' }}>
+                              Até 12x no Mercado Pago. Visa, Master, Elo, etc.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Option 3: PIX Direto da Igreja (sempre disponível ou fallback) */}
+                        {(!isMercadoPagoAvailable || paymentOption === 'direct_pix') && allowedMethods.includes('pix') && (
+                          <div
+                            onClick={() => setPaymentOption('direct_pix')}
+                            style={{
+                              padding: '0.85rem 1rem',
+                              borderRadius: '8px',
+                              border: `2px solid ${paymentOption === 'direct_pix' ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
+                              background: paymentOption === 'direct_pix' ? 'rgba(245, 158, 11, 0.12)' : 'var(--bg-secondary)',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 800, color: paymentOption === 'direct_pix' ? 'var(--accent-gold)' : 'var(--text-primary)', fontSize: '0.88rem' }}>
+                              <QrCode size={16} />
+                              <span>PIX Direto da Igreja</span>
+                            </div>
+                            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '0.3rem 0 0 0' }}>
+                              QR Code com chave da igreja. Conciliação por extrato.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Option 4: Pagamento Manual (se permitido) */}
+                        {allowedMethods.includes('manual') && (
+                          <div
+                            onClick={() => setPaymentOption('manual')}
+                            style={{
+                              padding: '0.85rem 1rem',
+                              borderRadius: '8px',
+                              border: `2px solid ${paymentOption === 'manual' ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
+                              background: paymentOption === 'manual' ? 'rgba(245, 158, 11, 0.12)' : 'var(--bg-secondary)',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 800, color: paymentOption === 'manual' ? 'var(--accent-gold)' : 'var(--text-primary)', fontSize: '0.88rem' }}>
+                              <HelpCircle size={16} />
+                              <span>Pagamento Manual</span>
+                            </div>
+                            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '0.3rem 0 0 0' }}>
+                              Presencial com a secretaria. Inscrição ficará pendente.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {paymentMethod === 'manual' && (
+                    {/* ==================== DETALHES DE PAGAMENTO: MERCADO PAGO PIX ==================== */}
+                    {paymentOption === 'mp_pix' && (
                       <div
                         style={{
-                          marginTop: '0.85rem',
-                          padding: '0.75rem 1rem',
-                          background: 'rgba(245, 158, 11, 0.12)',
-                          border: '1px solid rgba(245, 158, 11, 0.4)',
-                          borderRadius: '6px',
-                          fontSize: '0.8rem',
-                          color: 'var(--accent-gold)',
-                          lineHeight: 1.45,
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid rgba(0, 158, 227, 0.45)',
+                          borderRadius: 'var(--radius-lg)',
+                          padding: '1.25rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '1rem',
+                          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
                         }}
                       >
-                        ⏳ <strong>Atenção:</strong> Ao optar pelo Pagamento Manual, sua inscrição ficará registrada com status <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato com você via WhatsApp (<strong>{phone}</strong>) para orientar sobre o pagamento de <strong>{formatCurrency(totalAmount)}</strong> e validar seu credenciamento.
+                        {/* Header do Card MP PIX */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div
+                              style={{
+                                width: '34px',
+                                height: '34px',
+                                borderRadius: '8px',
+                                background: 'rgba(0, 158, 227, 0.15)',
+                                color: '#009ee3',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <Sparkles size={19} />
+                            </div>
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+                                  PIX Mercado Pago Oficial
+                                </span>
+                                <span style={{ fontSize: '0.68rem', fontWeight: 800, padding: '0.15rem 0.45rem', borderRadius: '4px', background: '#009ee3', color: '#fff' }}>
+                                  AUTOMÁTICO
+                                </span>
+                              </div>
+                              <span style={{ fontSize: '0.74rem', color: 'var(--status-success)', display: 'block', fontWeight: 600 }}>
+                                ✓ Reconhecimento e baixa instantânea em tempo real
+                              </span>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>
+                              Total a Pagar
+                            </span>
+                            <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#009ee3' }}>
+                              {formatCurrency(totalAmount)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Error Alert if any */}
+                        {mpError && (
+                          <div
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.1)',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              borderRadius: '8px',
+                              padding: '0.75rem 1rem',
+                              color: '#f87171',
+                              fontSize: '0.82rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: '0.5rem',
+                              flexWrap: 'wrap',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <AlertCircle size={18} />
+                              <span>{mpError}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button
+                                type="button"
+                                onClick={createMercadoPagoPix}
+                                className="btn btn-secondary btn-sm"
+                                style={{ fontSize: '0.74rem' }}
+                              >
+                                Tentar Novamente
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPaymentOption('direct_pix')}
+                                className="btn btn-primary btn-sm"
+                                style={{ fontSize: '0.74rem' }}
+                              >
+                                Usar PIX Direto
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Loading State */}
+                        {isCreatingMpPix && !mpPayment && (
+                          <div style={{ textAlign: 'center', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                            <RefreshCw size={28} className="animate-spin" color="#009ee3" />
+                            <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              Gerando cobrança PIX no Mercado Pago...
+                            </span>
+                            <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                              Criando QR Code exclusivo com valor de {formatCurrency(totalAmount)}.
+                            </span>
+                          </div>
+                        )}
+
+                        {/* QR Code and Info */}
+                        {mpPayment && (
+                          <>
+                            <div
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: '170px 1fr',
+                                gap: '1.25rem',
+                                alignItems: 'center',
+                              }}
+                            >
+                              {/* QR Code Container */}
+                              <div
+                                style={{
+                                  background: '#ffffff',
+                                  padding: '0.65rem',
+                                  borderRadius: '12px',
+                                  textAlign: 'center',
+                                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                                  border: '2px solid rgba(0, 158, 227, 0.5)',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                {mpPayment.qrCodeBase64 ? (
+                                  <img
+                                    src={`data:image/png;base64,${mpPayment.qrCodeBase64}`}
+                                    alt="QR Code PIX Mercado Pago"
+                                    style={{ width: '135px', height: '135px', display: 'block', borderRadius: '4px' }}
+                                  />
+                                ) : mpPayment.qrCode ? (
+                                  <img
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=4&data=${encodeURIComponent(mpPayment.qrCode)}`}
+                                    alt="QR Code PIX"
+                                    style={{ width: '135px', height: '135px', display: 'block', borderRadius: '4px' }}
+                                  />
+                                ) : null}
+                                <span style={{ fontSize: '0.68rem', color: '#009ee3', fontWeight: 800, marginTop: '0.4rem', textTransform: 'uppercase' }}>
+                                  Pagar com o App do Banco
+                                </span>
+                              </div>
+
+                              {/* Status Radar & Instruções */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.82rem' }}>
+                                {/* Pulse Real-time indicator */}
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.65rem',
+                                    background: isMpApproved ? 'rgba(16, 185, 129, 0.15)' : 'rgba(0, 158, 227, 0.1)',
+                                    border: `1px solid ${isMpApproved ? 'rgba(16, 185, 129, 0.4)' : 'rgba(0, 158, 227, 0.3)'}`,
+                                    borderRadius: '8px',
+                                    padding: '0.75rem 0.9rem',
+                                  }}
+                                >
+                                  <div style={{ position: 'relative', width: '12px', height: '12px', flexShrink: 0 }}>
+                                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: isMpApproved ? '#10b981' : '#009ee3' }} />
+                                    {!isMpApproved && (
+                                      <div style={{ position: 'absolute', inset: -3, borderRadius: '50%', background: '#009ee3', opacity: 0.5, animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <span style={{ fontSize: '0.8rem', fontWeight: 800, color: isMpApproved ? 'var(--status-success)' : 'var(--text-primary)', display: 'block' }}>
+                                      {isMpApproved ? '✓ Pagamento Aprovado!' : 'Aguardando pagamento no seu banco...'}
+                                    </span>
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                                      {isMpApproved
+                                        ? 'Sua vaga foi liberada. Concluindo inscrição...'
+                                        : 'O sistema detecta seu pagamento automaticamente em até 5 segundos.'}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => checkPaymentStatus(false)}
+                                    disabled={isCheckingMpStatus || isMpApproved}
+                                    className="btn btn-secondary btn-sm"
+                                    style={{ gap: '0.4rem', fontSize: '0.76rem', fontWeight: 700 }}
+                                  >
+                                    <RefreshCw size={13} className={isCheckingMpStatus ? 'animate-spin' : ''} />
+                                    <span>{isCheckingMpStatus ? 'Consultando...' : 'Já Paguei / Verificar Agora'}</span>
+                                  </button>
+
+                                  {/* Fallback to direct PIX */}
+                                  <button
+                                    type="button"
+                                    onClick={() => setPaymentOption('direct_pix')}
+                                    className="btn btn-secondary btn-sm"
+                                    style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}
+                                  >
+                                    PIX Direto da Igreja
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Copia e Cola Mercado Pago */}
+                            {mpPayment.qrCode && (
+                              <div
+                                style={{
+                                  background: 'var(--bg-tertiary)',
+                                  border: '1px dashed rgba(0, 158, 227, 0.45)',
+                                  borderRadius: '8px',
+                                  padding: '0.85rem',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '0.5rem',
+                                }}
+                              >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '0.76rem', fontWeight: 800, color: '#009ee3', textTransform: 'uppercase' }}>
+                                    Código PIX Copia e Cola (Mercado Pago):
+                                  </span>
+                                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                    Valor: {formatCurrency(totalAmount)}
+                                  </span>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                  <input
+                                    type="text"
+                                    readOnly
+                                    value={mpPayment.qrCode}
+                                    style={{
+                                      flex: 1,
+                                      background: 'var(--bg-secondary)',
+                                      border: '1px solid var(--border-subtle)',
+                                      borderRadius: '6px',
+                                      padding: '0.45rem 0.65rem',
+                                      color: 'var(--text-secondary)',
+                                      fontSize: '0.78rem',
+                                      fontFamily: 'monospace',
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={handleCopyMpPixCode}
+                                    className="btn btn-primary btn-sm"
+                                    style={{
+                                      padding: '0.45rem 0.95rem',
+                                      fontSize: '0.78rem',
+                                      fontWeight: 800,
+                                      gap: '0.4rem',
+                                      whiteSpace: 'nowrap',
+                                      background: copiedMpPixCode ? 'var(--status-success)' : '#009ee3',
+                                      borderColor: copiedMpPixCode ? 'var(--status-success)' : '#009ee3',
+                                    }}
+                                  >
+                                    {copiedMpPixCode ? <Check size={16} /> : <Copy size={16} />}
+                                    <span>{copiedMpPixCode ? 'Copiado!' : 'Copiar Código'}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Instruções do evento */}
+                            {event.paymentInstructions && (
+                              <div
+                                style={{
+                                  background: 'rgba(0, 158, 227, 0.08)',
+                                  border: '1px solid rgba(0, 158, 227, 0.25)',
+                                  borderRadius: '6px',
+                                  padding: '0.65rem 0.85rem',
+                                  fontSize: '0.78rem',
+                                  color: 'var(--text-secondary)',
+                                  lineHeight: 1.45,
+                                }}
+                              >
+                                ℹ️ <strong>Orientações do Evento:</strong> {event.paymentInstructions}
+                              </div>
+                            )}
+
+                            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                              💡 <strong>Como pagar:</strong> Copie o código acima &gt; Abra seu app bancário &gt; <strong>PIX Copia e Cola</strong> &gt; Confirme <strong>{formatCurrency(totalAmount)}</strong>. O sistema confirmará sua inscrição instantaneamente.
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ==================== DETALHES DE PAGAMENTO: CARTÃO DE CRÉDITO ==================== */}
+                    {paymentOption === 'mp_card' && (
+                      <div
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid rgba(0, 158, 227, 0.45)',
+                          borderRadius: 'var(--radius-lg)',
+                          padding: '1.25rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '1rem',
+                          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div
+                              style={{
+                                width: '34px',
+                                height: '34px',
+                                borderRadius: '8px',
+                                background: 'rgba(0, 158, 227, 0.15)',
+                                color: '#009ee3',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <CreditCard size={19} />
+                            </div>
+                            <div>
+                              <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+                                Pagamento via Cartão de Crédito
+                              </span>
+                              <span style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', display: 'block' }}>
+                                Parcelamento em até 12x via Mercado Pago
+                              </span>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>
+                              Total
+                            </span>
+                            <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#009ee3' }}>
+                              {formatCurrency(totalAmount)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Card Brands Badges */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          <span style={{ fontWeight: 700 }}>Bandeiras aceitas:</span>
+                          <span style={{ background: 'var(--bg-tertiary)', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', fontWeight: 700 }}>Visa</span>
+                          <span style={{ background: 'var(--bg-tertiary)', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', fontWeight: 700 }}>Mastercard</span>
+                          <span style={{ background: 'var(--bg-tertiary)', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', fontWeight: 700 }}>Elo</span>
+                          <span style={{ background: 'var(--bg-tertiary)', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', fontWeight: 700 }}>Hipercard</span>
+                          <span style={{ background: 'var(--bg-tertiary)', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid var(--border-subtle)', fontWeight: 700 }}>Amex</span>
+                        </div>
+
+                        <div
+                          style={{
+                            background: 'rgba(0, 158, 227, 0.08)',
+                            border: '1px solid rgba(0, 158, 227, 0.25)',
+                            borderRadius: '8px',
+                            padding: '1rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem',
+                          }}
+                        >
+                          <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                            🔒 Você será direcionado para o checkout oficial e protegido do <strong>Mercado Pago</strong>, onde poderá parcelar sua vaga com total segurança.
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleOpenCardCheckout}
+                            disabled={isCreatingCardCheckout}
+                            className="btn btn-primary"
+                            style={{
+                              background: '#009ee3',
+                              borderColor: '#009ee3',
+                              fontWeight: 800,
+                              gap: '0.5rem',
+                              justifyContent: 'center',
+                              padding: '0.65rem 1.25rem',
+                            }}
+                          >
+                            <CreditCard size={18} />
+                            <span>{isCreatingCardCheckout ? 'Abrindo Checkout...' : 'Pagar com Cartão no Mercado Pago'}</span>
+                            <ExternalLink size={15} />
+                          </button>
+
+                          {cardCheckoutOpened && (
+                            <div
+                              style={{
+                                background: 'rgba(16, 185, 129, 0.12)',
+                                border: '1px solid rgba(16, 185, 129, 0.4)',
+                                borderRadius: '6px',
+                                padding: '0.65rem 0.85rem',
+                                color: 'var(--status-success)',
+                                fontSize: '0.78rem',
+                                fontWeight: 600,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.45rem',
+                              }}
+                            >
+                              <CheckCircle2 size={16} />
+                              <span>Janela de pagamento aberta! Conclua os dados do cartão e clique em "Confirmar Minha Vaga" abaixo.</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ==================== DETALHES DE PAGAMENTO: PIX DIRETO DA IGREJA ==================== */}
+                    {paymentOption === 'direct_pix' && (
+                      <div
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid rgba(245, 158, 11, 0.4)',
+                          borderRadius: 'var(--radius-lg)',
+                          padding: '1.25rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '1rem',
+                          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
+                        }}
+                      >
+                        {/* Header do Card PIX */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '8px',
+                                background: 'rgba(245, 158, 11, 0.15)',
+                                color: 'var(--accent-gold)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <QrCode size={18} />
+                            </div>
+                            <div>
+                              <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+                                Pagamento via PIX Oficial da Igreja
+                              </span>
+                              <span style={{ fontSize: '0.74rem', color: 'var(--status-success)', display: 'block', fontWeight: 600 }}>
+                                ✓ QR Code Dinâmico com Valor Exato
+                              </span>
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>
+                              Total a Pagar
+                            </span>
+                            <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-gold)' }}>
+                              {formatCurrency(totalAmount)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* QR Code e Dados Bancários */}
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: '170px 1fr',
+                            gap: '1.25rem',
+                            alignItems: 'center',
+                          }}
+                        >
+                          {/* QR Code Container */}
+                          <div
+                            style={{
+                              background: '#ffffff',
+                              padding: '0.65rem',
+                              borderRadius: '12px',
+                              textAlign: 'center',
+                              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                              border: '2px solid rgba(245, 158, 11, 0.5)',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <img
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=4&data=${encodeURIComponent(pixCode)}`}
+                              alt="QR Code PIX"
+                              style={{ width: '135px', height: '135px', display: 'block', borderRadius: '4px' }}
+                            />
+                            <span style={{ fontSize: '0.68rem', color: '#475569', fontWeight: 700, marginTop: '0.4rem', textTransform: 'uppercase' }}>
+                              Aponte a Câmera
+                            </span>
+                          </div>
+
+                          {/* Dados da Chave e Favorecido */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.82rem' }}>
+                            <div>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block' }}>
+                                Favorecido / Destinatário:
+                              </span>
+                              <strong style={{ color: 'var(--text-primary)', fontSize: '0.88rem' }}>
+                                {pixReceiver}
+                              </strong>
+                              <span style={{ color: 'var(--text-secondary)', fontSize: '0.76rem', display: 'block' }}>
+                                {pixBank}
+                              </span>
+                            </div>
+
+                            {/* Box da Chave PIX direta */}
+                            <div>
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.74rem', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>
+                                Chave PIX:
+                              </span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                                <code
+                                  style={{
+                                    background: 'var(--bg-tertiary)',
+                                    border: '1px solid var(--border-subtle)',
+                                    borderRadius: '6px',
+                                    padding: '0.35rem 0.65rem',
+                                    color: 'var(--accent-gold)',
+                                    fontWeight: 700,
+                                    fontSize: '0.84rem',
+                                    fontFamily: 'monospace',
+                                    wordBreak: 'break-all',
+                                  }}
+                                >
+                                  {pixKey}
+                                </code>
+                                <button
+                                  type="button"
+                                  onClick={handleCopyPixKey}
+                                  className="btn btn-secondary btn-sm"
+                                  style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', gap: '0.35rem' }}
+                                  title="Copiar Chave PIX"
+                                >
+                                  {copiedPixKey ? <Check size={14} color="var(--status-success)" /> : <Copy size={14} />}
+                                  <span>{copiedPixKey ? 'Copiada!' : 'Copiar'}</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bloco do PIX Copia e Cola */}
+                        <div
+                          style={{
+                            background: 'var(--bg-tertiary)',
+                            border: '1px dashed rgba(245, 158, 11, 0.45)',
+                            borderRadius: '8px',
+                            padding: '0.85rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.5rem',
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.76rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                              Código PIX Copia e Cola:
+                            </span>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                              Valor: {formatCurrency(totalAmount)}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <input
+                              type="text"
+                              readOnly
+                              value={pixCode}
+                              style={{
+                                flex: 1,
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-subtle)',
+                                borderRadius: '6px',
+                                padding: '0.45rem 0.65rem',
+                                color: 'var(--text-secondary)',
+                                fontSize: '0.78rem',
+                                fontFamily: 'monospace',
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={handleCopyPixCode}
+                              className="btn btn-primary btn-sm"
+                              style={{
+                                padding: '0.45rem 0.95rem',
+                                fontSize: '0.78rem',
+                                fontWeight: 800,
+                                gap: '0.4rem',
+                                whiteSpace: 'nowrap',
+                                background: copiedPixCode ? 'var(--status-success)' : undefined,
+                                borderColor: copiedPixCode ? 'var(--status-success)' : undefined,
+                              }}
+                            >
+                              {copiedPixCode ? <Check size={16} /> : <Copy size={16} />}
+                              <span>{copiedPixCode ? 'Código Copiado!' : 'Copiar Código PIX'}</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Instruções Adicionais configuradas no evento */}
+                        {event.paymentInstructions && (
+                          <div
+                            style={{
+                              background: 'rgba(245, 158, 11, 0.08)',
+                              border: '1px solid rgba(245, 158, 11, 0.3)',
+                              borderRadius: '6px',
+                              padding: '0.65rem 0.85rem',
+                              fontSize: '0.78rem',
+                              color: 'var(--text-secondary)',
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            ℹ️ <strong>Orientações do Evento:</strong> {event.paymentInstructions}
+                          </div>
+                        )}
+
+                        <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                          💡 <strong>Como pagar:</strong> Abra o app do seu banco &gt; Escolha <strong>Área PIX</strong> &gt; Clique em <strong>PIX Copia e Cola</strong> ou <strong>Ler QR Code</strong> &gt; Confirme o valor de <strong>{formatCurrency(totalAmount)}</strong> &gt; Em seguida, clique no botão <strong>"Confirmar Minha Vaga"</strong> abaixo.
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ==================== PAGAMENTO MANUAL ==================== */}
+                    {paymentOption === 'manual' && (
+                      <div
+                        style={{
+                          padding: '0.9rem 1.15rem',
+                          background: 'rgba(245, 158, 11, 0.12)',
+                          border: '1px solid rgba(245, 158, 11, 0.4)',
+                          borderRadius: '8px',
+                          fontSize: '0.82rem',
+                          color: 'var(--accent-gold)',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        ⏳ <strong>Atenção ao Pagamento Manual:</strong> Ao optar pelo Pagamento Manual / Presencial, sua inscrição ficará registrada com status <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato com você via WhatsApp (<strong>{phone}</strong>) para orientar sobre o acerto do valor de <strong>{formatCurrency(totalAmount)}</strong> e a validação final da sua credencial de acesso.
                       </div>
                     )}
                   </div>
@@ -942,7 +1952,15 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                   style={{ gap: '0.45rem', padding: '0.65rem 1.5rem', fontWeight: 900 }}
                 >
                   <CheckCircle2 size={18} />
-                  <span>{paymentMethod === 'manual' && totalAmount > 0 ? 'Concluir Inscrição (Pagamento Manual)' : 'Confirmar Minha Vaga'}</span>
+                  <span>
+                    {paymentOption === 'manual' && totalAmount > 0
+                      ? 'Concluir Inscrição (Pagamento Manual)'
+                      : paymentOption === 'mp_card'
+                      ? 'Confirmar Inscrição com Cartão'
+                      : isMpApproved
+                      ? 'Concluir Inscrição (Aprovada)'
+                      : 'Confirmar Minha Vaga'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -1027,16 +2045,27 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                   <div>
                     <span
                       style={{
-                        background: 'rgba(245, 158, 11, 0.15)',
-                        color: 'var(--accent-gold)',
+                        background: confirmedRegistration?.mercadoPagoPaymentId
+                          ? 'rgba(0, 158, 227, 0.15)'
+                          : 'rgba(245, 158, 11, 0.15)',
+                        color: confirmedRegistration?.mercadoPagoPaymentId
+                          ? '#009ee3'
+                          : 'var(--accent-gold)',
                         padding: '0.3rem 0.8rem',
                         borderRadius: 'var(--radius-full)',
                         fontSize: '0.78rem',
                         fontWeight: 800,
                         textTransform: 'uppercase',
+                        border: confirmedRegistration?.mercadoPagoPaymentId
+                          ? '1px solid rgba(0, 158, 227, 0.4)'
+                          : undefined,
                       }}
                     >
-                      🎉 Vaga Confirmada com Sucesso!
+                      {confirmedRegistration?.mercadoPagoPaymentId
+                        ? `⚡ Aprovado pelo Mercado Pago • ID: ${confirmedRegistration.mercadoPagoPaymentId}`
+                        : confirmedRegistration?.paymentMethod === 'credit_card'
+                        ? '💳 Cartão de Crédito • Mercado Pago'
+                        : '🎉 Vaga Confirmada com Sucesso!'}
                     </span>
                     <h4 style={{ fontSize: '1.6rem', fontWeight: 900, marginTop: '0.65rem', color: 'var(--text-primary)' }}>
                       Glória a Deus, {name}!
@@ -1190,7 +2219,14 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                   )}
                   {confirmedRegistration?.totalPaid !== undefined && confirmedRegistration.totalPaid > 0 && (
                     <div style={{ color: 'var(--text-primary)', fontWeight: 800 }}>
-                      Total Pago: {formatCurrency(confirmedRegistration.totalPaid)}
+                      Total: {formatCurrency(confirmedRegistration.totalPaid)}{' '}
+                      {confirmedRegistration.mercadoPagoPaymentId
+                        ? '• ⚡ Pago via Mercado Pago'
+                        : confirmedRegistration.paymentMethod === 'credit_card'
+                        ? '• 💳 Cartão de Crédito'
+                        : confirmedRegistration.paymentMethod === 'pix'
+                        ? '• ⚡ Pago via PIX'
+                        : '• ⏳ Pagamento Manual (Pendente)'}
                     </div>
                   )}
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>

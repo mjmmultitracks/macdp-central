@@ -126,10 +126,18 @@ export function sendEventConfirmationEmail(params: {
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px;">
           <span style="font-size: 12px; color: #64748b; text-transform: uppercase;">Status do Pagamento:</span>
-          <span style="font-size: 13px; font-weight: 800; color: #10B981;">✓ ${isFree ? 'ISENTO (GRATUITO)' : 'APROVADO / PAGO'}</span>
+          <span style="font-size: 13px; font-weight: 800; color: ${isPending ? '#d97706' : '#10B981'};">
+            ${isFree ? '✓ ISENTO (GRATUITO)' : isPending ? '⏳ PENDENTE DE ACERTO' : '✓ APROVADO / PAGO'}
+          </span>
         </div>
         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px;">
-          <span style="font-size: 12px; color: #64748b; text-transform: uppercase;">Valor Pago:</span>
+          <span style="font-size: 12px; color: #64748b; text-transform: uppercase;">Forma de Pagamento:</span>
+          <span style="font-size: 13px; font-weight: 700; color: #1e293b;">
+            ${isFree ? 'Gratuito' : registration.paymentMethod === 'credit_card' ? '💳 Cartão de Crédito (Mercado Pago)' : registration.paymentMethod === 'pix' ? '⚡ PIX Instantâneo' : registration.paymentMethod === 'manual' ? '🏛️ Pagamento Manual / Presencial' : (registration.paymentMethod || 'PIX')}
+          </span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px;">
+          <span style="font-size: 12px; color: #64748b; text-transform: uppercase;">Valor:</span>
           <span style="font-size: 14px; font-weight: 800; color: #0f172a;">${paymentAmountText}</span>
         </div>
         <div style="display: flex; justify-content: space-between;">
