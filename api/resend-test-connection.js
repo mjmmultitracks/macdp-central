@@ -87,6 +87,12 @@ export default async function handler(req, res) {
     const checkData = await checkRes.json();
 
     if (!checkRes.ok) {
+      if (checkData.name === 'restricted_api_key' || checkData.message?.includes('only send emails')) {
+        return res.status(200).json({
+          success: true,
+          message: 'Chave de API do Resend válida e pronta para envio de e-mails (Permissão: Sending Access)!',
+        });
+      }
       return res.status(checkRes.status).json({
         success: false,
         error: checkData.message || 'Chave de API do Resend inválida ou sem permissões.',
