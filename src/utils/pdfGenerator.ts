@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf';
+import QRCode from 'qrcode';
 import { ChurchEvent, EventRegistration } from '../types';
 import { formatDate, calculateAge, formatEventDateRange } from './formatters';
 
@@ -12,35 +13,23 @@ interface GenerateVoucherPDFParams {
 }
 
 /**
- * Loads the QR Code as base64 image via offscreen canvas
+ * Loads the QR Code as base64 image data URL using standard local QRCode library
  */
-function fetchQRCodeDataUrl(text: string): Promise<string> {
-  return new Promise((resolve) => {
-    try {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width || 140;
-          canvas.height = img.height || 140;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0);
-            resolve(canvas.toDataURL('image/png'));
-          } else {
-            resolve('');
-          }
-        } catch {
-          resolve('');
-        }
-      };
-      img.onerror = () => resolve('');
-      img.src = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(text)}`;
-    } catch {
-      resolve('');
-    }
-  });
+async function fetchQRCodeDataUrl(text: string): Promise<string> {
+  try {
+    return await QRCode.toDataURL(text, {
+      width: 280,
+      margin: 2,
+      errorCorrectionLevel: 'M',
+      color: {
+        dark: '#000000',
+        light: '#ffffff',
+      },
+    });
+  } catch (err) {
+    console.error('Erro ao gerar QR Code para o PDF:', err);
+    return '';
+  }
 }
 
 export async function generateEventVoucherPDF(params: GenerateVoucherPDFParams): Promise<void> {

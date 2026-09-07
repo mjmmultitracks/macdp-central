@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import QRCode from 'qrcode';
 import { ChurchEvent, EventRegistration } from '../../types';
 import { addEventRegistration, getChurchSettings } from '../../services/db';
 import { generatePixCopiaECola } from '../../services/pixService';
@@ -101,6 +102,10 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   const [isCreatingCardCheckout, setIsCreatingCardCheckout] = useState(false);
   const [cardCheckoutOpened, setCardCheckoutOpened] = useState(false);
   const pollingIntervalRef = useRef<any>(null);
+
+  // High-Resolution Standards-Compliant QR Codes (generated via qrcode)
+  const [mpQrDataUrl, setMpQrDataUrl] = useState<string>('');
+  const [directPixQrDataUrl, setDirectPixQrDataUrl] = useState<string>('');
 
   // Step 4: Success Result
   const [confirmedRegistration, setConfirmedRegistration] = useState<EventRegistration | null>(null);
@@ -249,6 +254,44 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
       createMercadoPagoPix();
     }
   }, [currentStep, totalAmount, isMercadoPagoAvailable, paymentOption]);
+
+  // Generate high-resolution, standards-compliant QR Code for Mercado Pago PIX
+  useEffect(() => {
+    if (mpPayment?.qrCode) {
+      QRCode.toDataURL(mpPayment.qrCode, {
+        width: 450,
+        margin: 2,
+        errorCorrectionLevel: 'M',
+        color: {
+          dark: '#000000',
+          light: '#ffffff',
+        },
+      })
+        .then((url) => setMpQrDataUrl(url))
+        .catch((err) => console.error('Erro ao gerar QR Code MP:', err));
+    } else {
+      setMpQrDataUrl('');
+    }
+  }, [mpPayment?.qrCode]);
+
+  // Generate high-resolution QR Code for Direct PIX
+  useEffect(() => {
+    if (pixCode) {
+      QRCode.toDataURL(pixCode, {
+        width: 450,
+        margin: 2,
+        errorCorrectionLevel: 'M',
+        color: {
+          dark: '#000000',
+          light: '#ffffff',
+        },
+      })
+        .then((url) => setDirectPixQrDataUrl(url))
+        .catch((err) => console.error('Erro ao gerar QR Code Direto:', err));
+    } else {
+      setDirectPixQrDataUrl('');
+    }
+  }, [pixCode]);
 
   // Validation handlers
   const isValidEmail = (val: string) => {
@@ -1406,7 +1449,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                             <div
                               style={{
                                 display: 'grid',
-                                gridTemplateColumns: '170px 1fr',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
                                 gap: '1.25rem',
                                 alignItems: 'center',
                               }}
@@ -1415,31 +1458,37 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                               <div
                                 style={{
                                   background: '#ffffff',
-                                  padding: '0.65rem',
-                                  borderRadius: '12px',
+                                  padding: '0.85rem',
+                                  borderRadius: '16px',
                                   textAlign: 'center',
-                                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-                                  border: '2px solid rgba(0, 158, 227, 0.5)',
+                                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)',
+                                  border: '2px solid rgba(0, 158, 227, 0.6)',
                                   display: 'flex',
                                   flexDirection: 'column',
                                   alignItems: 'center',
+                                  maxWidth: '230px',
+                                  margin: '0 auto',
                                 }}
                               >
-                                {mpPayment.qrCodeBase64 ? (
+                                {mpQrDataUrl ? (
                                   <img
-                                    src={`data:image/png;base64,${mpPayment.qrCodeBase64}`}
+                                    src={mpQrDataUrl}
                                     alt="QR Code PIX Mercado Pago"
-                                    style={{ width: '135px', height: '135px', display: 'block', borderRadius: '4px' }}
+                                    style={{ width: '190px', height: '190px', display: 'block', borderRadius: '4px', imageRendering: 'pixelated' }}
                                   />
                                 ) : mpPayment.qrCode ? (
                                   <img
-                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=4&data=${encodeURIComponent(mpPayment.qrCode)}`}
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=350x350&margin=8&data=${encodeURIComponent(mpPayment.qrCode)}`}
                                     alt="QR Code PIX"
-                                    style={{ width: '135px', height: '135px', display: 'block', borderRadius: '4px' }}
+                                    style={{ width: '190px', height: '190px', display: 'block', borderRadius: '4px' }}
                                   />
-                                ) : null}
-                                <span style={{ fontSize: '0.68rem', color: '#009ee3', fontWeight: 800, marginTop: '0.4rem', textTransform: 'uppercase' }}>
-                                  Pagar com o App do Banco
+                                ) : (
+                                  <div style={{ width: '190px', height: '190px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <RefreshCw size={24} className="animate-spin" color="#009ee3" />
+                                  </div>
+                                )}
+                                <span style={{ fontSize: '0.72rem', color: '#009ee3', fontWeight: 800, marginTop: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                  Aponte a Câmera do Banco
                                 </span>
                               </div>
 
@@ -1498,6 +1547,26 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                                   </button>
                                 </div>
                               </div>
+                            </div>
+
+                            {/* Dica amigável para celular (Copia e Cola) */}
+                            <div
+                              style={{
+                                background: 'rgba(0, 158, 227, 0.08)',
+                                border: '1px solid rgba(0, 158, 227, 0.25)',
+                                borderRadius: '8px',
+                                padding: '0.65rem 0.85rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.55rem',
+                                fontSize: '0.78rem',
+                                color: 'var(--text-secondary)',
+                              }}
+                            >
+                              <Sparkles size={16} color="#009ee3" style={{ flexShrink: 0 }} />
+                              <span>
+                                📱 <strong>No celular?</strong> Se não puder escanear a tela, clique em <strong>Copiar Código</strong> abaixo e cole no seu banco na opção <strong>Pix Copia e Cola</strong>.
+                              </span>
                             </div>
 
                             {/* Copia e Cola Mercado Pago */}
@@ -1754,7 +1823,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                         <div
                           style={{
                             display: 'grid',
-                            gridTemplateColumns: '170px 1fr',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
                             gap: '1.25rem',
                             alignItems: 'center',
                           }}
@@ -1763,22 +1832,32 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                           <div
                             style={{
                               background: '#ffffff',
-                              padding: '0.65rem',
-                              borderRadius: '12px',
+                              padding: '0.85rem',
+                              borderRadius: '16px',
                               textAlign: 'center',
-                              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-                              border: '2px solid rgba(245, 158, 11, 0.5)',
+                              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)',
+                              border: '2px solid rgba(245, 158, 11, 0.6)',
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
+                              maxWidth: '230px',
+                              margin: '0 auto',
                             }}
                           >
-                            <img
-                              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=4&data=${encodeURIComponent(pixCode)}`}
-                              alt="QR Code PIX"
-                              style={{ width: '135px', height: '135px', display: 'block', borderRadius: '4px' }}
-                            />
-                            <span style={{ fontSize: '0.68rem', color: '#475569', fontWeight: 700, marginTop: '0.4rem', textTransform: 'uppercase' }}>
+                            {directPixQrDataUrl ? (
+                              <img
+                                src={directPixQrDataUrl}
+                                alt="QR Code PIX"
+                                style={{ width: '190px', height: '190px', display: 'block', borderRadius: '4px', imageRendering: 'pixelated' }}
+                              />
+                            ) : (
+                              <img
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=350x350&margin=8&data=${encodeURIComponent(pixCode)}`}
+                                alt="QR Code PIX"
+                                style={{ width: '190px', height: '190px', display: 'block', borderRadius: '4px' }}
+                              />
+                            )}
+                            <span style={{ fontSize: '0.72rem', color: '#475569', fontWeight: 800, marginTop: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                               Aponte a Câmera
                             </span>
                           </div>
