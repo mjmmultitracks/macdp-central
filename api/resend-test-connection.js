@@ -31,7 +31,9 @@ export default async function handler(req, res) {
 
     // Se informou um e-mail para envio de teste, dispara e-mail real de teste
     if (toEmail) {
-      const senderEmail = (fromEmail && String(fromEmail).trim()) || process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+      const senderEmail = (fromEmail && String(fromEmail).trim() && !fromEmail.includes('onboarding@resend.dev'))
+        ? String(fromEmail).trim()
+        : process.env.RESEND_FROM_EMAIL || 'eventos@macdp.com.br';
       const senderName = fromName ? String(fromName).trim() : 'MACDP Central';
       const fromField = `${senderName} <${senderEmail}>`;
 

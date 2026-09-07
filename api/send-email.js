@@ -40,8 +40,10 @@ export default async function handler(req, res) {
       });
     }
 
-    // Remetente: se especificado e válido, usa; senão usa padrão do ambiente ou onboarding@resend.dev
-    const senderEmail = (fromEmail && String(fromEmail).trim()) || process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+    // Remetente: se especificado e válido, usa; senão usa padrão do ambiente ou eventos@macdp.com.br
+    const senderEmail = (fromEmail && String(fromEmail).trim() && !fromEmail.includes('onboarding@resend.dev'))
+      ? String(fromEmail).trim()
+      : process.env.RESEND_FROM_EMAIL || 'eventos@macdp.com.br';
     const senderName = fromName ? String(fromName).trim() : 'MACDP Central';
     const fromField = `${senderName} <${senderEmail}>`;
 

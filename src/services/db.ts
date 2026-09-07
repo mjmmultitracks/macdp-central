@@ -136,7 +136,7 @@ export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
     enabled: true,
     provider: 'resend',
     apiKey: '',
-    fromEmail: 'onboarding@resend.dev',
+    fromEmail: 'eventos@macdp.com.br',
     fromName: 'MACDP Central',
   },
   appSettings: INITIAL_APP_SETTINGS,
