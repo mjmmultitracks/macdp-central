@@ -647,9 +647,9 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       category: 'Conferência',
       imageUrl: '/images/hero.jpg',
       isFree: false,
-      price: 60.0,
+      price: 0.10,
       hasShirt: true,
-      shirtPrice: 50.0,
+      shirtPrice: 0.10,
       shirtSizes: ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'Infantil 8', 'Infantil 12'],
       totalCapacity: 200,
       registeredCount: 0,
@@ -1424,6 +1424,14 @@ export function getDatabase(): DatabaseSchema {
           publicKey: INITIAL_CHURCH_SETTINGS.mercadoPago?.publicKey || '',
           sandbox: false,
         };
+        needsSave = true;
+      }
+    }
+    if (parsed.events) {
+      const conf = parsed.events.find(e => e.id === 'evt_1');
+      if (conf && (conf.price === 60.0 || !conf.price)) {
+        conf.price = 0.10;
+        if (conf.shirtPrice === 50.0) conf.shirtPrice = 0.10;
         needsSave = true;
       }
     }

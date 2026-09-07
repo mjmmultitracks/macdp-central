@@ -2894,7 +2894,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                 <label className="form-label">Valor da Inscrição (R$) *</label>
                 <input
                   type="number"
-                  min={1}
+                  min={0.01}
                   step="0.01"
                   className="form-input"
                   value={price}
@@ -2951,7 +2951,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                     </label>
                     <input
                       type="number"
-                      min={1}
+                      min={0.01}
                       step="0.01"
                       required={hasShirt}
                       className="form-input"
