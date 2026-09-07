@@ -1,5 +1,5 @@
 // Service Worker para Aplicativo da Igreja MACDP (PWA Offline & Push)
-const CACHE_NAME = 'macdp-app-cache-v3';
+const CACHE_NAME = 'macdp-app-cache-v4';
 const OFFLINE_URL = '/offline.html';
 const STATIC_ASSETS = [
   '/',

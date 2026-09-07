@@ -64,10 +64,8 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
 
   // Allowed Payment Methods & Mercado Pago Integration
   const churchSettings = getChurchSettings();
-  const isMercadoPagoConfigured = !!(
-    churchSettings.mercadoPago?.enabled &&
-    churchSettings.mercadoPago?.accessToken?.trim()
-  );
+  // Mercado Pago está ativo por padrão, a não ser que desativado nas configurações da igreja
+  const isMercadoPagoConfigured = churchSettings.mercadoPago?.enabled !== false;
   const isMercadoPagoAvailable = isMercadoPagoConfigured && event.mercadoPagoEnabled !== false;
 
   const allowedMethods = event.allowedPaymentMethods && event.allowedPaymentMethods.length > 0
@@ -1238,8 +1236,8 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                           </div>
                         )}
 
-                        {/* Option 3: PIX Direto da Igreja (sempre disponível ou fallback) */}
-                        {(!isMercadoPagoAvailable || paymentOption === 'direct_pix') && allowedMethods.includes('pix') && (
+                        {/* Option 3: PIX Direto da Igreja (sempre disponível) */}
+                        {allowedMethods.includes('pix') && (
                           <div
                             onClick={() => setPaymentOption('direct_pix')}
                             style={{

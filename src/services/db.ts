@@ -1412,9 +1412,20 @@ export function getDatabase(): DatabaseSchema {
     if (!parsed.churchSettings) {
       parsed.churchSettings = INITIAL_CHURCH_SETTINGS;
       needsSave = true;
-    } else if (!parsed.churchSettings.appSettings) {
-      parsed.churchSettings.appSettings = INITIAL_APP_SETTINGS;
-      needsSave = true;
+    } else {
+      if (!parsed.churchSettings.appSettings) {
+        parsed.churchSettings.appSettings = INITIAL_APP_SETTINGS;
+        needsSave = true;
+      }
+      if (!parsed.churchSettings.mercadoPago || !parsed.churchSettings.mercadoPago.accessToken) {
+        parsed.churchSettings.mercadoPago = {
+          enabled: true,
+          accessToken: INITIAL_CHURCH_SETTINGS.mercadoPago?.accessToken || '',
+          publicKey: INITIAL_CHURCH_SETTINGS.mercadoPago?.publicKey || '',
+          sandbox: false,
+        };
+        needsSave = true;
+      }
     }
     if (!parsed.appNotifications || parsed.appNotifications.length === 0) {
       parsed.appNotifications = INITIAL_APP_NOTIFICATIONS;
@@ -2259,13 +2270,12 @@ export function deleteAccessUser(id: string): boolean {
 export function getChurchSettings(): ChurchSettings {
   const db = getDatabase();
   const settings = db.churchSettings || INITIAL_CHURCH_SETTINGS;
-  if (!settings.mercadoPago?.accessToken) {
+  if (!settings.mercadoPago || !settings.mercadoPago.accessToken) {
     settings.mercadoPago = {
-      enabled: true,
-      accessToken: INITIAL_CHURCH_SETTINGS.mercadoPago?.accessToken || '',
-      publicKey: INITIAL_CHURCH_SETTINGS.mercadoPago?.publicKey || '',
-      sandbox: false,
-      ...(settings.mercadoPago || {}),
+      enabled: settings.mercadoPago?.enabled ?? true,
+      accessToken: settings.mercadoPago?.accessToken || INITIAL_CHURCH_SETTINGS.mercadoPago?.accessToken || '',
+      publicKey: settings.mercadoPago?.publicKey || INITIAL_CHURCH_SETTINGS.mercadoPago?.publicKey || '',
+      sandbox: settings.mercadoPago?.sandbox ?? false,
     };
   }
   return settings;

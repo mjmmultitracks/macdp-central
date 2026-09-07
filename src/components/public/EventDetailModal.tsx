@@ -42,8 +42,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
   const churchSettings = getChurchSettings();
   const isMpActive = !!(
-    churchSettings.mercadoPago?.enabled &&
-    churchSettings.mercadoPago?.accessToken?.trim() &&
+    churchSettings.mercadoPago?.enabled !== false &&
     event.mercadoPagoEnabled !== false
   );
 
