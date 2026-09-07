@@ -103,6 +103,9 @@ export async function sendEventConfirmationEmail(params: {
     
     <!-- Top Header -->
     <div style="background: linear-gradient(135deg, #0B1120 0%, #1E293B 100%); padding: 32px 24px; text-align: center; border-bottom: 4px solid #F59E0B;">
+      <div style="margin-bottom: 12px;">
+        <img src="https://macdp.com.br/images/logo.png" alt="Logo MACDP" style="width: 72px; height: 72px; object-fit: contain; border-radius: 50%; background: #ffffff; padding: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); border: 2px solid #F59E0B; display: inline-block;" />
+      </div>
       <span style="color: #F59E0B; font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; display: block; margin-bottom: 6px;">
         MINISTÉRIO APOSTÓLICO CAÇADORES DA PRESENÇA
       </span>
@@ -197,6 +200,9 @@ export async function sendEventConfirmationEmail(params: {
 
     <!-- Footer -->
     <div style="background: #f8fafc; padding: 20px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
+      <div style="margin-bottom: 8px;">
+        <img src="https://macdp.com.br/images/logo.png" alt="Logo MACDP" style="width: 36px; height: 36px; object-fit: contain; border-radius: 50%; display: inline-block;" />
+      </div>
       <p style="margin: 0 0 4px 0; font-weight: 700; color: #1e293b;">
         Ministério Apostólico Caçadores da Presença (MACDP)
       </p>
