@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import QRCode from 'qrcode';
 import { ChurchEvent, EventRegistration } from '../../types';
 import { addEventRegistration, getChurchSettings } from '../../services/db';
@@ -63,8 +63,8 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   const [includeShirt, setIncludeShirt] = useState(false);
   const [shirtSize, setShirtSize] = useState('M');
 
-  // Allowed Payment Methods & Mercado Pago Integration
-  const churchSettings = getChurchSettings();
+  // Allowed Payment Methods & Mercado Pago Integration (memoized to avoid JSON.parse on every keystroke)
+  const churchSettings = useMemo(() => getChurchSettings(), []);
   // Mercado Pago está ativo por padrão, a não ser que desativado nas configurações da igreja
   const isMercadoPagoConfigured = churchSettings.mercadoPago?.enabled !== false;
   const isMercadoPagoAvailable = isMercadoPagoConfigured && event.mercadoPagoEnabled !== false;
@@ -134,15 +134,20 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   const pixBank = event.pixBank || churchSettings.pix?.bank || 'Banco Bradesco';
   const pixCity = churchSettings.address?.city || 'Manaus';
 
-  // Dynamic Direct PIX Copia e Cola Code
-  const pixCode = generatePixCopiaECola({
-    key: pixKey,
-    name: pixReceiver,
-    city: pixCity,
-    amount: totalAmount,
-    description: `Inscricao ${event.title.substring(0, 20)}`,
-    txid: `EVT${event.id.replace(/\D/g, '').slice(-4)}${Math.floor(Math.random() * 899 + 100)}`,
-  });
+  // Stable direct PIX txid (persists across re-renders to prevent recalculating on keystroke)
+  const txidRef = useRef<string>(`EVT${event.id.replace(/\D/g, '').slice(-4)}${Math.floor(Math.random() * 899 + 100)}`);
+
+  // Dynamic Direct PIX Copia e Cola Code (memoized to avoid regenerating on keystrokes)
+  const pixCode = useMemo(() => {
+    return generatePixCopiaECola({
+      key: pixKey,
+      name: pixReceiver,
+      city: pixCity,
+      amount: totalAmount,
+      description: `Inscricao ${event.title.substring(0, 20)}`,
+      txid: txidRef.current,
+    });
+  }, [pixKey, pixReceiver, pixCity, totalAmount, event.title]);
 
   const handleCopyPixCode = () => {
     navigator.clipboard.writeText(pixCode);
@@ -255,11 +260,11 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
     }
   }, [currentStep, totalAmount, isMercadoPagoAvailable, paymentOption]);
 
-  // Generate high-resolution, standards-compliant QR Code for Mercado Pago PIX
+  // Generate high-resolution, standards-compliant QR Code for Mercado Pago PIX (ONLY on Step 3)
   useEffect(() => {
-    if (mpPayment?.qrCode) {
+    if (currentStep === 3 && paymentOption === 'mp_pix' && mpPayment?.qrCode) {
       QRCode.toDataURL(mpPayment.qrCode, {
-        width: 450,
+        width: 380,
         margin: 2,
         errorCorrectionLevel: 'M',
         color: {
@@ -269,16 +274,14 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
       })
         .then((url) => setMpQrDataUrl(url))
         .catch((err) => console.error('Erro ao gerar QR Code MP:', err));
-    } else {
-      setMpQrDataUrl('');
     }
-  }, [mpPayment?.qrCode]);
+  }, [currentStep, paymentOption, mpPayment?.qrCode]);
 
-  // Generate high-resolution QR Code for Direct PIX
+  // Generate high-resolution QR Code for Direct PIX (ONLY on Step 3 when direct_pix is active)
   useEffect(() => {
-    if (pixCode) {
+    if (currentStep === 3 && paymentOption === 'direct_pix' && pixCode) {
       QRCode.toDataURL(pixCode, {
-        width: 450,
+        width: 380,
         margin: 2,
         errorCorrectionLevel: 'M',
         color: {
@@ -288,10 +291,8 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
       })
         .then((url) => setDirectPixQrDataUrl(url))
         .catch((err) => console.error('Erro ao gerar QR Code Direto:', err));
-    } else {
-      setDirectPixQrDataUrl('');
     }
-  }, [pixCode]);
+  }, [currentStep, paymentOption, pixCode]);
 
   // Validation handlers
   const isValidEmail = (val: string) => {
