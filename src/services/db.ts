@@ -127,9 +127,9 @@ export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
     secondaryColor: '#3b82f6',
   },
   mercadoPago: {
-    enabled: false,
-    accessToken: '',
-    publicKey: '',
+    enabled: true,
+    accessToken: 'APP_USR-618247065351176-090713-7df8d1b1a7fda47e50d21e09192ac117-2570443730',
+    publicKey: 'APP_USR-18bee5ba-a5ca-4dd9-a511-06308a2a2bfe',
     sandbox: false,
   },
   appSettings: INITIAL_APP_SETTINGS,
@@ -2258,7 +2258,17 @@ export function deleteAccessUser(id: string): boolean {
 // ==================== CONFIGURAÇÕES DA IGREJA (NOME, LOGO, CONTATOS) ====================
 export function getChurchSettings(): ChurchSettings {
   const db = getDatabase();
-  return db.churchSettings || INITIAL_CHURCH_SETTINGS;
+  const settings = db.churchSettings || INITIAL_CHURCH_SETTINGS;
+  if (!settings.mercadoPago?.accessToken) {
+    settings.mercadoPago = {
+      enabled: true,
+      accessToken: INITIAL_CHURCH_SETTINGS.mercadoPago?.accessToken || '',
+      publicKey: INITIAL_CHURCH_SETTINGS.mercadoPago?.publicKey || '',
+      sandbox: false,
+      ...(settings.mercadoPago || {}),
+    };
+  }
+  return settings;
 }
 
 export function updateChurchSettings(settings: Partial<ChurchSettings>): ChurchSettings {
