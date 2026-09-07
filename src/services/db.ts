@@ -1427,14 +1427,6 @@ export function getDatabase(): DatabaseSchema {
         needsSave = true;
       }
     }
-    if (parsed.events) {
-      const conf = parsed.events.find(e => e.id === 'evt_1');
-      if (conf && (conf.price === 60.0 || !conf.price)) {
-        conf.price = 0.10;
-        if (conf.shirtPrice === 50.0) conf.shirtPrice = 0.10;
-        needsSave = true;
-      }
-    }
     if (!parsed.appNotifications || parsed.appNotifications.length === 0) {
       parsed.appNotifications = INITIAL_APP_NOTIFICATIONS;
       needsSave = true;
