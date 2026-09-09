@@ -337,11 +337,17 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
       return;
     }
 
+    const finalInitialBalance = isNaN(accountForm.initialBalance) ? 0 : Number(accountForm.initialBalance);
+    const payload = {
+      ...accountForm,
+      initialBalance: finalInitialBalance,
+    };
+
     if (editingAccount) {
-      updateBankAccount(editingAccount.id, accountForm);
+      updateBankAccount(editingAccount.id, payload);
       onNotify('success', `Conta "${accountForm.name}" atualizada com sucesso!`);
     } else {
-      addBankAccount(accountForm);
+      addBankAccount(payload);
       onNotify('success', `Nova conta bancária "${accountForm.name}" cadastrada!`);
     }
 
@@ -2458,17 +2464,25 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             </div>
 
             <div className="form-group">
-              <label className="form-label">Saldo Inicial (R$) *</label>
+              <label className="form-label">Saldo Inicial (R$)</label>
               <input
                 type="number"
                 step="0.01"
-                required
                 className="form-input"
                 placeholder="0,00"
-                value={accountForm.initialBalance || ''}
-                onChange={(e) => setAccountForm({ ...accountForm, initialBalance: parseFloat(e.target.value) || 0 })}
+                value={accountForm.initialBalance === undefined || isNaN(accountForm.initialBalance) ? '0' : accountForm.initialBalance}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setAccountForm({
+                    ...accountForm,
+                    initialBalance: val === '' ? 0 : parseFloat(val) || 0,
+                  });
+                }}
                 style={{ fontWeight: 700 }}
               />
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem', display: 'block' }}>
+                Pode ser 0,00 caso a conta esteja iniciando zerada.
+              </span>
             </div>
           </div>
 
