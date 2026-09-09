@@ -24,8 +24,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
   onOpenEvent,
   onRegister,
 }) => {
-  // Target: 13 de Novembro de 2026 às 19:30 (Horário de Manaus)
-  const targetDate = new Date('2026-11-13T19:30:00');
+  const targetDate = event && event.date ? new Date(`${event.date}T${event.time || '19:30'}:00`) : new Date('2026-11-13T19:30:00');
 
   const calculateTimeLeft = () => {
     const now = new Date();
@@ -47,16 +46,22 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
   useEffect(() => {
+    setTimeLeft(calculateTimeLeft());
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [event?.date, event?.time]);
 
   const formatNumber = (num: number) => String(num).padStart(2, '0');
 
-  const shareText = `🔥 *Conferência Caçadores da Presença 2026*\n\n📅 Início: 13 de Novembro de 2026 às 19h30\n📍 Local: Chácara Paraiso Verde - Iranduba - AM\n⏳ Faltam apenas ${timeLeft.days} dias, ${timeLeft.hours} horas e ${timeLeft.minutes} minutos!\n\nGaranta sua vaga no site oficial:\n${window.location.origin}/evento/evt_1`;
+  const shareEventId = event?.id || 'evt_1';
+  const shareTitle = event?.title || 'Conferência Caçadores da Presença 2026';
+  const shareLocation = event?.location || 'Chácara Paraiso Verde - Iranduba - AM';
+  const shareDateStr = event?.date ? formatDate(event.date) : '13 de Novembro de 2026';
+  const shareTimeStr = event?.time ? `às ${event.time}` : 'às 19h30';
+  const shareText = `🔥 *${shareTitle}*\n\n📅 Início: ${shareDateStr} ${shareTimeStr}\n📍 Local: ${shareLocation}\n⏳ Faltam apenas ${timeLeft.days} dias, ${timeLeft.hours} horas e ${timeLeft.minutes} minutos!\n\nGaranta sua vaga no site oficial:\n${window.location.origin}/evento/${shareEventId}`;
 
   const shareWhatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 

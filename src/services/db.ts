@@ -654,129 +654,56 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       category: 'Conferência',
       imageUrl: '/images/hero.jpg',
       isFree: false,
-      price: 0.10,
+      price: 250,
       hasShirt: true,
-      shirtPrice: 0.10,
+      shirtPrice: 50,
       shirtSizes: ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'Infantil 8', 'Infantil 12'],
       totalCapacity: 200,
-      registeredCount: 0,
-      speakerName: 'Pr. Oziel Gomes Maduro & Preletores Convidados',
-      detailedSchedule: 'Sexta (19h30): Abertura e Clamor Profético | Sábado (16h): Plenárias de Capacitação | Domingo (18h): Noite de Avivamento e Ministração',
+      registeredCount: 1,
+      speakerName: '',
+      detailedSchedule: '',
       customQuestions: [
         {
-          id: 'q1_1',
-          label: 'Tamanho da Camiseta Oficial do Evento',
-          type: 'select',
-          options: ['P', 'M', 'G', 'GG', 'XGG'],
-          required: true,
-        },
-        {
-          id: 'q1_2',
-          label: 'Você já participa de alguma Célula do MACDP?',
-          type: 'radio',
-          options: ['Sim, sou de uma célula', 'Ainda não participo de célula'],
-          required: true,
-        },
-        {
-          id: 'q1_3',
-          label: 'Possui alguma restrição alimentar ou necessidade especial?',
+          id: 'q_1788975380777',
           type: 'text',
-          placeholder: 'Ex: intolerância a lactose, vegetariano, etc.',
-          required: false,
-        },
-      ],
-      registrations: [],
-    },
-    {
-      id: 'evt_2',
-      title: 'Retiro da Juventude Caçadores: Profundidade',
-      description:
-        'Um final de semana de imersão, comunhão, adoração e transformação espiritual para a juventude e novos convertidos.',
-      date: '2026-11-20',
-      time: '18:00',
-      location: 'Sítio Recanto da Bênção - Manaus/AM',
-      roomReserved: 'Ônibus de Transporte & Chalés',
-      category: 'Acampamento',
-      imageUrl: '/images/macdp_comunhao.jpg',
-      isFree: false,
-      price: 180.0,
-      totalCapacity: 120,
-      registeredCount: 0,
-      speakerName: 'Pastores Auxiliares & Liderança de Jovens',
-      detailedSchedule: 'Sexta (18h): Embarque no Templo Sede | Sábado: Dinâmicas, Trilha e Luau de Adoração | Domingo (17h): Retorno com Ceia',
-      customQuestions: [
-        {
-          id: 'q2_1',
-          label: 'Tamanho da Camiseta do Acampamento',
-          type: 'select',
-          options: ['PP', 'P', 'M', 'G', 'GG'],
+          label: 'Nome Completo',
           required: true,
         },
         {
-          id: 'q2_2',
-          label: 'Meio de Transporte até o Sítio',
+          id: 'q_1788975422070',
+          type: 'date',
+          label: 'Data de Nascimento',
+          required: true,
+        },
+        {
+          id: 'q_1788975440148',
+          type: 'number',
+          label: 'Telefone',
+          required: true,
+        },
+        {
+          id: 'q_1788975530487',
           type: 'radio',
-          options: ['Vou de ônibus oficial da igreja', 'Vou em condução própria'],
+          label: 'Qual a sua congregação?',
+          options: [
+            'Comunidade Plenitude de Cristo',
+            'Missão Internacional Fé Apostólica',
+            'Ministério Apostólico Jesus Salva',
+            'Igreja Cristã Leão de Judá',
+            'MACDP Zona Leste. MACDP Central.',
+          ],
           required: true,
         },
         {
-          id: 'q2_3',
-          label: 'Nome e Telefone de Emergência do Responsável',
+          id: 'q_1788975736681',
           type: 'text',
-          placeholder: 'Ex: Maria Silva (Mãe) - (92) 99123-4567',
+          label: 'Você tem alguma restrição alimentar? Se sim, qual?',
           required: true,
         },
-      ],
-      registrations: [],
-    },
-    {
-      id: 'evt_3',
-      title: 'Seminário de Finanças Bíblicas & Generosidade',
-      description:
-        'Aprenda princípios bíblicos práticos para gerir seu orçamento, eliminar dívidas e prosperar com o propósito do Reino.',
-      date: '2026-09-19',
-      time: '09:00',
-      location: 'Auditório de Ensino - Templo Sede MACDP',
-      roomReserved: 'Salão Social & Sala de Vídeo',
-      category: 'Capacitação',
-      imageUrl: '/images/hero-section.jpeg',
-      isFree: true,
-      totalCapacity: 150,
-      registeredCount: 0,
-      speakerName: 'Marcos Vinicius Ribeiro (Diretor Financeiro)',
-      detailedSchedule: 'Manhã (09h às 12h): Princípios da Mordomia Bíblica, Planilha Familiar e Saída das Dívidas',
-      customQuestions: [
         {
-          id: 'q3_1',
-          label: 'Qual o seu principal objetivo neste seminário?',
-          type: 'select',
-          options: ['Planejamento Financeiro Pessoal', 'Gestão Financeira para Casais', 'Empreendedorismo Bíblico'],
-          required: true,
-        },
-      ],
-      registrations: [],
-    },
-    {
-      id: 'evt_4',
-      title: 'Grande Ação Social Comunitária: Caçadores de Vidas',
-      description:
-        'Atendimento médico voluntário, cortes de cabelo gratuitos, doação de agasalhos e cestas básicas para famílias carentes.',
-      date: '2026-09-26',
-      time: '08:30',
-      location: 'Pátio Externo & Estacionamento MACDP',
-      roomReserved: 'Pátio Externo & Salas de Apoio',
-      category: 'Ação Social',
-      imageUrl: '/images/macdp_comunhao.jpg',
-      isFree: true,
-      totalCapacity: 500,
-      registeredCount: 0,
-      speakerName: 'Equipe de Ação Social e Diaconia',
-      customQuestions: [
-        {
-          id: 'q4_1',
-          label: 'Você participará como voluntário em qual área?',
-          type: 'select',
-          options: ['Distribuição de Alimentos', 'Apoio Médico / Triagem', 'Corte de Cabelo / Barbearia', 'Acolhimento Infantil & Brinquedos'],
+          id: 'q_1788975772098',
+          type: 'text',
+          label: 'Você tem alguma restrição a alguma medicação?',
           required: true,
         },
       ],
@@ -1464,42 +1391,6 @@ export function getDatabase(): DatabaseSchema {
     }
     if (parsed.events) {
       parsed.events.forEach((e) => {
-        const initEvt = INITIAL_DATABASE.events.find((ie) => ie.id === e.id);
-        if (initEvt) {
-          if (e.id === 'evt_1') {
-            if (
-              e.date !== '2026-11-13' ||
-              e.endDate !== '2026-11-15' ||
-              e.location !== 'Chácara Paraiso Verde - Iranduba - AM' ||
-              e.totalCapacity !== 200
-            ) {
-              e.date = '2026-11-13';
-              e.endDate = '2026-11-15';
-              e.title = 'Conferência Caçadores da Presença 2026';
-              e.location = 'Chácara Paraiso Verde - Iranduba - AM';
-              e.roomReserved = 'Área de Eventos & Salão Campestre';
-              e.totalCapacity = 200;
-              e.description = 'Três dias inesquecíveis de louvor profético, ministração da Palavra e capacitação espiritual para toda a família na Chácara Paraiso Verde.';
-              needsSave = true;
-            }
-            if (e.hasShirt === undefined) {
-              e.hasShirt = true;
-              e.shirtPrice = 50.0;
-              e.shirtSizes = ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'Infantil 8', 'Infantil 12'];
-              needsSave = true;
-            }
-          }
-          if (initEvt.endDate && !e.endDate) {
-            e.endDate = initEvt.endDate;
-            needsSave = true;
-          }
-          if (!e.customQuestions || e.customQuestions.length === 0) {
-            e.customQuestions = initEvt.customQuestions;
-            e.speakerName = e.speakerName || initEvt.speakerName;
-            e.detailedSchedule = e.detailedSchedule || initEvt.detailedSchedule;
-            needsSave = true;
-          }
-        }
         // Always ensure registeredCount is strictly synced with actual registrations
         if (e.registrations) {
           if (e.registeredCount !== e.registrations.length) {

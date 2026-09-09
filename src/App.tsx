@@ -210,7 +210,7 @@ export function App() {
 
     // 1. Busca dados em nuvem do Supabase
     pullDatabaseFromSupabase().then((remoteDb) => {
-      if (remoteDb && remoteDb.events && remoteDb.events.length > 0) {
+      if (remoteDb) {
         setDb(remoteDb);
         localStorage.setItem('macdp_db_data_v3', JSON.stringify(remoteDb));
       } else {
@@ -224,7 +224,9 @@ export function App() {
     const unsubscribe = subscribeToSupabaseRealtime((updatedDb) => {
       setDb(updatedDb);
       localStorage.setItem('macdp_db_data_v3', JSON.stringify(updatedDb));
-      addNotification('info', 'Dados sincronizados com o Supabase em tempo real!');
+      if (isAdminRoute()) {
+        addNotification('info', 'Dados sincronizados com o Supabase em tempo real!');
+      }
     });
 
     return () => {
