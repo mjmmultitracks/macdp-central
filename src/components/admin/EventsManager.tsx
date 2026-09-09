@@ -49,6 +49,8 @@ import {
   Share2,
   CreditCard,
   Sparkles,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface RoomItem {
@@ -345,6 +347,34 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
   const handleDragEnd = () => {
     setDraggedQIndex(null);
     setDragOverQIndex(null);
+  };
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      onNotify('error', 'Selecione um arquivo de imagem válido (PNG, JPG, WEBP).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      onNotify('error', 'A imagem é muito grande. Escolha uma imagem de até 5 MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        setImageUrl(base64);
+        onNotify('success', 'Foto de capa carregada com sucesso!');
+      }
+    };
+    reader.onerror = () => {
+      onNotify('error', 'Erro ao processar o arquivo de imagem.');
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveEvent = (e: React.FormEvent) => {
@@ -2766,6 +2796,107 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
+          </div>
+
+          {/* FOTO DE CAPA / BANNER DO EVENTO */}
+          <div
+            style={{
+              background: 'var(--bg-tertiary)',
+              border: '1px solid var(--border-medium)',
+              borderRadius: 'var(--radius-md)',
+              padding: '1rem',
+              marginBottom: '1.25rem',
+            }}
+          >
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.65rem' }}>
+              <ImageIcon size={16} color="var(--accent-gold)" />
+              <span>Foto de Capa / Banner do Evento</span>
+            </label>
+
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              {/* Preview Thumbnail */}
+              <div
+                style={{
+                  width: '130px',
+                  height: '80px',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  flexShrink: 0,
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt="Preview da Capa"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/hero.jpg';
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Sem Imagem</span>
+                )}
+              </div>
+
+              {/* Upload Controls */}
+              <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <label
+                    className="btn btn-secondary btn-sm"
+                    style={{
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                    }}
+                  >
+                    <Upload size={14} />
+                    <span>Escolher Imagem do Dispositivo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileChange}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+
+                  {imageUrl !== '/images/hero.jpg' && (
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl('/images/hero.jpg')}
+                      className="btn btn-secondary btn-sm"
+                      style={{ fontSize: '0.75rem' }}
+                      title="Usar banner padrão da igreja"
+                    >
+                      Restaurar Padrão
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <input
+                    type="text"
+                    className="form-input"
+                    style={{ fontSize: '0.8rem', padding: '0.4rem 0.65rem' }}
+                    placeholder="Ou cole uma URL direta da imagem (ex: https://... ou /images/...)"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                  />
+                </div>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                  Formatos aceitos: JPG, PNG, WEBP (até 5 MB). Esta imagem aparece na lista de eventos, nos cards, na página de detalhes e no voucher.
+                </span>
+              </div>
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
