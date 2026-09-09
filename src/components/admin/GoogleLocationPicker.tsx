@@ -5,6 +5,7 @@ import {
   getGoogleMapsEmbedUrl,
   getGoogleMapsDirectionsUrl,
   toLocationDetails,
+  createCustomLocationResult,
   PlaceSearchResult,
 } from '../../services/googleMapsService';
 import {
@@ -85,7 +86,12 @@ export const GoogleLocationPicker: React.FC<GoogleLocationPickerProps> = ({
 
   const handleManualBlur = () => {
     if (searchTerm !== value) {
-      onChange(searchTerm, locationDetails);
+      if (searchTerm.trim()) {
+        const customPlace = createCustomLocationResult(searchTerm);
+        onChange(searchTerm, toLocationDetails(customPlace));
+      } else {
+        onChange('', undefined);
+      }
     }
   };
 
@@ -138,11 +144,21 @@ export const GoogleLocationPicker: React.FC<GoogleLocationPickerProps> = ({
             required
             className="form-input"
             style={{ paddingLeft: '2.5rem', paddingRight: searchTerm ? '2.5rem' : '1rem' }}
-            placeholder="Digite o endereço ou nome do local em Manaus (ex: Templo Sede, Arena da Amazônia...)"
+            placeholder="Digite o endereço ou nome do local (ex: Chácara Paraíso Verde, Estrada do Caldeirão, Templo Sede...)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => {
               if (results.length > 0) setIsOpenSuggestions(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (results.length > 0) {
+                  handleSelectPlace(results[0]);
+                } else if (searchTerm.trim()) {
+                  handleSelectPlace(createCustomLocationResult(searchTerm));
+                }
+              }
             }}
             onBlur={handleManualBlur}
           />
@@ -206,6 +222,41 @@ export const GoogleLocationPicker: React.FC<GoogleLocationPickerProps> = ({
               <span>{results.length} locais</span>
             </div>
 
+            {/* Opção para aplicar exatamente o endereço digitado */}
+            {searchTerm.trim().length >= 3 && (
+              <div
+                onMouseDown={() => {
+                  const custom = createCustomLocationResult(searchTerm);
+                  handleSelectPlace(custom);
+                }}
+                style={{
+                  padding: '0.65rem 0.85rem',
+                  borderBottom: '1px solid var(--border-subtle)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.65rem',
+                  background: 'rgba(245, 158, 11, 0.07)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(245, 158, 11, 0.18)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(245, 158, 11, 0.07)';
+                }}
+              >
+                <Sparkles size={16} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.84rem', color: 'var(--accent-gold)' }}>
+                    Usar este endereço: &quot;{searchTerm.trim()}&quot;
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    Aplicar endereço personalizado e traçar coordenadas automaticamente
+                  </div>
+                </div>
+              </div>
+            )}
+
             {results.map((place) => (
               <div
                 key={place.id}
@@ -247,6 +298,14 @@ export const GoogleLocationPicker: React.FC<GoogleLocationPickerProps> = ({
       {/* Quick Venue Presets */}
       <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Locais Frequentes:</span>
+        <button
+          type="button"
+          onClick={() => handleSelectPreset('chacara_paraiso_verde')}
+          className="btn btn-secondary btn-sm"
+          style={{ fontSize: '0.72rem', padding: '0.2rem 0.55rem', gap: '0.3rem' }}
+        >
+          <span>🌳 Chácara Paraíso Verde (Iranduba)</span>
+        </button>
         <button
           type="button"
           onClick={() => handleSelectPreset('macdp_sede')}

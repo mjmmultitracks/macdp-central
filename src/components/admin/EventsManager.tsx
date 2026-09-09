@@ -10,6 +10,7 @@ import {
   getChurchSettings,
 } from '../../services/db';
 import { GoogleLocationPicker } from './GoogleLocationPicker';
+import { createCustomLocationResult, toLocationDetails, ensureEventLocationDetails } from '../../services/googleMapsService';
 import { ChurchEvent, EventCustomQuestion, EventQuestionType, EventLocationDetails, EventRegistration } from '../../types';
 import { formatDate, formatCurrency, calculateAge, formatEventDateRange } from '../../utils/formatters';
 import { generateEventRegistrationsListPDF } from '../../utils/pdfGenerator';
@@ -190,17 +191,8 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setEndDate(evt.endDate || evt.date);
     setTime(evt.time);
     setLocation(evt.location);
-    setLocationDetails(
-      evt.locationDetails || {
-        placeName: evt.location,
-        formattedAddress: evt.location,
-        city: 'Manaus',
-        state: 'AM',
-        latitude: -3.038142,
-        longitude: -60.003215,
-        googleMapsUrl: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(evt.location)}`,
-      }
-    );
+    const resolvedDetails = ensureEventLocationDetails(evt.location, evt.locationDetails);
+    setLocationDetails(resolvedDetails);
     setRoomReserved(evt.roomReserved || 'Auditório Principal');
     setCategory(evt.category);
     setImageUrl(evt.imageUrl);
@@ -389,6 +381,9 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
           mercadoPagoEnabled: undefined,
         };
 
+    const finalLocation = location.trim();
+    const finalLocationDetails = ensureEventLocationDetails(finalLocation, locationDetails);
+
     if (editingEvent) {
       updateEvent(editingEvent.id, {
         title,
@@ -396,8 +391,8 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         date,
         endDate: finalEndDate,
         time,
-        location,
-        locationDetails,
+        location: finalLocation,
+        locationDetails: finalLocationDetails,
         roomReserved,
         category,
         imageUrl,
@@ -421,8 +416,8 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         date,
         endDate: finalEndDate,
         time,
-        location,
-        locationDetails,
+        location: finalLocation,
+        locationDetails: finalLocationDetails,
         roomReserved,
         category,
         imageUrl,
