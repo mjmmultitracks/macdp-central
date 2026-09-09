@@ -52,6 +52,8 @@ import {
   Upload,
   Image as ImageIcon,
   X,
+  List,
+  LayoutGrid,
 } from 'lucide-react';
 
 interface FinancialManagerProps {
@@ -96,6 +98,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // Bank Account Modals & State
+  const [accountsViewMode, setAccountsViewMode] = useState<'list' | 'cards'>('list');
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
   const [accountForm, setAccountForm] = useState<Omit<BankAccount, 'id'>>({
@@ -1275,220 +1278,531 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={openNewAccountModal}
-              className="btn btn-primary btn-sm"
-              style={{ gap: '0.45rem' }}
-            >
-              <Plus size={16} />
-              <span>Nova Conta Bancária</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              {/* View Switcher: Lista (Padrão) vs Cards */}
+              <div
+                style={{
+                  display: 'flex',
+                  background: 'var(--bg-tertiary)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '3px',
+                  border: '1px solid var(--border-medium)',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setAccountsViewMode('list')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.35rem 0.65rem',
+                    border: 'none',
+                    background: accountsViewMode === 'list' ? 'var(--accent-gold)' : 'transparent',
+                    color: accountsViewMode === 'list' ? '#000000' : 'var(--text-secondary)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                  title="Visualização em Lista"
+                >
+                  <List size={14} />
+                  <span>Lista</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAccountsViewMode('cards')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.35rem 0.65rem',
+                    border: 'none',
+                    background: accountsViewMode === 'cards' ? 'var(--accent-gold)' : 'transparent',
+                    color: accountsViewMode === 'cards' ? '#000000' : 'var(--text-secondary)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                  title="Visualização em Cards"
+                >
+                  <LayoutGrid size={14} />
+                  <span>Cards</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={openNewAccountModal}
+                className="btn btn-primary btn-sm"
+                style={{ gap: '0.45rem' }}
+              >
+                <Plus size={16} />
+                <span>Nova Conta Bancária</span>
+              </button>
+            </div>
           </div>
 
-          {/* Accounts Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
-            {bankAccounts.map((acc) => {
-              const liveBalance = getAccountLiveBalance(acc);
-              const isDefault = !!acc.isDefault;
+          {/* ACCOUNTS LIST VIEW (TABLE) */}
+          {accountsViewMode === 'list' ? (
+            <div
+              style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-medium)',
+                borderRadius: 'var(--radius-xl)',
+                overflow: 'hidden',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ background: 'var(--bg-tertiary)', borderBottom: '1px solid var(--border-medium)' }}>
+                      <th style={{ padding: '0.9rem 1.15rem', fontSize: '0.76rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '0.5px' }}>
+                        Conta / Instituição
+                      </th>
+                      <th style={{ padding: '0.9rem 1rem', fontSize: '0.76rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '0.5px' }}>
+                        Agência & Conta
+                      </th>
+                      <th style={{ padding: '0.9rem 1rem', fontSize: '0.76rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '0.5px' }}>
+                        Chave PIX
+                      </th>
+                      <th style={{ padding: '0.9rem 1rem', fontSize: '0.76rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '0.5px', textAlign: 'right' }}>
+                        Saldo Inicial
+                      </th>
+                      <th style={{ padding: '0.9rem 1.15rem', fontSize: '0.76rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '0.5px', textAlign: 'right' }}>
+                        Saldo Atual Conciliado
+                      </th>
+                      <th style={{ padding: '0.9rem 1.15rem', fontSize: '0.76rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '0.5px', textAlign: 'center' }}>
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bankAccounts.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                          Nenhuma conta bancária ou caixa cadastrado. Clique em "Nova Conta Bancária" para começar.
+                        </td>
+                      </tr>
+                    ) : (
+                      bankAccounts.map((acc) => {
+                        const liveBalance = getAccountLiveBalance(acc);
+                        const isDefault = !!acc.isDefault;
 
-              return (
-                <div
-                  key={acc.id}
-                  className="card"
-                  style={{
-                    background: 'var(--bg-secondary)',
-                    border: isDefault ? '2px solid var(--accent-gold)' : '1px solid var(--border-medium)',
-                    borderRadius: 'var(--radius-xl)',
-                    padding: '1.5rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: isDefault ? '0 4px 18px var(--accent-gold-glow)' : 'var(--shadow-sm)',
-                    position: 'relative',
-                  }}
-                >
-                  <div>
-                    {/* Header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        {acc.logoUrl ? (
-                          <div
+                        return (
+                          <tr
+                            key={acc.id}
                             style={{
-                              width: '46px',
-                              height: '46px',
-                              borderRadius: '12px',
-                              background: '#ffffff',
-                              border: '1px solid var(--border-medium)',
-                              padding: '4px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              overflow: 'hidden',
-                              boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
-                              flexShrink: 0,
+                              borderBottom: '1px solid var(--border-subtle)',
+                              background: isDefault ? 'rgba(245, 158, 11, 0.03)' : 'transparent',
+                              transition: 'background 0.15s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = isDefault ? 'rgba(245, 158, 11, 0.07)' : 'var(--bg-tertiary)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = isDefault ? 'rgba(245, 158, 11, 0.03)' : 'transparent';
                             }}
                           >
-                            <img
-                              src={resolveBankLogo(acc.bankName || acc.name, acc.logoUrl)}
-                              alt={acc.bankName}
-                              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/images/banks/bradesco.svg';
+                            {/* Conta / Instituição */}
+                            <td style={{ padding: '1rem 1.15rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                                {acc.logoUrl ? (
+                                  <div
+                                    style={{
+                                      width: '40px',
+                                      height: '40px',
+                                      borderRadius: '10px',
+                                      background: '#ffffff',
+                                      border: '1px solid var(--border-medium)',
+                                      padding: '3px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      overflow: 'hidden',
+                                      boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    <img
+                                      src={resolveBankLogo(acc.bankName || acc.name, acc.logoUrl)}
+                                      alt={acc.bankName}
+                                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/images/banks/bradesco.svg';
+                                      }}
+                                    />
+                                  </div>
+                                ) : (
+                                  <div
+                                    style={{
+                                      width: '40px',
+                                      height: '40px',
+                                      borderRadius: '10px',
+                                      background: acc.color ? `${acc.color}20` : 'var(--accent-gold-soft)',
+                                      color: acc.color || 'var(--accent-gold)',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    {acc.accountType === 'caixa_fisico' ? <Wallet size={18} /> : <Building size={18} />}
+                                  </div>
+                                )}
+                                <div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                                    <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                                      {acc.name}
+                                    </span>
+                                    {isDefault && (
+                                      <span
+                                        style={{
+                                          background: 'var(--accent-gold-soft)',
+                                          color: 'var(--accent-gold)',
+                                          fontSize: '0.68rem',
+                                          fontWeight: 800,
+                                          padding: '0.15rem 0.45rem',
+                                          borderRadius: 'var(--radius-full)',
+                                          border: '1px solid var(--accent-gold)',
+                                        }}
+                                      >
+                                        Padrão
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                                    {acc.bankName} • {acc.accountType === 'corrente' ? 'Conta Corrente' : (acc.accountType === 'caixa_fisico' ? 'Caixa Físico' : 'Poupança')}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Agência & Conta */}
+                            <td style={{ padding: '1rem', fontSize: '0.85rem' }}>
+                              {acc.agency || acc.accountNumber ? (
+                                <div>
+                                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                                    {acc.agency ? `Ag: ${acc.agency} ` : ''}{acc.accountNumber ? `CC: ${acc.accountNumber}` : ''}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)' }}>—</span>
+                              )}
+                            </td>
+
+                            {/* Chave PIX */}
+                            <td style={{ padding: '1rem', fontSize: '0.84rem' }}>
+                              {acc.pixKey ? (
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'var(--bg-tertiary)', padding: '0.3rem 0.6rem', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+                                  <span style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-gold)', fontSize: '0.8rem' }}>
+                                    {acc.pixKey}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyPix(acc)}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', padding: '2px' }}
+                                    title="Copiar Chave PIX"
+                                  >
+                                    {copiedPixId === acc.id ? <Check size={13} color="var(--success)" /> : <Copy size={13} />}
+                                  </button>
+                                </div>
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)' }}>—</span>
+                              )}
+                            </td>
+
+                            {/* Saldo Inicial */}
+                            <td style={{ padding: '1rem', textAlign: 'right', fontSize: '0.86rem', color: 'var(--text-secondary)' }}>
+                              {formatCurrency(acc.initialBalance)}
+                            </td>
+
+                            {/* Saldo Atual Conciliado */}
+                            <td style={{ padding: '1rem 1.15rem', textAlign: 'right' }}>
+                              <span
+                                style={{
+                                  fontWeight: 900,
+                                  fontSize: '1.12rem',
+                                  color: liveBalance >= 0 ? 'var(--text-primary)' : 'var(--danger)',
+                                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                                }}
+                              >
+                                {formatCurrency(liveBalance)}
+                              </span>
+                            </td>
+
+                            {/* Ações */}
+                            <td style={{ padding: '1rem 1.15rem', textAlign: 'center' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem' }}>
+                                {!isDefault ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSetDefaultAccount(acc)}
+                                    className="btn btn-secondary btn-sm"
+                                    style={{ fontSize: '0.72rem', padding: '0.25rem 0.55rem', whiteSpace: 'nowrap' }}
+                                    title="Tornar Conta Padrão"
+                                  >
+                                    Tornar Padrão
+                                  </button>
+                                ) : (
+                                  <span
+                                    style={{
+                                      fontSize: '0.72rem',
+                                      color: 'var(--accent-gold)',
+                                      fontWeight: 700,
+                                      padding: '0.25rem 0.55rem',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    ✓ Principal
+                                  </span>
+                                )}
+
+                                <button
+                                  type="button"
+                                  onClick={() => openEditAccountModal(acc)}
+                                  className="btn btn-secondary btn-sm"
+                                  style={{ padding: '0.35rem 0.5rem' }}
+                                  title="Editar Conta"
+                                >
+                                  <Edit2 size={13} />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteAccount(acc)}
+                                  className="btn btn-secondary btn-sm"
+                                  style={{ color: 'var(--danger)', padding: '0.35rem 0.5rem' }}
+                                  title="Excluir Conta"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            /* Accounts Grid (Cards) */
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+              {bankAccounts.length === 0 ? (
+                <div style={{ gridColumn: '1 / -1', padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' }}>
+                  Nenhuma conta bancária ou caixa cadastrado. Clique em "Nova Conta Bancária" para começar.
+                </div>
+              ) : (
+                bankAccounts.map((acc) => {
+                  const liveBalance = getAccountLiveBalance(acc);
+                  const isDefault = !!acc.isDefault;
+
+                  return (
+                    <div
+                      key={acc.id}
+                      className="card"
+                      style={{
+                        background: 'var(--bg-secondary)',
+                        border: isDefault ? '2px solid var(--accent-gold)' : '1px solid var(--border-medium)',
+                        borderRadius: 'var(--radius-xl)',
+                        padding: '1.5rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        boxShadow: isDefault ? '0 4px 18px var(--accent-gold-glow)' : 'var(--shadow-sm)',
+                        position: 'relative',
+                      }}
+                    >
+                      <div>
+                        {/* Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.85rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            {acc.logoUrl ? (
+                              <div
+                                style={{
+                                  width: '46px',
+                                  height: '46px',
+                                  borderRadius: '12px',
+                                  background: '#ffffff',
+                                  border: '1px solid var(--border-medium)',
+                                  padding: '4px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  overflow: 'hidden',
+                                  boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <img
+                                  src={resolveBankLogo(acc.bankName || acc.name, acc.logoUrl)}
+                                  alt={acc.bankName}
+                                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/images/banks/bradesco.svg';
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  width: '46px',
+                                  height: '46px',
+                                  borderRadius: '12px',
+                                  background: acc.color ? `${acc.color}20` : 'var(--accent-gold-soft)',
+                                  color: acc.color || 'var(--accent-gold)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {acc.accountType === 'caixa_fisico' ? <Wallet size={20} /> : <Building size={20} />}
+                              </div>
+                            )}
+                            <div>
+                              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
+                                {acc.name}
+                              </div>
+                              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                {acc.bankName} • {acc.accountType === 'corrente' ? 'Conta Corrente' : (acc.accountType === 'caixa_fisico' ? 'Caixa Físico' : 'Poupança')}
+                              </div>
+                            </div>
+                          </div>
+
+                          {isDefault && (
+                            <span
+                              style={{
+                                background: 'var(--accent-gold-soft)',
+                                color: 'var(--accent-gold)',
+                                fontSize: '0.72rem',
+                                fontWeight: 800,
+                                padding: '0.2rem 0.55rem',
+                                borderRadius: 'var(--radius-full)',
+                                border: '1px solid var(--accent-gold)',
                               }}
-                            />
-                          </div>
-                        ) : (
-                          <div
-                            style={{
-                              width: '46px',
-                              height: '46px',
-                              borderRadius: '12px',
-                              background: acc.color ? `${acc.color}20` : 'var(--accent-gold-soft)',
-                              color: acc.color || 'var(--accent-gold)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                            }}
-                          >
-                            {acc.accountType === 'caixa_fisico' ? <Wallet size={20} /> : <Building size={20} />}
-                          </div>
-                        )}
-                        <div>
-                          <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
-                            {acc.name}
-                          </div>
-                          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                            {acc.bankName} • {acc.accountType === 'corrente' ? 'Conta Corrente' : (acc.accountType === 'caixa_fisico' ? 'Caixa Físico' : 'Poupança')}
+                            >
+                              Padrão
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Account Details */}
+                        <div
+                          style={{
+                            background: 'var(--bg-tertiary)',
+                            borderRadius: 'var(--radius-md)',
+                            padding: '0.85rem 1rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.45rem',
+                            fontSize: '0.82rem',
+                            marginBottom: '1rem',
+                          }}
+                        >
+                          {(acc.agency || acc.accountNumber) && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <span style={{ color: 'var(--text-muted)' }}>Agência / Conta:</span>
+                              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                                {acc.agency ? `Ag: ${acc.agency} ` : ''} {acc.accountNumber ? `CC: ${acc.accountNumber}` : ''}
+                              </span>
+                            </div>
+                          )}
+
+                          {acc.pixKey && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ color: 'var(--text-muted)' }}>Chave PIX:</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <span style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-gold)' }}>
+                                  {acc.pixKey}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyPix(acc)}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                                  title="Copiar Chave PIX"
+                                >
+                                  {copiedPixId === acc.id ? <Check size={13} color="var(--success)" /> : <Copy size={13} />}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Saldo Inicial:</span>
+                            <span style={{ color: 'var(--text-secondary)' }}>{formatCurrency(acc.initialBalance)}</span>
                           </div>
                         </div>
                       </div>
 
-                      {isDefault && (
-                        <span
-                          style={{
-                            background: 'var(--accent-gold-soft)',
-                            color: 'var(--accent-gold)',
-                            fontSize: '0.72rem',
-                            fontWeight: 800,
-                            padding: '0.2rem 0.55rem',
-                            borderRadius: 'var(--radius-full)',
-                            border: '1px solid var(--accent-gold)',
-                          }}
-                        >
-                          Padrão
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Account Details */}
-                    <div
-                      style={{
-                        background: 'var(--bg-tertiary)',
-                        borderRadius: 'var(--radius-md)',
-                        padding: '0.85rem 1rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.45rem',
-                        fontSize: '0.82rem',
-                        marginBottom: '1rem',
-                      }}
-                    >
-                      {(acc.agency || acc.accountNumber) && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>Agência / Conta:</span>
-                          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
-                            {acc.agency ? `Ag: ${acc.agency} ` : ''} {acc.accountNumber ? `CC: ${acc.accountNumber}` : ''}
+                      {/* Balance and Actions */}
+                      <div>
+                        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem', marginBottom: '1rem' }}>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Saldo Atual Conciliado
                           </span>
+                          <div
+                            style={{
+                              fontSize: '1.65rem',
+                              fontWeight: 800,
+                              color: liveBalance >= 0 ? 'var(--text-primary)' : 'var(--danger)',
+                              marginTop: '0.15rem',
+                            }}
+                          >
+                            {formatCurrency(liveBalance)}
+                          </div>
                         </div>
-                      )}
 
-                      {acc.pixKey && (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ color: 'var(--text-muted)' }}>Chave PIX:</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <span style={{ fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-gold)' }}>
-                              {acc.pixKey}
-                            </span>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                          {!isDefault ? (
                             <button
                               type="button"
-                              onClick={() => handleCopyPix(acc)}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                              title="Copiar Chave PIX"
+                              onClick={() => handleSetDefaultAccount(acc)}
+                              className="btn btn-secondary btn-sm"
+                              style={{ fontSize: '0.78rem' }}
                             >
-                              {copiedPixId === acc.id ? <Check size={13} color="var(--success)" /> : <Copy size={13} />}
+                              Definir Padrão
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '0.78rem', color: 'var(--accent-gold)', fontWeight: 700 }}>
+                              ✓ Conta Principal
+                            </span>
+                          )}
+
+                          <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => openEditAccountModal(acc)}
+                              className="btn btn-secondary btn-sm"
+                              title="Editar Conta"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAccount(acc)}
+                              className="btn btn-secondary btn-sm"
+                              style={{ color: 'var(--danger)' }}
+                              title="Excluir Conta"
+                            >
+                              <Trash2 size={14} />
                             </button>
                           </div>
                         </div>
-                      )}
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Saldo Inicial:</span>
-                        <span style={{ color: 'var(--text-secondary)' }}>{formatCurrency(acc.initialBalance)}</span>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Balance and Actions */}
-                  <div>
-                    <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem', marginBottom: '1rem' }}>
-                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        Saldo Atual Conciliado
-                      </span>
-                      <div
-                        style={{
-                          fontSize: '1.65rem',
-                          fontWeight: 800,
-                          color: liveBalance >= 0 ? 'var(--text-primary)' : 'var(--danger)',
-                          marginTop: '0.15rem',
-                        }}
-                      >
-                        {formatCurrency(liveBalance)}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                      {!isDefault ? (
-                        <button
-                          type="button"
-                          onClick={() => handleSetDefaultAccount(acc)}
-                          className="btn btn-secondary btn-sm"
-                          style={{ fontSize: '0.78rem' }}
-                        >
-                          Definir Padrão
-                        </button>
-                      ) : (
-                        <span style={{ fontSize: '0.78rem', color: 'var(--accent-gold)', fontWeight: 700 }}>
-                          ✓ Conta Principal
-                        </span>
-                      )}
-
-                      <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        <button
-                          type="button"
-                          onClick={() => openEditAccountModal(acc)}
-                          className="btn btn-secondary btn-sm"
-                          title="Editar Conta"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteAccount(acc)}
-                          className="btn btn-secondary btn-sm"
-                          style={{ color: 'var(--danger)' }}
-                          title="Excluir Conta"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
       )}
 
