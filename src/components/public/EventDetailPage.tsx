@@ -20,6 +20,8 @@ import {
   HelpCircle,
   Sparkles,
   Shirt,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { getGoogleMapsEmbedUrl, getGoogleMapsDirectionsUrl } from '../../services/googleMapsService';
 
@@ -35,6 +37,9 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
   onStartRegistration,
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+
+  const isLongDescription = (event.description || '').length > 280 || (event.description || '').split('\n').length > 4;
 
   const spotsLeft = event.totalCapacity - event.registeredCount;
   const isSoldOut = spotsLeft <= 0;
@@ -363,33 +368,113 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
                 borderRadius: 'var(--radius-xl)',
                 padding: '2rem',
                 boxShadow: 'var(--shadow-sm)',
+                position: 'relative',
               }}
             >
-              <h3
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3
+                  style={{
+                    fontSize: '1.4rem',
+                    fontWeight: 900,
+                    color: 'var(--accent-gold)',
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <Sparkles size={20} />
+                  <span>Sobre o Evento</span>
+                </h3>
+
+                {isLongDescription && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDescExpanded(!isDescExpanded)}
+                    className="btn btn-ghost btn-sm"
+                    style={{
+                      color: 'var(--accent-gold)',
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      gap: '0.35rem',
+                      padding: '0.25rem 0.65rem',
+                    }}
+                  >
+                    <span>{isDescExpanded ? 'Recolher' : 'Ler Completo'}</span>
+                    {isDescExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                  </button>
+                )}
+              </div>
+
+              <div
                 style={{
-                  fontSize: '1.4rem',
-                  fontWeight: 900,
-                  color: 'var(--accent-gold)',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
+                  position: 'relative',
+                  maxHeight: isLongDescription && !isDescExpanded ? '170px' : 'none',
+                  overflow: 'hidden',
+                  transition: 'all 0.35s ease',
                 }}
               >
-                <Sparkles size={20} />
-                <span>Sobre o Evento</span>
-              </h3>
-              <p
-                style={{
-                  color: 'var(--text-secondary)',
-                  lineHeight: 1.85,
-                  fontSize: '1.05rem',
-                  margin: 0,
-                  whiteSpace: 'pre-line',
-                }}
-              >
-                {event.description}
-              </p>
+                <div
+                  style={{
+                    color: 'var(--text-secondary)',
+                    lineHeight: 1.85,
+                    fontSize: '1.05rem',
+                    margin: 0,
+                    whiteSpace: 'pre-line',
+                  }}
+                >
+                  {event.description}
+                </div>
+
+                {/* Efeito suave de degradê quando recolhido */}
+                {isLongDescription && !isDescExpanded && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '75px',
+                      background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0), var(--bg-secondary) 95%)',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )}
+              </div>
+
+              {isLongDescription && (
+                <div style={{ marginTop: '0.85rem', display: 'flex', justifyContent: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsDescExpanded(!isDescExpanded)}
+                    className="btn btn-secondary btn-sm"
+                    style={{
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      padding: '0.45rem 1.25rem',
+                      borderRadius: 'var(--radius-full)',
+                      border: '1px solid rgba(245, 158, 11, 0.4)',
+                      color: 'var(--accent-gold)',
+                      background: 'rgba(245, 158, 11, 0.08)',
+                      gap: '0.4rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {isDescExpanded ? (
+                      <>
+                        <ChevronUp size={16} />
+                        <span>Ver Menos Informações</span>
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={16} />
+                        <span>Ler Descrição Completa</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Preletor em Destaque */}

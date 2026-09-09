@@ -421,6 +421,10 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                           lineHeight: 1.6,
                           marginBottom: '1.25rem',
                           flex: 1,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
                         }}
                       >
                         {evt.description}

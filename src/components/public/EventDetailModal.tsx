@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChurchEvent } from '../../types';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { getChurchSettings } from '../../services/db';
@@ -19,6 +19,8 @@ import {
   Navigation,
   CreditCard,
   QrCode,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { getGoogleMapsEmbedUrl, getGoogleMapsDirectionsUrl } from '../../services/googleMapsService';
 
@@ -39,6 +41,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
   const spotsLeft = event.totalCapacity - event.registeredCount;
   const isSoldOut = spotsLeft <= 0;
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const isLongDescription = (event.description || '').length > 240 || (event.description || '').split('\n').length > 3;
 
   const churchSettings = getChurchSettings();
   const isMpActive = !!(
@@ -363,13 +367,88 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           )}
 
           {/* Description Section */}
-          <div>
-            <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.65rem', color: 'var(--accent-gold)' }}>
-              Sobre o Evento
-            </h4>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.75, fontSize: '0.94rem' }}>
-              {event.description}
-            </p>
+          <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--accent-gold)' }}>
+                Sobre o Evento
+              </h4>
+              {isLongDescription && (
+                <button
+                  type="button"
+                  onClick={() => setIsDescExpanded(!isDescExpanded)}
+                  className="btn btn-ghost btn-sm"
+                  style={{
+                    color: 'var(--accent-gold)',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    gap: '0.25rem',
+                    padding: '0.2rem 0.5rem',
+                  }}
+                >
+                  <span>{isDescExpanded ? 'Recolher' : 'Ler mais'}</span>
+                  {isDescExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+              )}
+            </div>
+
+            <div
+              style={{
+                position: 'relative',
+                maxHeight: isLongDescription && !isDescExpanded ? '130px' : 'none',
+                overflow: 'hidden',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              <p style={{ color: 'var(--text-secondary)', lineHeight: 1.75, fontSize: '0.94rem', margin: 0, whiteSpace: 'pre-line' }}>
+                {event.description}
+              </p>
+              {isLongDescription && !isDescExpanded && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '60px',
+                    background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0), var(--bg-secondary) 95%)',
+                    pointerEvents: 'none',
+                  }}
+                />
+              )}
+            </div>
+
+            {isLongDescription && (
+              <div style={{ marginTop: '0.65rem', display: 'flex', justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsDescExpanded(!isDescExpanded)}
+                  className="btn btn-secondary btn-sm"
+                  style={{
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    padding: '0.35rem 1rem',
+                    borderRadius: 'var(--radius-full)',
+                    border: '1px solid rgba(245, 158, 11, 0.4)',
+                    color: 'var(--accent-gold)',
+                    background: 'rgba(245, 158, 11, 0.08)',
+                    gap: '0.35rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {isDescExpanded ? (
+                    <>
+                      <ChevronUp size={14} />
+                      <span>Ver Menos</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown size={14} />
+                      <span>Ler Descrição Completa</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Preletor & Ministração */}
