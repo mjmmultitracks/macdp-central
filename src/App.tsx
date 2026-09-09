@@ -335,6 +335,11 @@ export function App() {
   const handleSwitchRole = (role: UserRole) => {
     const updated = switchUserRole(role);
     setCurrentUser(updated);
+    if (updated.allowedModules && updated.allowedModules.length > 0) {
+      if (!updated.allowedModules.includes(adminTab as any)) {
+        setAdminTab(updated.allowedModules[0]);
+      }
+    }
   };
 
   const handleLogout = async () => {
@@ -520,6 +525,11 @@ export function App() {
           onLoginSuccess={(user) => {
             setCurrentUser(user);
             setIsAuthenticated(true);
+            if (user.allowedModules && user.allowedModules.length > 0) {
+              if (!user.allowedModules.includes(adminTab as any)) {
+                setAdminTab(user.allowedModules[0]);
+              }
+            }
           }}
           onBackToPublic={() => navigateToPublic('home')}
           onNotify={addNotification}
@@ -549,6 +559,7 @@ export function App() {
               onNavigateTab={setAdminTab}
               onOpenNewMemberModal={() => setAdminTab('membros')}
               onOpenNewTransactionModal={() => setAdminTab('financeiro')}
+              currentUser={currentUser}
             />
           )}
 

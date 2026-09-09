@@ -1,4 +1,4 @@
-import { UserRole, UserSession } from '../types';
+import { UserRole, UserSession, PanelModuleId } from '../types';
 import { supabase, isSupabaseConfigured } from './supabase';
 import { getDatabase } from './db';
 
@@ -10,6 +10,22 @@ export const SYSTEM_USERS: Record<UserRole, UserSession> = {
     role: 'admin',
     roleTitle: 'Pastor Presidente & Fundador',
     avatarUrl: '/images/pastors.jpg',
+    allowedModules: [
+      'dashboard',
+      'membros',
+      'celulas_admin',
+      'ministerios_admin',
+      'ensino_admin',
+      'kids_admin',
+      'patrimonio_admin',
+      'pastoral_admin',
+      'financeiro',
+      'eventos_admin',
+      'oracao_admin',
+      'acessos_admin',
+      'config_igreja',
+    ],
+    canEdit: true,
   },
   pastor: {
     id: 'usr_pastor',
@@ -18,6 +34,19 @@ export const SYSTEM_USERS: Record<UserRole, UserSession> = {
     role: 'pastor',
     roleTitle: 'Pastora Presidente',
     avatarUrl: '/images/pastors.jpg',
+    allowedModules: [
+      'dashboard',
+      'membros',
+      'celulas_admin',
+      'ministerios_admin',
+      'ensino_admin',
+      'kids_admin',
+      'patrimonio_admin',
+      'pastoral_admin',
+      'eventos_admin',
+      'oracao_admin',
+    ],
+    canEdit: true,
   },
   lider: {
     id: 'usr_lider',
@@ -26,6 +55,14 @@ export const SYSTEM_USERS: Record<UserRole, UserSession> = {
     role: 'lider',
     roleTitle: 'Pastor Auxiliar / Juventude',
     avatarUrl: '/images/pastor-jaziel.jpg',
+    allowedModules: [
+      'membros',
+      'celulas_admin',
+      'ministerios_admin',
+      'eventos_admin',
+      'oracao_admin',
+    ],
+    canEdit: true,
   },
   tesouraria: {
     id: 'usr_tesouraria',
@@ -34,6 +71,12 @@ export const SYSTEM_USERS: Record<UserRole, UserSession> = {
     role: 'tesouraria',
     roleTitle: 'Diretor Financeiro / Tesouraria',
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300',
+    allowedModules: [
+      'dashboard',
+      'financeiro',
+      'patrimonio_admin',
+    ],
+    canEdit: true,
   },
   voluntario: {
     id: 'usr_voluntario',
@@ -42,6 +85,11 @@ export const SYSTEM_USERS: Record<UserRole, UserSession> = {
     role: 'voluntario',
     roleTitle: 'Voluntário (Mídia e Recepção)',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+    allowedModules: [
+      'eventos_admin',
+      'oracao_admin',
+    ],
+    canEdit: false,
   },
 };
 
@@ -59,7 +107,28 @@ export function getStoredUserRole(): UserRole {
 export function getCurrentUser(): UserSession {
   // First check if there is an authenticated session
   const authSession = getAuthenticatedSession();
-  if (authSession) return authSession;
+  if (authSession) {
+    try {
+      const db = getDatabase();
+      if (db && db.accessUsers) {
+        const found = db.accessUsers.find(
+          (u) => u.email.toLowerCase() === authSession.email.toLowerCase() || u.id === authSession.id
+        );
+        if (found) {
+          return {
+            ...authSession,
+            name: found.name || authSession.name,
+            roleTitle: found.roleTitle || authSession.roleTitle,
+            allowedModules: found.allowedModules,
+            canEdit: found.canEdit,
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao sincronizar dados de acesso:', e);
+    }
+    return authSession;
+  }
 
   const role = getStoredUserRole();
   return SYSTEM_USERS[role] || SYSTEM_USERS.admin;
@@ -67,17 +136,20 @@ export function getCurrentUser(): UserSession {
 
 export function switchUserRole(role: UserRole): UserSession {
   localStorage.setItem(AUTH_STORAGE_KEY, role);
+  const sysUser = SYSTEM_USERS[role] || SYSTEM_USERS.admin;
   const current = getAuthenticatedSession();
   if (current) {
-    const updated = {
+    const updated: UserSession = {
       ...current,
       role,
-      roleTitle: SYSTEM_USERS[role]?.roleTitle || current.roleTitle,
+      roleTitle: sysUser.roleTitle || current.roleTitle,
+      allowedModules: sysUser.allowedModules,
+      canEdit: sysUser.canEdit,
     };
     setAuthenticatedSession(updated);
     return updated;
   }
-  return SYSTEM_USERS[role];
+  return sysUser;
 }
 
 // Session Persistence
@@ -239,6 +311,8 @@ export async function loginWithCredentials(
           role: mappedRole,
           roleTitle: foundInDb.roleTitle,
           avatarUrl: SYSTEM_USERS[mappedRole]?.avatarUrl || '/images/logo.png',
+          allowedModules: foundInDb.allowedModules || [],
+          canEdit: foundInDb.canEdit ?? true,
         };
 
         setAuthenticatedSession(customUser);
@@ -253,8 +327,25 @@ export async function loginWithCredentials(
   const matched = authorizedAccounts.find((acc) => acc.email.toLowerCase() === email);
   if (matched) {
     if (matched.allowedPasswords.includes(password) || password === 'macdp2026') {
-      setAuthenticatedSession(matched.user);
-      return { success: true, user: matched.user };
+      let userToSet: UserSession = matched.user;
+      try {
+        const db = getDatabase();
+        const inDb = db?.accessUsers?.find((u) => u.email.toLowerCase() === email);
+        if (inDb) {
+          userToSet = {
+            ...matched.user,
+            name: inDb.name || matched.user.name,
+            roleTitle: inDb.roleTitle || matched.user.roleTitle,
+            allowedModules: inDb.allowedModules || matched.user.allowedModules,
+            canEdit: inDb.canEdit ?? matched.user.canEdit,
+          };
+        }
+      } catch (e) {
+        console.warn('Erro ao carregar dados do usuário institucional:', e);
+      }
+
+      setAuthenticatedSession(userToSet);
+      return { success: true, user: userToSet };
     }
     return {
       success: false,
@@ -316,4 +407,60 @@ export function hasPermission(role: UserRole, feature: PermissionFeature): boole
     default:
       return false;
   }
+}
+
+/**
+ * Verifica se um módulo específico do painel está disponível para o usuário.
+ * Se o usuário tiver restrições definidas em allowedModules (via Gestão de Acessos),
+ * apenas os módulos expressamente liberados são exibidos.
+ */
+export function isUserModuleAllowed(user: UserSession | null | undefined, moduleId: string): boolean {
+  if (!user) return false;
+
+  // 1. Se o usuário tem lista personalizada de módulos liberados configurada no ERP (db.accessUsers)
+  if (user.allowedModules && user.allowedModules.length > 0) {
+    if (moduleId.startsWith('financeiro')) {
+      return user.allowedModules.includes('financeiro');
+    }
+    return user.allowedModules.includes(moduleId as PanelModuleId);
+  }
+
+  // 2. Administrador irrestrito tem acesso a tudo
+  if (user.role === 'admin') {
+    return true;
+  }
+
+  // 3. Fallback baseado no papel (RBAC padrão)
+  if (moduleId.startsWith('financeiro')) {
+    return user.role === 'tesouraria';
+  }
+  if (moduleId === 'dashboard') {
+    return user.role === 'pastor' || user.role === 'tesouraria';
+  }
+  if (moduleId === 'acessos_admin' || moduleId === 'config_igreja') {
+    return false;
+  }
+  if (
+    moduleId === 'membros' ||
+    moduleId === 'celulas_admin' ||
+    moduleId === 'ministerios_admin' ||
+    moduleId === 'ensino_admin' ||
+    moduleId === 'kids_admin'
+  ) {
+    return user.role === 'pastor' || user.role === 'lider';
+  }
+  if (moduleId === 'patrimonio_admin') {
+    return user.role === 'pastor' || user.role === 'tesouraria';
+  }
+  if (moduleId === 'pastoral_admin') {
+    return user.role === 'pastor';
+  }
+  if (moduleId === 'oracao_admin') {
+    return user.role === 'pastor' || user.role === 'lider' || user.role === 'voluntario';
+  }
+  if (moduleId === 'eventos_admin') {
+    return true;
+  }
+
+  return false;
 }

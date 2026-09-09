@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserRole, UserSession } from '../../types';
-import { SYSTEM_USERS, hasPermission, PermissionFeature } from '../../services/authService';
+import { SYSTEM_USERS, hasPermission, PermissionFeature, isUserModuleAllowed } from '../../services/authService';
 import { resetDatabase } from '../../services/db';
 import {
   LayoutDashboard,
@@ -101,6 +101,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'config_igreja', label: 'Configurações da Igreja', icon: Building2, permission: 'dashboard_full' },
   ];
 
+  // Apenas exibe os módulos estritamente liberados para o perfil / usuário atual
+  const visibleMenuItems = menuItems.filter((item) => isUserModuleAllowed(currentUser, item.id));
+
   const handleResetData = () => {
     if (window.confirm('Deseja restaurar todos os dados do banco para o estado de fábrica de demonstração?')) {
       resetDatabase();
@@ -109,11 +112,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   };
 
   const activeFinancialSub = financialSubItems.find((s) => s.id === currentTab);
-  const userHasCurrentTabPermission = currentTab.startsWith('financeiro')
-    ? hasPermission(currentUser.role, 'finance_manage')
-    : menuItems.find((m) => m.id === currentTab)
-    ? hasPermission(currentUser.role, menuItems.find((m) => m.id === currentTab)!.permission)
-    : true;
+  const userHasCurrentTabPermission = isUserModuleAllowed(currentUser, currentTab);
+
+  // Se o usuário estiver em um módulo não permitido para ele, redireciona automaticamente para o primeiro módulo liberado
+  useEffect(() => {
+    if (!userHasCurrentTabPermission && visibleMenuItems.length > 0) {
+      onTabChange(visibleMenuItems[0].id);
+    }
+  }, [userHasCurrentTabPermission, visibleMenuItems, onTabChange]);
 
   const currentTabTitle = currentTab.startsWith('financeiro')
     ? (activeFinancialSub ? `Gestão Financeira • ${activeFinancialSub.label}` : 'Gestão Financeira')
@@ -240,9 +246,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
         {/* Navigation Menu */}
         <nav style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, overflowY: 'auto' }}>
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const Icon = item.icon;
-            const allowed = hasPermission(currentUser.role, item.permission);
 
             // Item Especial: Gestão Financeira com Dropdown
             if (item.id === 'financeiro') {
@@ -267,16 +272,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                       background: isFinanceActive ? 'var(--accent-gold-soft)' : 'transparent',
                       color: isFinanceActive
                         ? 'var(--accent-gold)'
-                        : allowed
-                        ? 'var(--text-primary)'
-                        : 'var(--text-muted)',
+                        : 'var(--text-primary)',
                       border: 'none',
                       fontSize: '0.88rem',
                       fontWeight: isFinanceActive ? 700 : 500,
                       cursor: 'pointer',
                       textAlign: 'left',
                       transition: 'all 0.15s',
-                      opacity: allowed ? 1 : 0.6,
                     }}
                     title="Clique para abrir ou recolher os sub-menus de Gestão Financeira"
                   >
@@ -285,11 +287,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                       <span>{item.label}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      {!allowed && (
-                        <span style={{ fontSize: '0.65rem', padding: '0.1rem 0.4rem', borderRadius: '4px', background: 'var(--bg-tertiary)' }}>
-                          Restrito
-                        </span>
-                      )}
                       <ChevronDown
                         size={15}
                         style={{
@@ -302,7 +299,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   </button>
 
                   {/* Sub-menus em Dropdown */}
-                  {isFinanceDropdownOpen && allowed && (
+                  {isFinanceDropdownOpen && (
                     <div
                       className="animate-tab-content"
                       style={{
@@ -372,23 +369,19 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   background: isActive ? 'var(--accent-gold-soft)' : 'transparent',
                   color: isActive
                     ? 'var(--accent-gold)'
-                    : allowed
-                    ? 'var(--text-primary)'
-                    : 'var(--text-muted)',
+                    : 'var(--text-primary)',
                   border: 'none',
                   fontSize: '0.88rem',
                   fontWeight: isActive ? 700 : 500,
                   cursor: 'pointer',
                   textAlign: 'left',
                   transition: 'all 0.15s',
-                  opacity: allowed ? 1 : 0.6,
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <Icon size={18} />
                   <span>{item.label}</span>
                 </div>
-                {!allowed && <span style={{ fontSize: '0.65rem', padding: '0.1rem 0.4rem', borderRadius: '4px', background: 'var(--bg-tertiary)' }}>Restrito</span>}
               </button>
             );
           })}
@@ -455,26 +448,28 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </button>
           )}
 
-          <button
-            onClick={handleResetData}
-            title="Restaurar dados de fábrica da demonstração"
-            style={{
-              width: '100%',
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
-              fontSize: '0.75rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.4rem',
-              cursor: 'pointer',
-              padding: '0.4rem',
-            }}
-          >
-            <RotateCcw size={12} />
-            <span>Restaurar Dados Demo</span>
-          </button>
+          {currentUser.role === 'admin' && (
+            <button
+              onClick={handleResetData}
+              title="Restaurar dados de fábrica da demonstração"
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                fontSize: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.4rem',
+                cursor: 'pointer',
+                padding: '0.4rem',
+              }}
+            >
+              <RotateCcw size={12} />
+              <span>Restaurar Dados Demo</span>
+            </button>
+          )}
         </div>
       </aside>
 
@@ -616,69 +611,84 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     zIndex: 200,
                   }}
                 >
-                  <div
-                    style={{
-                      padding: '0.5rem 0.75rem',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      color: 'var(--text-muted)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      borderBottom: '1px solid var(--border-subtle)',
-                      marginBottom: '0.5rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                    }}
-                  >
-                    <Shield size={14} color="var(--accent-gold)" />
-                    <span>Simular Controle de Acesso (RBAC):</span>
+                  <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid var(--border-subtle)', marginBottom: '0.5rem' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{currentUser.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{currentUser.email}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.35rem' }}>
+                      <span className="badge badge-gold" style={{ fontSize: '0.7rem' }}>{currentUser.roleTitle}</span>
+                      {currentUser.canEdit === false && (
+                        <span className="badge" style={{ fontSize: '0.7rem', background: 'var(--bg-tertiary)' }}>Somente Leitura</span>
+                      )}
+                    </div>
                   </div>
 
-                  {(Object.keys(SYSTEM_USERS) as UserRole[]).map((role) => {
-                    const u = SYSTEM_USERS[role];
-                    const isSelected = currentUser.role === role;
-
-                    return (
-                      <button
-                        key={role}
-                        onClick={() => {
-                          onSwitchRole(role);
-                          setRoleMenuOpen(false);
-                          onNotify('info', `Perfil alterado para: ${u.roleTitle}`);
-                        }}
+                  {currentUser.role === 'admin' && (
+                    <>
+                      <div
                         style={{
+                          padding: '0.5rem 0.75rem',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          color: 'var(--text-muted)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          borderBottom: '1px solid var(--border-subtle)',
+                          marginBottom: '0.5rem',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'space-between',
-                          width: '100%',
-                          padding: '0.65rem 0.75rem',
-                          borderRadius: 'var(--radius-md)',
-                          background: isSelected ? 'var(--accent-gold-soft)' : 'transparent',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: 'var(--text-primary)',
-                          textAlign: 'left',
-                          marginBottom: '0.25rem',
+                          gap: '0.4rem',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                          <img
-                            src={u.avatarUrl}
-                            alt={u.name}
-                            style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
-                          />
-                          <div>
-                            <strong style={{ fontSize: '0.825rem', display: 'block' }}>{u.name}</strong>
-                            <small style={{ fontSize: '0.72rem', color: isSelected ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
-                              {u.roleTitle}
-                            </small>
-                          </div>
-                        </div>
-                        {isSelected && <Check size={16} color="var(--accent-gold)" />}
-                      </button>
-                    );
-                  })}
+                        <Shield size={14} color="var(--accent-gold)" />
+                        <span>Simular Controle de Acesso (RBAC):</span>
+                      </div>
+
+                      {(Object.keys(SYSTEM_USERS) as UserRole[]).map((role) => {
+                        const u = SYSTEM_USERS[role];
+                        const isSelected = currentUser.role === role;
+
+                        return (
+                          <button
+                            key={role}
+                            onClick={() => {
+                              onSwitchRole(role);
+                              setRoleMenuOpen(false);
+                              onNotify('info', `Perfil alterado para: ${u.roleTitle}`);
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              width: '100%',
+                              padding: '0.65rem 0.75rem',
+                              borderRadius: 'var(--radius-md)',
+                              background: isSelected ? 'var(--accent-gold-soft)' : 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: 'var(--text-primary)',
+                              textAlign: 'left',
+                              marginBottom: '0.25rem',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                              <img
+                                src={u.avatarUrl}
+                                alt={u.name}
+                                style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
+                              />
+                              <div>
+                                <strong style={{ fontSize: '0.825rem', display: 'block' }}>{u.name}</strong>
+                                <small style={{ fontSize: '0.72rem', color: isSelected ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
+                                  {u.roleTitle}
+                                </small>
+                              </div>
+                            </div>
+                            {isSelected && <Check size={16} color="var(--accent-gold)" />}
+                          </button>
+                        );
+                      })}
+                    </>
+                  )}
 
                   {onLogout && (
                     <div style={{ marginTop: '0.6rem', paddingTop: '0.6rem', borderTop: '1px solid var(--border-subtle)' }}>
@@ -744,20 +754,19 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <AlertTriangle size={32} />
               </div>
               <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-                Acesso Restrito ao Módulo
+                Módulo Não Disponível
               </h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-                O perfil atual (<strong>{currentUser.roleTitle}</strong>) não possui privilégios de acesso a esta área segundo a política de segurança RBAC.
+                Este módulo não faz parte das permissões atribuídas ao seu usuário (<strong>{currentUser.roleTitle}</strong>).
               </p>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                Dica: você pode alternar para o perfil de <strong>Administrador Geral</strong> ou <strong>Pastor Presidente</strong> no topo da página para testar este módulo.
-              </p>
-              <button
-                onClick={() => onTabChange('dashboard')}
-                className="btn btn-primary"
-              >
-                Voltar ao Dashboard
-              </button>
+              {visibleMenuItems.length > 0 && (
+                <button
+                  onClick={() => onTabChange(visibleMenuItems[0].id)}
+                  className="btn btn-primary"
+                >
+                  Acessar {visibleMenuItems[0].label}
+                </button>
+              )}
             </div>
           ) : (
             <div key={currentTab} className="animate-tab-content" style={{ width: '100%' }}>

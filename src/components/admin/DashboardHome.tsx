@@ -1,6 +1,7 @@
 import React from 'react';
-import { DatabaseSchema, ChurchStats } from '../../types';
+import { DatabaseSchema, ChurchStats, UserSession } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
+import { isUserModuleAllowed } from '../../services/authService';
 import {
   Users,
   TrendingUp,
@@ -22,6 +23,7 @@ interface DashboardHomeProps {
   onNavigateTab: (tab: string) => void;
   onOpenNewMemberModal: () => void;
   onOpenNewTransactionModal: () => void;
+  currentUser?: UserSession;
 }
 
 export const DashboardHome: React.FC<DashboardHomeProps> = ({
@@ -30,7 +32,13 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
   onNavigateTab,
   onOpenNewMemberModal,
   onOpenNewTransactionModal,
+  currentUser,
 }) => {
+  const isFinanceAllowed = !currentUser || isUserModuleAllowed(currentUser, 'financeiro');
+  const isMembersAllowed = !currentUser || isUserModuleAllowed(currentUser, 'membros');
+  const isCellsAllowed = !currentUser || isUserModuleAllowed(currentUser, 'celulas_admin');
+  const isPrayerAllowed = !currentUser || isUserModuleAllowed(currentUser, 'oracao_admin');
+
   // Weekly attendance points (last 8 weeks)
   const attendanceWeeks = [
     { label: 'Sem 1', attendance: 880 },
@@ -146,76 +154,116 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
           </div>
         </div>
 
-        {/* Card 4: Saldo Financeiro Líquido */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Saldo Financeiro Mensal
-            </span>
+        {/* Card 4: Saldo Financeiro Líquido ou Comunhão */}
+        {isFinanceAllowed ? (
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Saldo Financeiro Mensal
+              </span>
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  background: 'var(--accent-gold-soft)',
+                  color: 'var(--accent-gold)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <DollarSign size={18} />
+              </div>
+            </div>
             <div
               style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '8px',
-                background: 'var(--accent-gold-soft)',
-                color: 'var(--accent-gold)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                fontSize: '1.8rem',
+                fontWeight: 800,
+                lineHeight: 1,
+                color: stats.netBalance >= 0 ? 'var(--success)' : 'var(--danger)',
               }}
             >
-              <DollarSign size={18} />
+              {formatCurrency(stats.netBalance)}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Entradas: {formatCurrency(stats.monthlyRevenue)} • Saídas: {formatCurrency(stats.monthlyExpenses)}
             </div>
           </div>
-          <div
-            style={{
-              fontSize: '1.8rem',
-              fontWeight: 800,
-              lineHeight: 1,
-              color: stats.netBalance >= 0 ? 'var(--success)' : 'var(--danger)',
-            }}
-          >
-            {formatCurrency(stats.netBalance)}
+        ) : (
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Células & Comunhão
+              </span>
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  background: 'var(--accent-gold-soft)',
+                  color: 'var(--accent-gold)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Compass size={18} />
+              </div>
+            </div>
+            <div style={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1 }}>
+              {db.cells?.length || 0}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Grupos em atividade • {db.ministries?.length || 0} Ministérios
+            </div>
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Entradas: {formatCurrency(stats.monthlyRevenue)} • Saídas: {formatCurrency(stats.monthlyExpenses)}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Quick Action Shortcuts */}
-      <div
-        style={{
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '1.25rem',
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: '1rem',
-        }}
-      >
-        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-          Ações Rápidas:
-        </span>
-        <button onClick={onOpenNewMemberModal} className="btn btn-sm btn-primary" style={{ gap: '0.4rem' }}>
-          <PlusCircle size={15} />
-          <span>Cadastrar Novo Membro</span>
-        </button>
-        <button onClick={onOpenNewTransactionModal} className="btn btn-sm btn-secondary" style={{ gap: '0.4rem' }}>
-          <DollarSign size={15} />
-          <span>Novo Lançamento Financeiro</span>
-        </button>
-        <button onClick={() => onNavigateTab('celulas_admin')} className="btn btn-sm btn-secondary" style={{ gap: '0.4rem' }}>
-          <Compass size={15} />
-          <span>Gerenciar Células & Grupos</span>
-        </button>
-        <button onClick={() => onNavigateTab('oracao_admin')} className="btn btn-sm btn-secondary" style={{ gap: '0.4rem' }}>
-          <Heart size={15} />
-          <span>Triar Pedidos de Oração ({pendingPrayers.length})</span>
-        </button>
-      </div>
+      {(isMembersAllowed || isFinanceAllowed || isCellsAllowed || isPrayerAllowed) && (
+        <div
+          style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '1.25rem',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '1rem',
+          }}
+        >
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+            Ações Rápidas:
+          </span>
+          {isMembersAllowed && (
+            <button onClick={onOpenNewMemberModal} className="btn btn-sm btn-primary" style={{ gap: '0.4rem' }}>
+              <PlusCircle size={15} />
+              <span>Cadastrar Novo Membro</span>
+            </button>
+          )}
+          {isFinanceAllowed && (
+            <button onClick={onOpenNewTransactionModal} className="btn btn-sm btn-secondary" style={{ gap: '0.4rem' }}>
+              <DollarSign size={15} />
+              <span>Novo Lançamento Financeiro</span>
+            </button>
+          )}
+          {isCellsAllowed && (
+            <button onClick={() => onNavigateTab('celulas_admin')} className="btn btn-sm btn-secondary" style={{ gap: '0.4rem' }}>
+              <Compass size={15} />
+              <span>Gerenciar Células & Grupos</span>
+            </button>
+          )}
+          {isPrayerAllowed && (
+            <button onClick={() => onNavigateTab('oracao_admin')} className="btn btn-sm btn-secondary" style={{ gap: '0.4rem' }}>
+              <Heart size={15} />
+              <span>Triar Pedidos de Oração ({pendingPrayers.length})</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Visual Charts Grid */}
       <div
@@ -274,114 +322,118 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
           </div>
         </div>
 
-        {/* Chart 2: Comparativo Financeiro */}
-        <div className="card" style={{ padding: '1.75rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <div>
-              <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Fluxo de Caixa Mensal</h4>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Entradas de Dízimos/Ofertas vs Saídas Operacionais</span>
+        {/* Chart 2: Comparativo Financeiro (somente se permitido) */}
+        {isFinanceAllowed && (
+          <div className="card" style={{ padding: '1.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Fluxo de Caixa Mensal</h4>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Entradas de Dízimos/Ofertas vs Saídas Operacionais</span>
+              </div>
+              <button onClick={() => onNavigateTab('financeiro')} className="btn btn-sm btn-secondary">
+                Ver Extrato
+              </button>
             </div>
-            <button onClick={() => onNavigateTab('financeiro')} className="btn btn-sm btn-secondary">
-              Ver Extrato
-            </button>
+
+            {/* Breakdown bars */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--success)' }}>Entradas (Dízimos & Doações)</span>
+                  <strong>{formatCurrency(stats.monthlyRevenue)}</strong>
+                </div>
+                <div style={{ height: '14px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                  <div style={{ width: '85%', height: '100%', background: 'var(--success)' }} />
+                </div>
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--danger)' }}>Saídas (Contas, Ajuda Social, Manutenção)</span>
+                  <strong>{formatCurrency(stats.monthlyExpenses)}</strong>
+                </div>
+                <div style={{ height: '14px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                  <div style={{ width: '52%', height: '100%', background: 'var(--danger)' }} />
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: 'var(--bg-tertiary)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '1rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: '0.5rem',
+                }}
+              >
+                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Superávit / Reserva do Mês:</span>
+                <strong style={{ fontSize: '1.1rem', color: 'var(--success)' }}>
+                  +{formatCurrency(stats.netBalance)}
+                </strong>
+              </div>
+            </div>
           </div>
-
-          {/* Breakdown bars */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
-                <span style={{ fontWeight: 600, color: 'var(--success)' }}>Entradas (Dízimos & Doações)</span>
-                <strong>{formatCurrency(stats.monthlyRevenue)}</strong>
-              </div>
-              <div style={{ height: '14px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-                <div style={{ width: '85%', height: '100%', background: 'var(--success)' }} />
-              </div>
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
-                <span style={{ fontWeight: 600, color: 'var(--danger)' }}>Saídas (Contas, Ajuda Social, Manutenção)</span>
-                <strong>{formatCurrency(stats.monthlyExpenses)}</strong>
-              </div>
-              <div style={{ height: '14px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-                <div style={{ width: '52%', height: '100%', background: 'var(--danger)' }} />
-              </div>
-            </div>
-
-            <div
-              style={{
-                background: 'var(--bg-tertiary)',
-                borderRadius: 'var(--radius-md)',
-                padding: '1rem',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: '0.5rem',
-              }}
-            >
-              <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Superávit / Reserva do Mês:</span>
-              <strong style={{ fontSize: '1.1rem', color: 'var(--success)' }}>
-                +{formatCurrency(stats.netBalance)}
-              </strong>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Two columns: Recent Transactions & Pending Prayers */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+          gridTemplateColumns: isFinanceAllowed ? 'repeat(auto-fit, minmax(400px, 1fr))' : '1fr',
           gap: '1.5rem',
         }}
       >
-        {/* Recent Financial Transactions */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Últimos Lançamentos Financeiros</h4>
-            <button onClick={() => onNavigateTab('financeiro')} className="btn btn-sm btn-secondary">
-              Gerenciar Finanças
-            </button>
-          </div>
+        {/* Recent Financial Transactions (somente se permitido) */}
+        {isFinanceAllowed && (
+          <div className="card" style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Últimos Lançamentos Financeiros</h4>
+              <button onClick={() => onNavigateTab('financeiro')} className="btn btn-sm btn-secondary">
+                Gerenciar Finanças
+              </button>
+            </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {recentTransactions.map((tx) => (
-              <div
-                key={tx.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.75rem',
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--bg-tertiary)',
-                }}
-              >
-                <div>
-                  <strong style={{ fontSize: '0.85rem', display: 'block' }}>{tx.description}</strong>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    {tx.category} • {tx.memberOrVendor}
-                  </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {recentTransactions.map((tx) => (
+                <div
+                  key={tx.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '0.75rem',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--bg-tertiary)',
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: '0.85rem', display: 'block' }}>{tx.description}</strong>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      {tx.category} • {tx.memberOrVendor}
+                    </span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <strong
+                      style={{
+                        fontSize: '0.9rem',
+                        display: 'block',
+                        color: tx.type === 'entrada' ? 'var(--success)' : 'var(--danger)',
+                      }}
+                    >
+                      {tx.type === 'entrada' ? '+' : '-'} {formatCurrency(tx.amount)}
+                    </strong>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                      {tx.paymentMethod}
+                    </span>
+                  </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <strong
-                    style={{
-                      fontSize: '0.9rem',
-                      display: 'block',
-                      color: tx.type === 'entrada' ? 'var(--success)' : 'var(--danger)',
-                    }}
-                  >
-                    {tx.type === 'entrada' ? '+' : '-'} {formatCurrency(tx.amount)}
-                  </strong>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                    {tx.paymentMethod}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Pending Prayer Requests for Pastoral Triage */}
         <div className="card" style={{ padding: '1.5rem' }}>

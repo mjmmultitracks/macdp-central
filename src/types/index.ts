@@ -7,6 +7,8 @@ export interface UserSession {
   role: UserRole;
   roleTitle: string;
   avatarUrl: string;
+  allowedModules?: PanelModuleId[];
+  canEdit?: boolean;
 }
 
 export type MemberStatus = 'ativo' | 'visitante' | 'em_integracao' | 'afastado';
