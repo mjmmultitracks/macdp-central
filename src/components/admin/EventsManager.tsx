@@ -99,6 +99,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
   const [totalCapacity, setTotalCapacity] = useState<number>(300);
   const [speakerName, setSpeakerName] = useState('');
   const [detailedSchedule, setDetailedSchedule] = useState('');
+  const [whatsappGroupUrl, setWhatsappGroupUrl] = useState('');
 
   // Payment configuration state for paid events
   const [useCustomPix, setUseCustomPix] = useState(false);
@@ -169,6 +170,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setTotalCapacity(300);
     setSpeakerName('Pr. Oziel Gomes Maduro & Preletores Convidados');
     setDetailedSchedule('');
+    setWhatsappGroupUrl('');
     setCustomQuestions([]);
     setEditingQuestionId(null);
     setIsAddingQuestion(false);
@@ -204,6 +206,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setTotalCapacity(evt.totalCapacity);
     setSpeakerName(evt.speakerName || '');
     setDetailedSchedule(evt.detailedSchedule || '');
+    setWhatsappGroupUrl(evt.whatsappGroupUrl || '');
     setCustomQuestions(evt.customQuestions || []);
     setEditingQuestionId(null);
     setIsAddingQuestion(false);
@@ -383,6 +386,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
 
     const finalLocation = location.trim();
     const finalLocationDetails = ensureEventLocationDetails(finalLocation, locationDetails);
+    const finalWhatsappGroupUrl = whatsappGroupUrl.trim() || undefined;
 
     if (editingEvent) {
       updateEvent(editingEvent.id, {
@@ -405,6 +409,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         registeredCount: editingEvent.registrations.length,
         speakerName,
         detailedSchedule,
+        whatsappGroupUrl: finalWhatsappGroupUrl,
         customQuestions,
         ...paymentConfig,
       });
@@ -429,6 +434,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         totalCapacity: Number(totalCapacity) || 100,
         speakerName,
         detailedSchedule,
+        whatsappGroupUrl: finalWhatsappGroupUrl,
         customQuestions,
         ...paymentConfig,
       });
@@ -3222,6 +3228,23 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                 onChange={(e) => setDetailedSchedule(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <MessageCircle size={16} color="#25D366" />
+              <span>Link do Grupo ou Comunidade no WhatsApp (Opcional)</span>
+            </label>
+            <input
+              type="url"
+              className="form-input"
+              placeholder="Ex: https://chat.whatsapp.com/..."
+              value={whatsappGroupUrl}
+              onChange={(e) => setWhatsappGroupUrl(e.target.value)}
+            />
+            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
+              Ao preencher este link, um botão de destaque será exibido ao participante assim que ele concluir a inscrição para entrar no grupo oficial.
+            </span>
           </div>
 
           {/* ==================== BUILDER DE PERGUNTAS PERSONALIZADAS ==================== */}

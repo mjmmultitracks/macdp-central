@@ -250,6 +250,7 @@ export interface ChurchEvent {
   paymentInstructions?: string; // Orientações e observações de pagamento
   allowedPaymentMethods?: ('pix' | 'manual')[]; // Métodos de pagamento aceitos no evento
   mercadoPagoEnabled?: boolean; // Permite checkout/PIX automático via Mercado Pago
+  whatsappGroupUrl?: string; // Link de convite do grupo ou comunidade do evento no WhatsApp (opcional)
 }
 
 export type PrayerCategory = 'Saúde' | 'Família' | 'Finanças' | 'Espiritual' | 'Libertação' | 'Gratidão' | 'Outros';

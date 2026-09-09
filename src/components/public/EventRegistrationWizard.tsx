@@ -546,7 +546,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
     }
   };
 
-  const whatsAppVoucherText = `Graça e Paz! Minha inscrição na *${event.title}* no MACDP foi confirmada com sucesso! 🏛️✨\n\n🎟️ *Comprovante de Inscrição:* ${confirmedRegistration?.id || ''}\n👤 *Participante:* ${name}\n📅 *Data:* ${formatEventDateRange(event.date, event.endDate)} às ${event.time}\n📍 *Local:* ${event.location}${includeShirt ? `\n👕 *Camisa Oficial:* Sim (Tamanho: ${shirtSize})` : ''}\n💰 *Valor Total:* ${totalAmount > 0 ? `R$ ${totalAmount.toFixed(2)}` : 'Gratuito'}${confirmedRegistration?.mercadoPagoPaymentId ? `\n⚡ *Mercado Pago ID:* ${confirmedRegistration.mercadoPagoPaymentId}` : ''}\n\n🔗 *Detalhes do Evento:* ${window.location.origin}/evento/${event.id}\n\nNos vemos lá na Presença de Deus!`;
+  const whatsAppVoucherText = `Graça e Paz! Minha inscrição na *${event.title}* no MACDP foi confirmada com sucesso! 🏛️✨\n\n🎟️ *Comprovante de Inscrição:* ${confirmedRegistration?.id || ''}\n👤 *Participante:* ${name}\n📅 *Data:* ${formatEventDateRange(event.date, event.endDate)} às ${event.time}\n📍 *Local:* ${event.location}${includeShirt ? `\n👕 *Camisa Oficial:* Sim (Tamanho: ${shirtSize})` : ''}\n💰 *Valor Total:* ${totalAmount > 0 ? `R$ ${totalAmount.toFixed(2)}` : 'Gratuito'}${confirmedRegistration?.mercadoPagoPaymentId ? `\n⚡ *Mercado Pago ID:* ${confirmedRegistration.mercadoPagoPaymentId}` : ''}${event.whatsappGroupUrl ? `\n\n💬 *Grupo Oficial:* ${event.whatsappGroupUrl}` : ''}\n\n🔗 *Detalhes do Evento:* ${window.location.origin}/evento/${event.id}\n\nNos vemos lá na Presença de Deus!`;
 
   return (
     <div
@@ -2184,6 +2184,80 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                 </>
               )}
 
+              {/* Card de Convite para Grupo Oficial no WhatsApp (se configurado pelo evento) */}
+              {event.whatsappGroupUrl && (
+                <div
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(37, 211, 102, 0.14) 0%, rgba(18, 140, 126, 0.08) 100%)',
+                    border: '1.5px solid #25D366',
+                    borderRadius: 'var(--radius-lg)',
+                    padding: '1.25rem',
+                    maxWidth: '520px',
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.85rem',
+                    boxShadow: '0 6px 20px rgba(37, 211, 102, 0.18)',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', textAlign: 'left' }}>
+                    <div
+                      style={{
+                        width: '44px',
+                        height: '44px',
+                        borderRadius: '50%',
+                        background: '#25D366',
+                        color: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        boxShadow: '0 3px 12px rgba(37, 211, 102, 0.35)',
+                      }}
+                    >
+                      <MessageCircle size={24} />
+                    </div>
+                    <div>
+                      <h5 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                        Entre no Grupo Oficial no WhatsApp
+                      </h5>
+                      <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                        Receba avisos em primeira mão, orientações da organização e tire dúvidas diretamente pelo WhatsApp!
+                      </p>
+                    </div>
+                  </div>
+
+                  <a
+                    href={event.whatsappGroupUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.55rem',
+                      background: '#25D366',
+                      color: '#ffffff',
+                      fontWeight: 800,
+                      fontSize: '0.92rem',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: 'var(--radius-full)',
+                      textDecoration: 'none',
+                      width: '100%',
+                      boxShadow: '0 4px 15px rgba(37, 211, 102, 0.35)',
+                      transition: 'transform 0.15s ease, filter 0.15s ease',
+                    }}
+                  >
+                    <MessageCircle size={20} />
+                    <span>Entrar no Grupo do WhatsApp</span>
+                    <ExternalLink size={16} />
+                  </a>
+                </div>
+              )}
+
               {/* Action Cards: PDF Download & Email Confirmation */}
               <div
                 style={{
@@ -2348,15 +2422,33 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.5rem' }}>
+                {event.whatsappGroupUrl && (
+                  <a
+                    href={event.whatsappGroupUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn"
+                    style={{
+                      gap: '0.45rem',
+                      background: '#25D366',
+                      borderColor: '#25D366',
+                      color: '#ffffff',
+                      fontWeight: 800,
+                    }}
+                  >
+                    <MessageCircle size={16} />
+                    <span>Grupo do WhatsApp</span>
+                  </a>
+                )}
                 <a
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent(whatsAppVoucherText)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="btn btn-primary"
-                  style={{ gap: '0.45rem', background: '#25D366', borderColor: '#25D366' }}
+                  className="btn btn-secondary"
+                  style={{ gap: '0.45rem' }}
                 >
                   <Share2 size={16} />
-                  <span>Compartilhar no WhatsApp</span>
+                  <span>Compartilhar</span>
                 </a>
                 <button onClick={onClose} className="btn btn-secondary">
                   Concluir
