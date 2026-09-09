@@ -45,8 +45,8 @@ export async function sendEventConfirmationEmail(params: {
     ? `
       <div style="background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 14px 18px; border-radius: 8px; margin: 18px 0; font-size: 13.5px; line-height: 1.5;">
         <strong style="color: #d97706; font-size: 14px;">⏳ Pagamento Pendente (Opção Manual):</strong><br/>
-        Como você optou pelo <strong>Pagamento Manual / Presencial</strong>, seu status está <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato com você via WhatsApp (<strong>${participantPhone}</strong>) para orientar sobre o acerto do valor e validação final da sua vaga.<br/>
-        <span style="font-size: 12px; color: #b45309; margin-top: 6px; display: inline-block;">Dúvidas? Fale direto com a secretaria no WhatsApp: <strong>(92) 98450-9989</strong></span>
+        Como você optou pelo <strong>Pagamento Manual / Presencial</strong>, seu status está <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato com você via WhatsApp (<strong>92 98402-9607</strong>) para orientar sobre o acerto do valor e validação final da sua vaga.<br/>
+        <span style="font-size: 12px; color: #b45309; margin-top: 6px; display: inline-block;">Dúvidas? Fale direto com a secretaria no WhatsApp: <strong>(92) 98402-9607</strong></span>
       </div>
     `
     : '';

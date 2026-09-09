@@ -32,6 +32,7 @@ import {
   AlertCircle,
   ExternalLink,
   Lock,
+  MessageCircle,
 } from 'lucide-react';
 import { formatCurrency, formatDate, calculateAge, formatEventDateRange } from '../../utils/formatters';
 import confetti from 'canvas-confetti';
@@ -2010,7 +2011,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                           lineHeight: 1.5,
                         }}
                       >
-                        ⏳ <strong>Atenção ao Pagamento Manual:</strong> Ao optar pelo Pagamento Manual / Presencial, sua inscrição ficará registrada com status <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato com você via WhatsApp (<strong>{phone}</strong>) para orientar sobre o acerto do valor de <strong>{formatCurrency(totalAmount)}</strong> e a validação final da sua credencial de acesso.
+                        ⏳ <strong>Atenção ao Pagamento Manual:</strong> Ao optar pelo Pagamento Manual / Presencial, sua inscrição ficará registrada com status <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato com você via WhatsApp (<strong>92 98402-9607</strong>) para orientar sobre o acerto do valor de <strong>{formatCurrency(totalAmount)}</strong> e a validação final da sua credencial de acesso.
                       </div>
                     )}
                   </div>
@@ -2101,8 +2102,32 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                       Inscrição Registrada, {name}!
                     </h4>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', maxWidth: '480px', margin: '0.4rem auto 0 auto', lineHeight: 1.5 }}>
-                      Sua inscrição na <strong>{event.title}</strong> foi registrada no sistema. Como você escolheu <strong>Pagamento Manual / Presencial</strong>, seu status está <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato via WhatsApp (<strong>{phone}</strong>) para orientar sobre o acerto do valor e validar sua vaga.
+                      Sua inscrição na <strong>{event.title}</strong> foi registrada no sistema. Como você escolheu <strong>Pagamento Manual / Presencial</strong>, seu status está <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato via WhatsApp (<strong>92 98402-9607</strong>) para orientar sobre o acerto do valor e validar sua vaga.
                     </p>
+                    <div style={{ marginTop: '0.85rem' }}>
+                      <a
+                        href={`https://wa.me/5592984029607?text=${encodeURIComponent(`Graça e Paz! Acabei de me inscrever no evento "${event.title}" com a opção de Pagamento Manual / Presencial (Inscrição: ${name}, Telefone: ${phone}). Gostaria de orientações para acerto do valor de ${formatCurrency(totalAmount)}.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-sm"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.45rem',
+                          background: '#25D366',
+                          color: '#ffffff',
+                          fontWeight: 800,
+                          fontSize: '0.82rem',
+                          padding: '0.55rem 1.25rem',
+                          borderRadius: 'var(--radius-full)',
+                          textDecoration: 'none',
+                          boxShadow: '0 4px 15px rgba(37, 211, 102, 0.35)',
+                        }}
+                      >
+                        <MessageCircle size={16} />
+                        <span>Falar com a Secretaria no WhatsApp (92 98402-9607)</span>
+                      </a>
+                    </div>
                   </div>
                 </>
               ) : (
