@@ -65,80 +65,8 @@ interface FinancialManagerProps {
 
 type FinancialSubTab = 'fluxo' | 'contas' | 'categorias' | 'eventos_caixa';
 
-export const PRESET_BANKS = [
-  {
-    name: 'Banco Bradesco (237)',
-    shortName: 'Bradesco',
-    color: '#dc2626',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Banco_Bradesco_logo.svg/512px-Banco_Bradesco_logo.svg.png',
-  },
-  {
-    name: 'Nu Pagamentos S.A. (260)',
-    shortName: 'Nubank',
-    color: '#820ad1',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Nubank_logo_2021.svg/512px-Nubank_logo_2021.svg.png',
-  },
-  {
-    name: 'Banco do Brasil (001)',
-    shortName: 'Banco do Brasil',
-    color: '#facc15',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Banco_do_Brasil_logo.svg/512px-Banco_do_Brasil_logo.svg.png',
-  },
-  {
-    name: 'Itaú Unibanco (341)',
-    shortName: 'Itaú',
-    color: '#ec7000',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Ita%C3%BA_Unibanco_logo_2023.svg/512px-Ita%C3%BA_Unibanco_logo_2023.svg.png',
-  },
-  {
-    name: 'Caixa Econômica Federal (104)',
-    shortName: 'Caixa Econômica',
-    color: '#0066b3',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Caixa_Econ%C3%B4mica_Federal_logo.svg/512px-Caixa_Econ%C3%B4mica_Federal_logo.svg.png',
-  },
-  {
-    name: 'Banco Santander (033)',
-    shortName: 'Santander',
-    color: '#ec0000',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Banco_Santander_Logotipo.svg/512px-Banco_Santander_Logotipo.svg.png',
-  },
-  {
-    name: 'Banco Inter (077)',
-    shortName: 'Banco Inter',
-    color: '#ff7a00',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Banco_Inter_logo.svg/512px-Banco_Inter_logo.svg.png',
-  },
-  {
-    name: 'Mercado Pago (323)',
-    shortName: 'Mercado Pago',
-    color: '#00aae4',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Mercado_Pago_logo.svg/512px-Mercado_Pago_logo.svg.png',
-  },
-  {
-    name: 'Sicoob (756)',
-    shortName: 'Sicoob',
-    color: '#003641',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Sicoob_logo.svg/512px-Sicoob_logo.svg.png',
-  },
-  {
-    name: 'Sicredi (748)',
-    shortName: 'Sicredi',
-    color: '#00853b',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Logo_Sicredi.svg/512px-Logo_Sicredi.svg.png',
-  },
-  {
-    name: 'C6 Bank (336)',
-    shortName: 'C6 Bank',
-    color: '#242424',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/C6_Bank_logo.svg/512px-C6_Bank_logo.svg.png',
-  },
-  {
-    name: 'PagBank / PagSeguro (290)',
-    shortName: 'PagBank',
-    color: '#00a859',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/PagBank_logo.svg/512px-PagBank_logo.svg.png',
-  },
-];
+import { PRESET_BANKS, resolveBankLogo } from '../../utils/bankLogos';
+export { PRESET_BANKS };
 
 export const FinancialManager: React.FC<FinancialManagerProps> = ({
   transactions,
@@ -173,7 +101,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
   const [accountForm, setAccountForm] = useState<Omit<BankAccount, 'id'>>({
     name: '',
     bankName: 'Banco Bradesco (237)',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Banco_Bradesco_logo.svg/512px-Banco_Bradesco_logo.svg.png',
+    logoUrl: '/images/banks/bradesco.svg',
     accountType: 'corrente',
     agency: '',
     accountNumber: '',
@@ -369,7 +297,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
     setAccountForm({
       name: '',
       bankName: 'Banco Bradesco (237)',
-      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Banco_Bradesco_logo.svg/512px-Banco_Bradesco_logo.svg.png',
+      logoUrl: '/images/banks/bradesco.svg',
       accountType: 'corrente',
       agency: '',
       accountNumber: '',
@@ -388,7 +316,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
     setAccountForm({
       name: acc.name,
       bankName: acc.bankName,
-      logoUrl: acc.logoUrl || '',
+      logoUrl: resolveBankLogo(acc.bankName, acc.logoUrl),
       accountType: acc.accountType,
       agency: acc.agency || '',
       accountNumber: acc.accountNumber || '',
@@ -1239,7 +1167,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                               <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
                                 {account.logoUrl ? (
                                   <img
-                                    src={account.logoUrl}
+                                    src={resolveBankLogo(account.bankName || account.name, account.logoUrl)}
                                     alt=""
                                     style={{
                                       width: '18px',
@@ -1250,6 +1178,9 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                                       padding: '1px',
                                       border: '1px solid var(--border-subtle)',
                                       flexShrink: 0,
+                                    }}
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = '/images/banks/bradesco.svg';
                                     }}
                                   />
                                 ) : (
@@ -1393,11 +1324,11 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                             }}
                           >
                             <img
-                              src={acc.logoUrl}
+                              src={resolveBankLogo(acc.bankName || acc.name, acc.logoUrl)}
                               alt={acc.bankName}
                               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                               onError={(e) => {
-                                (e.target as HTMLElement).style.display = 'none';
+                                (e.target as HTMLImageElement).src = '/images/banks/bradesco.svg';
                               }}
                             />
                           </div>
@@ -2371,9 +2302,12 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
               >
                 {accountForm.logoUrl ? (
                   <img
-                    src={accountForm.logoUrl}
+                    src={resolveBankLogo(accountForm.bankName, accountForm.logoUrl)}
                     alt="Logo do Banco"
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/banks/bradesco.svg';
+                    }}
                   />
                 ) : (
                   <Building size={24} color="var(--text-muted)" />
@@ -2433,7 +2367,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
               <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
                 Atalhos Rápidos de Logos Oficiais:
               </span>
-              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
                 {PRESET_BANKS.map((preset) => (
                   <button
                     key={preset.shortName}
@@ -2450,13 +2384,13 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.4rem',
-                      padding: '0.3rem 0.55rem',
+                      gap: '0.45rem',
+                      padding: '0.35rem 0.65rem',
                       borderRadius: 'var(--radius-md)',
                       background: accountForm.logoUrl === preset.logoUrl ? 'var(--accent-gold-soft)' : 'var(--bg-secondary)',
                       border: accountForm.logoUrl === preset.logoUrl ? '1px solid var(--accent-gold)' : '1px solid var(--border-medium)',
                       color: accountForm.logoUrl === preset.logoUrl ? 'var(--accent-gold)' : 'var(--text-secondary)',
-                      fontSize: '0.76rem',
+                      fontSize: '0.78rem',
                       fontWeight: 600,
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
@@ -2466,7 +2400,19 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                     <img
                       src={preset.logoUrl}
                       alt={preset.shortName}
-                      style={{ width: '14px', height: '14px', objectFit: 'contain', background: '#fff', borderRadius: '2px', padding: '1px' }}
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        objectFit: 'contain',
+                        borderRadius: '4px',
+                        flexShrink: 0,
+                        background: '#ffffff',
+                        padding: '1px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                      }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/images/banks/bradesco.svg';
+                      }}
                     />
                     <span>{preset.shortName}</span>
                   </button>
@@ -2846,9 +2792,12 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                       {acc.logoUrl ? (
                         <img
-                          src={acc.logoUrl}
+                          src={resolveBankLogo(acc.bankName || acc.name, acc.logoUrl)}
                           alt=""
-                          style={{ width: '16px', height: '16px', objectFit: 'contain', background: '#fff', borderRadius: '3px', padding: '1px', border: '1px solid var(--border-subtle)', flexShrink: 0 }}
+                          style={{ width: '18px', height: '18px', objectFit: 'contain', background: '#fff', borderRadius: '3px', padding: '1px', border: '1px solid var(--border-subtle)', flexShrink: 0 }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/images/banks/bradesco.svg';
+                          }}
                         />
                       ) : (
                         <span>🏦</span>
