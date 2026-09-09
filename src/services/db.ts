@@ -711,60 +711,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
     },
   ],
 
-  prayers: [
-    {
-      id: 'pray_1',
-      requesterName: 'Ana Lúcia Barbosa',
-      isAnonymous: false,
-      phone: '11982341234',
-      email: 'analucia@gmail.com',
-      category: 'Saúde',
-      message:
-        'Peço oração por minha mãe, Dona Valéria, que fará uma cirurgia delicada na próxima terça-feira no Hospital das Clínicas. Que as mãos dos médicos sejam guiadas pelo Senhor.',
-      requestPastoralContact: true,
-      createdAt: '2026-08-31T10:15:00Z',
-      status: 'novo',
-    },
-    {
-      id: 'pray_2',
-      requesterName: 'Anônimo',
-      isAnonymous: true,
-      category: 'Família',
-      message:
-        'Por favor, orem pela restauração do meu casamento. Estamos passando por uma crise muito difícil de diálogo e perdão.',
-      requestPastoralContact: false,
-      createdAt: '2026-08-30T21:40:00Z',
-      status: 'em_oracao',
-      pastoralNotes: 'Incluído na vigília de intercessão e clamor pelas famílias.',
-    },
-    {
-      id: 'pray_3',
-      requesterName: 'Marcos Vinicius Santos',
-      isAnonymous: false,
-      phone: '11971239876',
-      email: 'marcos.santos@email.com',
-      category: 'Finanças',
-      message:
-        'Estou desempregado há 6 meses. Peço a intercessão da igreja pelas portas de emprego que estão em processo seletivo.',
-      requestPastoralContact: true,
-      createdAt: '2026-08-28T14:20:00Z',
-      status: 'aconselhado',
-      pastoralNotes: 'Contato realizado pelo Pastor Auxiliar. Encaminhado para vaga na empresa de um membro da igreja.',
-    },
-    {
-      id: 'pray_4',
-      requesterName: 'Clara Mendes',
-      isAnonymous: false,
-      phone: '11961234567',
-      category: 'Gratidão',
-      message:
-        'Testemunho de cura! O exame do meu filho deu completamente limpo para a glória de Deus! Agradeço a toda a igreja que esteve orando conosco!',
-      requestPastoralContact: false,
-      createdAt: '2026-08-25T18:00:00Z',
-      status: 'testemunho',
-      pastoralNotes: 'Compartilhado como testemunho de vitória no culto de domingo.',
-    },
-  ],
+  prayers: [],
 
   teachingClasses: [
     {
@@ -1288,7 +1235,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
   churchSettings: INITIAL_CHURCH_SETTINGS,
   bankAccounts: INITIAL_BANK_ACCOUNTS,
   financialCategories: INITIAL_FINANCIAL_CATEGORIES,
-  appNotifications: INITIAL_APP_NOTIFICATIONS,
+  appNotifications: [],
 };
 
 export function getDatabase(): DatabaseSchema {
@@ -1365,8 +1312,12 @@ export function getDatabase(): DatabaseSchema {
         needsSave = true;
       }
     }
-    if (!parsed.appNotifications || parsed.appNotifications.length === 0) {
-      parsed.appNotifications = INITIAL_APP_NOTIFICATIONS;
+    if (!parsed.appNotifications) {
+      parsed.appNotifications = [];
+      needsSave = true;
+    }
+    if (!parsed.prayers) {
+      parsed.prayers = [];
       needsSave = true;
     }
     if (!parsed.bankAccounts) {
