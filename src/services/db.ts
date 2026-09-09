@@ -1242,6 +1242,31 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       createdAt: '2024-06-20',
       notes: 'Acesso apenas leitura para credenciar participantes na entrada.',
     },
+    {
+      id: 'acc_mika',
+      name: 'Mika Maduro',
+      email: 'mikamaduro@macdp.com.br',
+      password: 'macdp2026',
+      phone: '92984509989',
+      roleTitle: 'Gestão & Apoio',
+      roleType: 'Liderança',
+      status: 'ativo',
+      allowedModules: [
+        'dashboard',
+        'membros',
+        'celulas_admin',
+        'ministerios_admin',
+        'ensino_admin',
+        'kids_admin',
+        'pastoral_admin',
+        'eventos_admin',
+        'oracao_admin',
+      ],
+      canEdit: true,
+      lastAccess: 'Hoje',
+      createdAt: '2024-01-01',
+      notes: 'Usuária do portal - botões de aplicativo mobile e teste no celular ocultados.',
+    },
   ],
   churchSettings: INITIAL_CHURCH_SETTINGS,
   bankAccounts: INITIAL_BANK_ACCOUNTS,
@@ -1300,6 +1325,34 @@ export function getDatabase(): DatabaseSchema {
           needsSave = true;
         }
       });
+      if (!parsed.accessUsers.some((u) => u.email.toLowerCase() === 'mikamaduro@macdp.com.br')) {
+        parsed.accessUsers.push({
+          id: 'acc_mika',
+          name: 'Mika Maduro',
+          email: 'mikamaduro@macdp.com.br',
+          password: 'macdp2026',
+          phone: '92984509989',
+          roleTitle: 'Gestão & Apoio',
+          roleType: 'Liderança',
+          status: 'ativo',
+          allowedModules: [
+            'dashboard',
+            'membros',
+            'celulas_admin',
+            'ministerios_admin',
+            'ensino_admin',
+            'kids_admin',
+            'pastoral_admin',
+            'eventos_admin',
+            'oracao_admin',
+          ],
+          canEdit: true,
+          lastAccess: 'Hoje',
+          createdAt: '2024-01-01',
+          notes: 'Usuária do portal - botões de aplicativo mobile e teste no celular ocultados.',
+        });
+        needsSave = true;
+      }
     }
     if (!parsed.churchSettings) {
       parsed.churchSettings = INITIAL_CHURCH_SETTINGS;

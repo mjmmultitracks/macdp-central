@@ -113,6 +113,7 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
   const churchSettings: ChurchSettings = db.churchSettings || INITIAL_CHURCH_SETTINGS;
   const unreadCount = notifications.filter((n) => !n.read).length;
   const isLive = churchSettings.appSettings?.isLiveNow ?? true;
+  const shouldHideAppButtons = (currentUser?.email || '').toLowerCase().trim() === 'mikamaduro@macdp.com.br';
 
   const handleSelectTab = (tab: 'home' | 'biblia' | 'live' | 'midias' | 'mais') => {
     setCurrentTab(tab);
@@ -368,14 +369,16 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
         </div>
 
         {/* Botão Testar no Celular Real */}
-        <button
-          onClick={() => setIsDeviceTesterOpen(true)}
-          className="btn btn-secondary"
-          style={{ width: '100%', justifyContent: 'center', gap: '0.5rem', padding: '0.8rem', borderRadius: '14px' }}
-        >
-          <Smartphone size={18} />
-          <span>Instalar / Testar em Celular Real (QR Code)</span>
-        </button>
+        {!shouldHideAppButtons && (
+          <button
+            onClick={() => setIsDeviceTesterOpen(true)}
+            className="btn btn-secondary"
+            style={{ width: '100%', justifyContent: 'center', gap: '0.5rem', padding: '0.8rem', borderRadius: '14px' }}
+          >
+            <Smartphone size={18} />
+            <span>Instalar / Testar em Celular Real (QR Code)</span>
+          </button>
+        )}
 
         {/* Botão Voltar ao Site */}
         <button
@@ -441,14 +444,16 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
           </button>
 
           <div style={{ display: 'flex', gap: '0.4rem' }}>
-            <button
-              onClick={() => setIsDeviceTesterOpen(true)}
-              className="btn btn-primary btn-sm"
-              style={{ gap: '0.35rem', fontSize: '0.775rem' }}
-            >
-              <Smartphone size={14} />
-              <span>Testar no Celular</span>
-            </button>
+            {!shouldHideAppButtons && (
+              <button
+                onClick={() => setIsDeviceTesterOpen(true)}
+                className="btn btn-primary btn-sm"
+                style={{ gap: '0.35rem', fontSize: '0.775rem' }}
+              >
+                <Smartphone size={14} />
+                <span>Testar no Celular</span>
+              </button>
+            )}
 
             <button
               onClick={() => setIsDesktopFrame(false)}

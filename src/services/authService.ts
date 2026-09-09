@@ -254,6 +254,30 @@ export async function loginWithCredentials(
       allowedPasswords: ['macdp2026', 'central2026'],
       user: SYSTEM_USERS.lider,
     },
+    {
+      email: 'mikamaduro@macdp.com.br',
+      allowedPasswords: ['macdp2026', 'central2026'],
+      user: {
+        id: 'usr_mika',
+        name: 'Mika Maduro',
+        email: 'mikamaduro@macdp.com.br',
+        role: 'lider',
+        roleTitle: 'Gestão & Apoio',
+        avatarUrl: '/images/pastors.jpg',
+        allowedModules: [
+          'dashboard',
+          'membros',
+          'celulas_admin',
+          'ministerios_admin',
+          'ensino_admin',
+          'kids_admin',
+          'pastoral_admin',
+          'eventos_admin',
+          'oracao_admin',
+        ],
+        canEdit: true,
+      },
+    },
   ];
 
   // 3. Verificação em db.accessUsers (usuários e permissões cadastrados no ERP)

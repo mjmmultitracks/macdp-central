@@ -104,6 +104,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   // Apenas exibe os módulos estritamente liberados para o perfil / usuário atual
   const visibleMenuItems = menuItems.filter((item) => isUserModuleAllowed(currentUser, item.id));
 
+  // Regra específica: ocultar botões de aplicativo mobile e teste no celular para mikamaduro@macdp.com.br
+  const userEmail = (currentUser?.email || '').toLowerCase().trim();
+  const shouldHideAppButtons = userEmail === 'mikamaduro@macdp.com.br';
+
   const handleResetData = () => {
     if (window.confirm('Deseja restaurar todos os dados do banco para o estado de fábrica de demonstração?')) {
       resetDatabase();
@@ -389,7 +393,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
         {/* Back to Public Site & Open App */}
         <div style={{ padding: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
-          {onOpenApp && (
+          {onOpenApp && !shouldHideAppButtons && (
             <button
               type="button"
               onClick={onOpenApp}
@@ -408,7 +412,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </button>
           )}
 
-          {onOpenDeviceTester && (
+          {onOpenDeviceTester && !shouldHideAppButtons && (
             <button
               type="button"
               onClick={onOpenDeviceTester}
@@ -517,7 +521,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
           {/* Right Header Actions: App, Role Switcher & Theme */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            {onOpenApp && (
+            {onOpenApp && !shouldHideAppButtons && (
               <button
                 type="button"
                 onClick={onOpenApp}
@@ -530,7 +534,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </button>
             )}
 
-            {onOpenDeviceTester && (
+            {onOpenDeviceTester && !shouldHideAppButtons && (
               <button
                 type="button"
                 onClick={onOpenDeviceTester}
