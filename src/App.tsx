@@ -502,6 +502,7 @@ export function App() {
 
               <EventsSection
                 events={db.events}
+                regularServices={db.churchSettings?.regularServices}
                 onRegisterEvent={handleOpenEventPage}
                 onOpenEventDetail={handleOpenEventPage}
               />

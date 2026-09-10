@@ -2063,6 +2063,24 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         </button>
       </div>
 
+      {/* Dica Rápida: Cultos Semanais */}
+      <div
+        style={{
+          background: 'rgba(245, 158, 11, 0.08)',
+          border: '1px solid rgba(245, 158, 11, 0.25)',
+          borderRadius: 'var(--radius-md)',
+          padding: '0.85rem 1.15rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+        }}
+      >
+        <Clock size={18} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+        <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+          <strong>Deseja alterar a programação fixa dos cultos semanais (Domingos, Quartas, etc.)?</strong> Você pode cadastrar, alterar horários e adicionar novos dias de culto no menu <strong>Configurações da Igreja &gt; Cultos & Horários da Semana</strong>.
+        </span>
+      </div>
+
       {/* Cards de Resumo & Filtros Interativos de Eventos */}
       <div
         style={{

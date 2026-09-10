@@ -24,9 +24,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onNavigate, onOpenLive
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: `url('/images/hero-section.jpg?v=4')`,
+          backgroundImage: `url('/images/hero-section.jpg?v=5')`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center 40%',
+          backgroundPosition: 'center 35%',
           transform: 'scale(1.03)',
           zIndex: 1,
         }}

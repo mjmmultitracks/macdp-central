@@ -143,20 +143,35 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, churchS
               <span>Nossas Reuniões</span>
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.9rem' }}>
-              <div style={{ paddingBottom: '0.6rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                <strong style={{ color: 'var(--text-primary)', display: 'block' }}>Domingo</strong>
-                <span style={{ color: 'var(--text-secondary)' }}>10:00 - Culto de Celebração & Ceia</span>
-                <br />
-                <span style={{ color: 'var(--text-secondary)' }}>18:30 - Culto da Família na Presença</span>
-              </div>
-              <div style={{ paddingBottom: '0.6rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                <strong style={{ color: 'var(--text-primary)', display: 'block' }}>Quarta-feira</strong>
-                <span style={{ color: 'var(--text-secondary)' }}>19:30 - Noite Profética & Ensino</span>
-              </div>
-              <div>
-                <strong style={{ color: 'var(--text-primary)', display: 'block' }}>Sábado</strong>
-                <span style={{ color: 'var(--text-secondary)' }}>19:00 - Conexão Caçadores Youth</span>
-              </div>
+              {(() => {
+                const services = (churchSettings?.regularServices || [
+                  { id: '1', day: 'Domingo', time: '10:00', title: 'Culto de Celebração & Ceia', active: true },
+                  { id: '2', day: 'Domingo', time: '18:30', title: 'Culto da Família na Presença', active: true },
+                  { id: '3', day: 'Quarta-feira', time: '19:30', title: 'Noite Profética & Ensino', active: true },
+                  { id: '4', day: 'Sábado', time: '19:00', title: 'Conexão Caçadores Youth', active: true },
+                ]).filter((s) => s.active !== false);
+
+                const days = Array.from(new Set(services.map((s) => s.day)));
+
+                return days.map((day, idx) => (
+                  <div
+                    key={day}
+                    style={{
+                      paddingBottom: idx < days.length - 1 ? '0.6rem' : 0,
+                      borderBottom: idx < days.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                    }}
+                  >
+                    <strong style={{ color: 'var(--text-primary)', display: 'block' }}>{day}</strong>
+                    {services
+                      .filter((s) => s.day === day)
+                      .map((s) => (
+                        <div key={s.id} style={{ color: 'var(--text-secondary)' }}>
+                          {s.time} - {s.title}
+                        </div>
+                      ))}
+                  </div>
+                ));
+              })()}
             </div>
           </div>
 

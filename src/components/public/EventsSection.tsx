@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChurchEvent } from '../../types';
+import { ChurchEvent, RegularServiceItem } from '../../types';
 import { formatDate, formatEventDateRange } from '../../utils/formatters';
 import {
   Calendar,
@@ -18,19 +18,20 @@ import {
 
 interface EventsSectionProps {
   events: ChurchEvent[];
+  regularServices?: RegularServiceItem[];
   onRegisterEvent: (event: ChurchEvent) => void;
   onOpenEventDetail: (event: ChurchEvent) => void;
 }
 
 export const EventsSection: React.FC<EventsSectionProps> = ({
   events,
+  regularServices: customServices,
   onRegisterEvent,
   onOpenEventDetail,
 }) => {
-  const [selectedDayTab, setSelectedDayTab] = useState<'domingo' | 'quarta' | 'sabado'>('domingo');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
-  const regularServices = [
+  const regularServices = (customServices || [
     {
       id: 'domingo_1',
       day: 'Domingo',
@@ -38,6 +39,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
       title: 'Culto de Celebração & Ceia',
       description: 'Início da semana em adoração profunda, ministração da Palavra e celebração da Ceia do Senhor. Berçário e Kids abertos.',
       category: 'Geral',
+      active: true,
     },
     {
       id: 'domingo_2',
@@ -46,6 +48,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
       title: 'Culto da Família & Caçadores Kids',
       description: 'Culto focado na restauração e fortalecimento dos lares, com louvor contemporâneo e salas para todas as idades infantis.',
       category: 'Famílias',
+      active: true,
     },
     {
       id: 'quarta',
@@ -54,6 +57,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
       title: 'Noite de Oração & Estudo Bíblico',
       description: 'Momento precioso de intercessão coletiva pelas causas da igreja, cura e aprofundamento exegético das Escrituras.',
       category: 'Edificação',
+      active: true,
     },
     {
       id: 'sabado',
@@ -62,8 +66,12 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
       title: 'Culto Conexão Jovem (Youth)',
       description: 'Comunidade jovem, música vibrante, temas atuais e comunhão pós-culto na cafeteria da igreja.',
       category: 'Jovens',
+      active: true,
     },
-  ];
+  ]).filter((s) => s.active !== false);
+
+  const availableDays = Array.from(new Set(regularServices.map((s) => s.day)));
+  const [selectedDayTab, setSelectedDayTab] = useState<string>('todos');
 
   return (
     <section id="eventos" className="section" style={{ background: 'var(--bg-primary)' }}>
@@ -108,25 +116,24 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                 Todos os nossos cultos contam com recepção calorosa e suporte do ministério infantil
               </p>
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button
-                onClick={() => setSelectedDayTab('domingo')}
-                className={`btn btn-sm ${selectedDayTab === 'domingo' ? 'btn-primary' : 'btn-secondary'}`}
+                type="button"
+                onClick={() => setSelectedDayTab('todos')}
+                className={`btn btn-sm ${selectedDayTab === 'todos' ? 'btn-primary' : 'btn-secondary'}`}
               >
-                Domingos (2 cultos)
+                Todos os Cultos ({regularServices.length})
               </button>
-              <button
-                onClick={() => setSelectedDayTab('quarta')}
-                className={`btn btn-sm ${selectedDayTab === 'quarta' ? 'btn-primary' : 'btn-secondary'}`}
-              >
-                Quartas
-              </button>
-              <button
-                onClick={() => setSelectedDayTab('sabado')}
-                className={`btn btn-sm ${selectedDayTab === 'sabado' ? 'btn-primary' : 'btn-secondary'}`}
-              >
-                Sábados
-              </button>
+              {availableDays.map((day) => (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => setSelectedDayTab(day)}
+                  className={`btn btn-sm ${selectedDayTab === day ? 'btn-primary' : 'btn-secondary'}`}
+                >
+                  {day}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -138,7 +145,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
             }}
           >
             {regularServices
-              .filter((s) => (selectedDayTab === 'domingo' ? s.day === 'Domingo' : s.day.toLowerCase().includes(selectedDayTab)))
+              .filter((s) => (selectedDayTab === 'todos' ? true : s.day === selectedDayTab))
               .map((service) => (
                 <div
                   key={service.id}

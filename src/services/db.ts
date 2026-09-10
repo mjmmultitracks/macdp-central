@@ -26,6 +26,7 @@ import {
   ChurchAppSettings,
   AppNotification,
   AppModuleId,
+  RegularServiceItem,
 } from '../types';
 import { pushDatabaseToSupabase } from './supabaseSync';
 import { resolveBankLogo } from '../utils/bankLogos';
@@ -141,6 +142,44 @@ export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
     fromName: 'MACDP Central',
   },
   appSettings: INITIAL_APP_SETTINGS,
+  regularServices: [
+    {
+      id: 'service_domingo_1',
+      day: 'Domingo',
+      time: '10:00',
+      title: 'Culto de Celebração & Ceia',
+      description: 'Início da semana em adoração profunda, ministração da Palavra e celebração da Ceia do Senhor. Berçário e Kids abertos.',
+      category: 'Geral',
+      active: true,
+    },
+    {
+      id: 'service_domingo_2',
+      day: 'Domingo',
+      time: '18:30',
+      title: 'Culto da Família & Caçadores Kids',
+      description: 'Culto focado na restauração e fortalecimento dos lares, com louvor contemporâneo e salas para todas as idades infantis.',
+      category: 'Famílias',
+      active: true,
+    },
+    {
+      id: 'service_quarta',
+      day: 'Quarta-feira',
+      time: '19:30',
+      title: 'Noite de Oração & Estudo Bíblico',
+      description: 'Momento precioso de intercessão coletiva pelas causas da igreja, cura e aprofundamento exegético das Escrituras.',
+      category: 'Edificação',
+      active: true,
+    },
+    {
+      id: 'service_sabado',
+      day: 'Sábado',
+      time: '19:00',
+      title: 'Culto Conexão Jovem (Youth)',
+      description: 'Comunidade jovem, música vibrante, temas atuais e comunhão pós-culto na cafeteria da igreja.',
+      category: 'Jovens',
+      active: true,
+    },
+  ],
 };
 
 export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [
@@ -2219,10 +2258,27 @@ export function updateChurchSettings(settings: Partial<ChurchSettings>): ChurchS
       ...(current.mercadoPago || { enabled: false, accessToken: '', publicKey: '', sandbox: false }),
       ...(settings.mercadoPago || {}),
     },
+    regularServices:
+      settings.regularServices !== undefined
+        ? settings.regularServices
+        : (current.regularServices || INITIAL_CHURCH_SETTINGS.regularServices || []),
   };
   db.churchSettings = updated;
   saveDatabase(db);
   return updated;
+}
+
+export function getRegularServices(): RegularServiceItem[] {
+  const db = getDatabase();
+  return (
+    db.churchSettings?.regularServices ||
+    INITIAL_CHURCH_SETTINGS.regularServices ||
+    []
+  );
+}
+
+export function saveRegularServices(services: RegularServiceItem[]): ChurchSettings {
+  return updateChurchSettings({ regularServices: services });
 }
 
 // ==================== CONTAS BANCÁRIAS CRUD ====================

@@ -518,6 +518,17 @@ export interface ChurchSettings {
     fromName?: string;
   };
   appSettings?: ChurchAppSettings;
+  regularServices?: RegularServiceItem[];
+}
+
+export interface RegularServiceItem {
+  id: string;
+  day: string; // Ex: 'Domingo', 'Quarta-feira', 'Sábado'
+  time: string; // Ex: '10:00', '18:30', '19:30'
+  title: string; // Ex: 'Culto de Celebração & Ceia'
+  description: string; // Resumo do culto
+  category?: string; // Ex: 'Geral', 'Famílias', 'Edificação', 'Jovens', 'Oração'
+  active?: boolean;
 }
 
 export interface DatabaseSchema {

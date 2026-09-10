@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ChurchSettings, ChurchAppSettings, AppModuleId } from '../../types';
+import { ChurchSettings, ChurchAppSettings, AppModuleId, RegularServiceItem } from '../../types';
 import {
   updateChurchSettings,
   INITIAL_CHURCH_SETTINGS,
@@ -38,6 +38,13 @@ import {
   Eye,
   EyeOff,
   AlertTriangle,
+  Clock,
+  Plus,
+  Trash2,
+  Edit3,
+  ArrowUp,
+  ArrowDown,
+  X,
 } from 'lucide-react';
 import { COLOR_PRESETS, DEFAULT_THEME_COLORS, applyThemeColors } from '../../utils/themeColors';
 
@@ -103,9 +110,148 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
     appSettings: currentSettings.appSettings || INITIAL_APP_SETTINGS,
   });
 
-  const [activeTab, setActiveTab] = useState<'brand' | 'colors' | 'app' | 'contact' | 'address' | 'social' | 'mercadopago' | 'emails'>('brand');
+  const [activeTab, setActiveTab] = useState<'brand' | 'colors' | 'app' | 'services' | 'contact' | 'address' | 'social' | 'mercadopago' | 'emails'>('brand');
   const [isSaving, setIsSaving] = useState(false);
   const [isChurchLinkCopied, setIsChurchLinkCopied] = useState(false);
+
+  // Regular Services State
+  const [servicesList, setServicesList] = useState<RegularServiceItem[]>(
+    currentSettings.regularServices || [
+      {
+        id: 'service_domingo_1',
+        day: 'Domingo',
+        time: '10:00',
+        title: 'Culto de Celebração & Ceia',
+        description: 'Início da semana em adoração profunda, ministração da Palavra e celebração da Ceia do Senhor. Berçário e Kids abertos.',
+        category: 'Geral',
+        active: true,
+      },
+      {
+        id: 'service_domingo_2',
+        day: 'Domingo',
+        time: '18:30',
+        title: 'Culto da Família & Caçadores Kids',
+        description: 'Culto focado na restauração e fortalecimento dos lares, com louvor contemporâneo e salas para todas as idades infantis.',
+        category: 'Famílias',
+        active: true,
+      },
+      {
+        id: 'service_quarta',
+        day: 'Quarta-feira',
+        time: '19:30',
+        title: 'Noite de Oração & Estudo Bíblico',
+        description: 'Momento precioso de intercessão coletiva pelas causas da igreja, cura e aprofundamento exegético das Escrituras.',
+        category: 'Edificação',
+        active: true,
+      },
+      {
+        id: 'service_sabado',
+        day: 'Sábado',
+        time: '19:00',
+        title: 'Culto Conexão Jovem (Youth)',
+        description: 'Comunidade jovem, música vibrante, temas atuais e comunhão pós-culto na cafeteria da igreja.',
+        category: 'Jovens',
+        active: true,
+      },
+    ]
+  );
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [serviceForm, setServiceForm] = useState<Omit<RegularServiceItem, 'id'>>({
+    day: 'Domingo',
+    time: '19:00',
+    title: '',
+    description: '',
+    category: 'Geral',
+    active: true,
+  });
+
+  const handleOpenAddService = () => {
+    setEditingServiceId(null);
+    setServiceForm({
+      day: 'Domingo',
+      time: '19:00',
+      title: '',
+      description: '',
+      category: 'Geral',
+      active: true,
+    });
+    setIsServiceModalOpen(true);
+  };
+
+  const handleOpenEditService = (service: RegularServiceItem) => {
+    setEditingServiceId(service.id);
+    setServiceForm({
+      day: service.day,
+      time: service.time,
+      title: service.title,
+      description: service.description,
+      category: service.category || 'Geral',
+      active: service.active !== false,
+    });
+    setIsServiceModalOpen(true);
+  };
+
+  const handleDeleteService = (id: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir este culto da programação?')) return;
+    const updated = servicesList.filter((s) => s.id !== id);
+    setServicesList(updated);
+    setForm((prev) => ({ ...prev, regularServices: updated }));
+    updateChurchSettings({ regularServices: updated });
+    onNotify('info', 'Culto removido da programação com sucesso!');
+  };
+
+  const handleToggleServiceActive = (id: string) => {
+    const updated = servicesList.map((s) => (s.id === id ? { ...s, active: !s.active } : s));
+    setServicesList(updated);
+    setForm((prev) => ({ ...prev, regularServices: updated }));
+    updateChurchSettings({ regularServices: updated });
+    onNotify('success', 'Status de exibição do culto atualizado!');
+  };
+
+  const handleMoveService = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= servicesList.length) return;
+    const updated = [...servicesList];
+    const temp = updated[index];
+    updated[index] = updated[targetIndex];
+    updated[targetIndex] = temp;
+    setServicesList(updated);
+    setForm((prev) => ({ ...prev, regularServices: updated }));
+    updateChurchSettings({ regularServices: updated });
+  };
+
+  const handleSaveServiceModal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!serviceForm.title.trim()) {
+      onNotify('error', 'Informe o nome ou título do culto.');
+      return;
+    }
+    if (!serviceForm.time.trim()) {
+      onNotify('error', 'Informe o horário de início do culto.');
+      return;
+    }
+
+    let updated: RegularServiceItem[];
+    if (editingServiceId) {
+      updated = servicesList.map((s) =>
+        s.id === editingServiceId ? { ...serviceForm, id: editingServiceId } : s
+      );
+      onNotify('success', 'Culto atualizado com sucesso!');
+    } else {
+      const newService: RegularServiceItem = {
+        ...serviceForm,
+        id: `service_${Date.now()}`,
+      };
+      updated = [...servicesList, newService];
+      onNotify('success', 'Novo culto adicionado à programação!');
+    }
+
+    setServicesList(updated);
+    setForm((prev) => ({ ...prev, regularServices: updated }));
+    updateChurchSettings({ regularServices: updated });
+    setIsServiceModalOpen(false);
+  };
 
   // Mercado Pago Test & Visibility State
   const [isTestingMp, setIsTestingMp] = useState(false);
@@ -594,6 +740,28 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
         >
           <Smartphone size={16} />
           <span>📱 Aplicativo da Igreja & Live</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('services')}
+          style={{
+            padding: '0.75rem 1.25rem',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'services' ? '2px solid var(--accent-gold)' : '2px solid transparent',
+            color: activeTab === 'services' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <Clock size={16} />
+          <span>Cultos & Horários da Semana</span>
         </button>
 
         <button
@@ -1700,6 +1868,231 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
           </div>
         )}
 
+        {/* ==================== TAB: CULTOS & HORÁRIOS DA SEMANA ==================== */}
+        {activeTab === 'services' && (
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1rem',
+                borderBottom: '1px solid var(--border-subtle)',
+                paddingBottom: '1.25rem',
+              }}
+            >
+              <div>
+                <h4 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
+                  <Clock size={20} color="var(--accent-gold)" />
+                  <span>Programação dos Cultos Semanais da Igreja</span>
+                </h4>
+                <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  Cadastre e edite os dias e horários de culto da igreja. Todas as alterações são sincronizadas automaticamente na página inicial do site (Agenda de Reuniões), no rodapé e no aplicativo.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleOpenAddService}
+                className="btn btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.85rem', fontWeight: 700 }}
+              >
+                <Plus size={16} />
+                <span>Adicionar Novo Culto</span>
+              </button>
+            </div>
+
+            {/* Lista dos Cultos */}
+            {servicesList.length === 0 ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '3rem 1rem',
+                  background: 'var(--bg-tertiary)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px dashed var(--border-medium)',
+                }}
+              >
+                <Clock size={36} color="var(--text-muted)" style={{ marginBottom: '0.75rem' }} />
+                <h5 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.4rem 0' }}>
+                  Nenhum dia de culto cadastrado
+                </h5>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 1rem 0' }}>
+                  Clique no botão acima para cadastrar os dias e horários de culto da sua igreja.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleOpenAddService}
+                  className="btn btn-secondary btn-sm"
+                >
+                  <Plus size={14} />
+                  <span>Cadastrar Primeiro Culto</span>
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                {servicesList.map((service, index) => (
+                  <div
+                    key={service.id}
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      border: `1px solid ${service.active !== false ? 'var(--border-subtle)' : 'rgba(239, 68, 68, 0.25)'}`,
+                      borderRadius: 'var(--radius-lg)',
+                      padding: '1.25rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '1rem',
+                      boxShadow: 'var(--shadow-sm)',
+                      opacity: service.active !== false ? 1 : 0.65,
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {/* Left: Info */}
+                    <div style={{ flex: '1 1 320px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                        <span
+                          className="badge"
+                          style={{
+                            background: 'rgba(245, 158, 11, 0.15)',
+                            color: 'var(--accent-gold-light)',
+                            border: '1px solid rgba(245, 158, 11, 0.35)',
+                            fontWeight: 800,
+                            fontSize: '0.82rem',
+                          }}
+                        >
+                          {service.day}
+                        </span>
+
+                        <span
+                          className="badge"
+                          style={{
+                            background: 'rgba(59, 130, 246, 0.15)',
+                            color: '#60a5fa',
+                            border: '1px solid rgba(59, 130, 246, 0.3)',
+                            fontWeight: 700,
+                            fontSize: '0.82rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                          }}
+                        >
+                          <Clock size={12} /> {service.time}
+                        </span>
+
+                        {service.category && (
+                          <span
+                            className="badge"
+                            style={{
+                              background: 'var(--bg-tertiary)',
+                              color: 'var(--text-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              fontSize: '0.75rem',
+                            }}
+                          >
+                            {service.category}
+                          </span>
+                        )}
+
+                        {service.active === false && (
+                          <span
+                            className="badge"
+                            style={{
+                              background: 'rgba(239, 68, 68, 0.15)',
+                              color: '#ef4444',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              fontSize: '0.72rem',
+                            }}
+                          >
+                            Oculto no Site
+                          </span>
+                        )}
+                      </div>
+
+                      <h5 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+                        {service.title}
+                      </h5>
+
+                      {service.description && (
+                        <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                          {service.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Right: Actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {/* Move buttons */}
+                      <button
+                        type="button"
+                        onClick={() => handleMoveService(index, 'up')}
+                        disabled={index === 0}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.4rem 0.5rem', opacity: index === 0 ? 0.3 : 1 }}
+                        title="Mover para cima"
+                      >
+                        <ArrowUp size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveService(index, 'down')}
+                        disabled={index === servicesList.length - 1}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.4rem 0.5rem', opacity: index === servicesList.length - 1 ? 0.3 : 1 }}
+                        title="Mover para baixo"
+                      >
+                        <ArrowDown size={14} />
+                      </button>
+
+                      {/* Active Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleServiceActive(service.id)}
+                        className={`btn btn-sm ${service.active !== false ? 'btn-secondary' : 'btn-outline'}`}
+                        style={{ fontSize: '0.75rem', gap: '0.35rem' }}
+                        title={service.active !== false ? 'Clique para ocultar no site' : 'Clique para ativar no site'}
+                      >
+                        {service.active !== false ? (
+                          <>
+                            <Check size={13} color="var(--success)" />
+                            <span>Ativo</span>
+                          </>
+                        ) : (
+                          <span>Oculto</span>
+                        )}
+                      </button>
+
+                      {/* Edit Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditService(service)}
+                        className="btn btn-secondary btn-sm"
+                        style={{ gap: '0.35rem', fontSize: '0.78rem' }}
+                      >
+                        <Edit3 size={14} />
+                        <span>Editar</span>
+                      </button>
+
+                      {/* Delete Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteService(service.id)}
+                        className="btn btn-secondary btn-sm"
+                        style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)', padding: '0.4rem 0.6rem' }}
+                        title="Excluir culto"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ==================== TAB 2: LIDERANÇA & CONTATO ==================== */}
         {activeTab === 'contact' && (
           <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -2473,6 +2866,146 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
           </button>
         </div>
       </form>
+
+      {/* Modal de Adicionar / Editar Culto */}
+      {isServiceModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.78)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1rem',
+          }}
+          onClick={() => setIsServiceModalOpen(false)}
+        >
+          <div
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-medium)',
+              borderRadius: 'var(--radius-xl)',
+              maxWidth: '540px',
+              width: '100%',
+              padding: '1.75rem',
+              boxShadow: 'var(--shadow-xl)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h4 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Clock size={18} color="var(--accent-gold)" />
+                <span>{editingServiceId ? 'Editar Culto' : 'Novo Culto na Programação'}</span>
+              </h4>
+              <button
+                type="button"
+                onClick={() => setIsServiceModalOpen(false)}
+                className="btn btn-secondary btn-sm"
+                style={{ padding: '0.35rem 0.5rem' }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveServiceModal} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Dia da Semana *</label>
+                  <select
+                    className="form-select"
+                    value={serviceForm.day}
+                    onChange={(e) => setServiceForm({ ...serviceForm, day: e.target.value })}
+                  >
+                    <option value="Domingo">Domingo</option>
+                    <option value="Segunda-feira">Segunda-feira</option>
+                    <option value="Terça-feira">Terça-feira</option>
+                    <option value="Quarta-feira">Quarta-feira</option>
+                    <option value="Quinta-feira">Quinta-feira</option>
+                    <option value="Sexta-feira">Sexta-feira</option>
+                    <option value="Sábado">Sábado</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Horário de Início *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Ex: 10:00 ou 18:30"
+                    value={serviceForm.time}
+                    onChange={(e) => setServiceForm({ ...serviceForm, time: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Nome / Título do Culto *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Ex: Culto da Família & Caçadores Kids"
+                  value={serviceForm.title}
+                  onChange={(e) => setServiceForm({ ...serviceForm, title: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Categoria / Tag</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Ex: Famílias, Jovens, Geral, Edificação, Oração"
+                  value={serviceForm.category}
+                  onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Descrição / Mensagem do Culto</label>
+                <textarea
+                  className="form-textarea"
+                  rows={3}
+                  placeholder="Ex: Culto focado na restauração e fortalecimento dos lares, com louvor contemporâneo e salas para todas as idades infantis."
+                  value={serviceForm.description}
+                  onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
+                />
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.35rem 0' }}>
+                <input
+                  type="checkbox"
+                  id="serviceActiveCheck"
+                  checked={serviceForm.active !== false}
+                  onChange={(e) => setServiceForm({ ...serviceForm, active: e.target.checked })}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                />
+                <label htmlFor="serviceActiveCheck" style={{ fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', margin: 0 }}>
+                  Exibir este culto publicamente no site e no aplicativo
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsServiceModalOpen(false)}
+                  className="btn btn-secondary"
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className="btn btn-primary" style={{ gap: '0.4rem' }}>
+                  <Check size={16} />
+                  <span>Salvar Culto</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
