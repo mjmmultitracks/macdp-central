@@ -30,6 +30,8 @@ import {
 } from '../types';
 import { pushDatabaseToSupabase } from './supabaseSync';
 import { resolveBankLogo } from '../utils/bankLogos';
+import { sanitizeDatabase } from './dbSanitizer';
+export { sanitizeDatabase };
 
 const DB_STORAGE_KEY = 'macdp_db_data_v3';
 
@@ -1009,65 +1011,15 @@ export function getDatabase(): DatabaseSchema {
       needsSave = true;
     }
 
-    // Purga definitiva de quaisquer dados mockados/fictícios que ainda estejam em cache no localStorage
-    if (parsed.schedules && parsed.schedules.some((s) => s.id.startsWith('sch_'))) {
-      parsed.schedules = parsed.schedules.filter((s) => !s.id.startsWith('sch_'));
-      needsSave = true;
-    }
-    if (parsed.kidsChildren && parsed.kidsChildren.some((k) => k.id.startsWith('kid_'))) {
-      parsed.kidsChildren = parsed.kidsChildren.filter((k) => !k.id.startsWith('kid_'));
-      needsSave = true;
-    }
-    if (parsed.kidsLessons && parsed.kidsLessons.some((l) => l.id.startsWith('kl_') || l.id.startsWith('les_'))) {
-      parsed.kidsLessons = parsed.kidsLessons.filter((l) => !l.id.startsWith('kl_') && !l.id.startsWith('les_'));
-      needsSave = true;
-    }
-    if (parsed.patrimonyAssets && parsed.patrimonyAssets.some((a) => a.id.startsWith('ast_'))) {
-      parsed.patrimonyAssets = parsed.patrimonyAssets.filter((a) => !a.id.startsWith('ast_'));
-      needsSave = true;
-    }
-    if (parsed.teachingClasses && parsed.teachingClasses.some((c) => c.id.startsWith('tc_'))) {
-      parsed.teachingClasses = parsed.teachingClasses.filter((c) => !c.id.startsWith('tc_'));
-      needsSave = true;
-    }
-    if (parsed.teachingMaterials && parsed.teachingMaterials.some((m) => m.id.startsWith('mat_'))) {
-      parsed.teachingMaterials = parsed.teachingMaterials.filter((m) => !m.id.startsWith('mat_'));
-      needsSave = true;
-    }
-    if (parsed.teachingLogs && parsed.teachingLogs.some((l) => l.id.startsWith('log_'))) {
-      parsed.teachingLogs = parsed.teachingLogs.filter((l) => !l.id.startsWith('log_'));
-      needsSave = true;
-    }
-    if (
-      parsed.bankAccounts &&
-      parsed.bankAccounts.some(
-        (b) =>
-          ['acc_1', 'acc_2', 'acc_3'].includes(b.id) &&
-          (b.initialBalance === 12500 || b.initialBalance === 5800 || b.initialBalance === 850)
-      )
-    ) {
-      parsed.bankAccounts = parsed.bankAccounts.filter(
-        (b) =>
-          !(
-            ['acc_1', 'acc_2', 'acc_3'].includes(b.id) &&
-            (b.initialBalance === 12500 || b.initialBalance === 5800 || b.initialBalance === 850)
-          )
-      );
-      needsSave = true;
-    }
-    if (parsed.churchSettings?.cnpj === '34.567.890/0001-12') {
-      parsed.churchSettings.cnpj = '';
-      needsSave = true;
-    }
-
-    if (needsSave) {
+    const { sanitized, hasChanged } = sanitizeDatabase(parsed);
+    if (needsSave || hasChanged) {
       try {
-        localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(parsed));
+        localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(sanitized));
       } catch (e) {
         // ignore
       }
     }
-    return parsed;
+    return sanitized;
   } catch (err) {
     console.error('Erro ao ler banco de dados do localStorage:', err);
     return INITIAL_DATABASE;

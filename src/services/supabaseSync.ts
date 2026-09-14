@@ -1,5 +1,6 @@
 import { DatabaseSchema, ChurchEvent, EventRegistration, Member, CellGroup, PrayerRequest, FinancialTransaction } from '../types';
 import { supabase, isSupabaseConfigured } from './supabase';
+import { sanitizeDatabase } from './dbSanitizer';
 
 const STORE_KEY = 'main_church_db';
 let isSyncing = false;
@@ -152,7 +153,13 @@ export async function pullDatabaseFromSupabase(): Promise<DatabaseSchema | null>
     }
 
     if (data && data.data) {
-      return data.data as DatabaseSchema;
+      const rawDb = data.data as DatabaseSchema;
+      const { sanitized, hasChanged } = sanitizeDatabase(rawDb);
+      if (hasChanged) {
+        // Imediatamente atualiza o Supabase com o banco limpo para expurgar mockups da nuvem
+        pushDatabaseToSupabase(sanitized).catch(() => {});
+      }
+      return sanitized;
     }
 
     return null;
@@ -182,7 +189,8 @@ export function subscribeToSupabaseRealtime(
 
           const newRow = payload.new as { key: string; data: DatabaseSchema };
           if (newRow && newRow.key === STORE_KEY && newRow.data) {
-            onRemoteChange(newRow.data);
+            const { sanitized } = sanitizeDatabase(newRow.data);
+            onRemoteChange(sanitized);
           }
         }
       )

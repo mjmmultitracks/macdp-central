@@ -5,6 +5,7 @@ import { getCurrentUser, switchUserRole, isUserAuthenticated, logoutUser } from 
 import { formatDate } from './utils/formatters';
 import { pullDatabaseFromSupabase, pushDatabaseToSupabase, subscribeToSupabaseRealtime } from './services/supabaseSync';
 import { isSupabaseConfigured } from './services/supabase';
+import { sanitizeDatabase } from './services/dbSanitizer';
 import { applyThemeColors } from './utils/themeColors';
 
 // Common Components
@@ -211,10 +212,14 @@ export function App() {
     // 1. Busca dados em nuvem do Supabase
     pullDatabaseFromSupabase().then((remoteDb) => {
       if (remoteDb) {
-        setDb(remoteDb);
-        localStorage.setItem('macdp_db_data_v3', JSON.stringify(remoteDb));
+        const { sanitized, hasChanged } = sanitizeDatabase(remoteDb);
+        setDb(sanitized);
+        localStorage.setItem('macdp_db_data_v3', JSON.stringify(sanitized));
+        if (hasChanged) {
+          pushDatabaseToSupabase(sanitized).catch(() => {});
+        }
       } else {
-        // Se ainda não houver dados no Supabase, sobe os dados locais atuais como semente inicial
+        // Se ainda não houver dados no Supabase, sobe os dados locais atuais limpos como semente inicial
         const currentLocal = getDatabase();
         pushDatabaseToSupabase(currentLocal);
       }
