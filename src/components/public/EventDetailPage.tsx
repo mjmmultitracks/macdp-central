@@ -38,6 +38,19 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [openFaqIds, setOpenFaqIds] = useState<Record<string, boolean>>(() => {
+    if (event.faq && event.faq.length > 0) {
+      return { [event.faq[0].id]: true };
+    }
+    return {};
+  });
+
+  const toggleFaq = (id: string) => {
+    setOpenFaqIds((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   const isLongDescription = (event.description || '').length > 280 || (event.description || '').split('\n').length > 4;
 
@@ -595,6 +608,139 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
                       ✓ {q.label} {q.required ? '*' : ''}
                     </span>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Seção de Perguntas Frequentes (FAQ) */}
+            {event.faq && event.faq.length > 0 && (
+              <div
+                style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-medium)',
+                  borderRadius: 'var(--radius-xl)',
+                  padding: '2rem',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div>
+                    <h3
+                      style={{
+                        fontSize: '1.3rem',
+                        fontWeight: 900,
+                        color: 'var(--text-primary)',
+                        margin: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <HelpCircle size={22} color="var(--accent-gold)" />
+                      <span>Perguntas Frequentes (FAQ)</span>
+                    </h3>
+                    <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', margin: '0.3rem 0 0 0' }}>
+                      Tire suas dúvidas principais sobre o evento antes de realizar sua inscrição.
+                    </p>
+                  </div>
+                  <span
+                    style={{
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      color: 'var(--accent-gold)',
+                      border: '1px solid rgba(245, 158, 11, 0.3)',
+                      borderRadius: 'var(--radius-full)',
+                      padding: '0.3rem 0.8rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                    }}
+                  >
+                    {event.faq.length} {event.faq.length === 1 ? 'dúvida respondida' : 'dúvidas respondidas'}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {event.faq.map((item, idx) => {
+                    const isOpen = !!openFaqIds[item.id];
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          background: isOpen ? 'var(--bg-tertiary)' : 'var(--bg-primary)',
+                          border: isOpen ? '1.5px solid var(--accent-gold)' : '1px solid var(--border-subtle)',
+                          borderRadius: 'var(--radius-lg)',
+                          overflow: 'hidden',
+                          transition: 'all 0.2s ease',
+                          boxShadow: isOpen ? '0 4px 14px rgba(0,0,0,0.08)' : 'none',
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleFaq(item.id)}
+                          style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '1.1rem 1.3rem',
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            gap: '1rem',
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: '1rem',
+                              fontWeight: 800,
+                              color: isOpen ? 'var(--accent-gold)' : 'var(--text-primary)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.6rem',
+                            }}
+                          >
+                            <span style={{ color: 'var(--accent-gold)', fontSize: '0.9rem', opacity: 0.85 }}>
+                              {idx + 1}.
+                            </span>
+                            <span>{item.question}</span>
+                          </span>
+
+                          <span
+                            style={{
+                              color: isOpen ? 'var(--accent-gold)' : 'var(--text-muted)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '50%',
+                              background: isOpen ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-tertiary)',
+                              transition: 'transform 0.2s ease',
+                            }}
+                          >
+                            {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                          </span>
+                        </button>
+
+                        {isOpen && (
+                          <div
+                            style={{
+                              padding: '0 1.3rem 1.25rem 1.3rem',
+                              fontSize: '0.92rem',
+                              color: 'var(--text-secondary)',
+                              lineHeight: 1.7,
+                              borderTop: '1px solid var(--border-subtle)',
+                              paddingTop: '0.9rem',
+                              whiteSpace: 'pre-line',
+                            }}
+                          >
+                            {item.answer}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

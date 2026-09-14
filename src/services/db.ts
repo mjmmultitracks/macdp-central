@@ -1425,6 +1425,7 @@ export function addEvent(event: Omit<ChurchEvent, 'id' | 'registeredCount' | 're
     id: `evt_${Date.now()}`,
     registeredCount: 0,
     registrations: [],
+    faq: event.faq || [],
   };
   db.events.unshift(newEvent);
   saveDatabase(db);

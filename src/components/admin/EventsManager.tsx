@@ -11,7 +11,7 @@ import {
 } from '../../services/db';
 import { GoogleLocationPicker } from './GoogleLocationPicker';
 import { createCustomLocationResult, toLocationDetails, ensureEventLocationDetails } from '../../services/googleMapsService';
-import { ChurchEvent, EventCustomQuestion, EventQuestionType, EventLocationDetails, EventRegistration } from '../../types';
+import { ChurchEvent, EventCustomQuestion, EventQuestionType, EventLocationDetails, EventRegistration, EventFaqItem } from '../../types';
 import { formatDate, formatCurrency, calculateAge, formatEventDateRange } from '../../utils/formatters';
 import { generateEventRegistrationsListPDF } from '../../utils/pdfGenerator';
 import { Modal } from '../common/Modal';
@@ -122,6 +122,13 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
   const [newQOptions, setNewQOptions] = useState('');
   const [newQRequired, setNewQRequired] = useState(true);
 
+  // FAQ Builder state
+  const [faq, setFaq] = useState<EventFaqItem[]>([]);
+  const [isAddingFaq, setIsAddingFaq] = useState(false);
+  const [editingFaqId, setEditingFaqId] = useState<string | null>(null);
+  const [faqQuestion, setFaqQuestion] = useState('');
+  const [faqAnswer, setFaqAnswer] = useState('');
+
   // Drag & drop reorder state
   const [draggedQIndex, setDraggedQIndex] = useState<number | null>(null);
   const [dragOverQIndex, setDragOverQIndex] = useState<number | null>(null);
@@ -176,6 +183,11 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setCustomQuestions([]);
     setEditingQuestionId(null);
     setIsAddingQuestion(false);
+    setFaq([]);
+    setEditingFaqId(null);
+    setIsAddingFaq(false);
+    setFaqQuestion('');
+    setFaqAnswer('');
     setUseCustomPix(false);
     setEventPixKey('');
     setEventPixReceiver('');
@@ -212,6 +224,11 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setCustomQuestions(evt.customQuestions || []);
     setEditingQuestionId(null);
     setIsAddingQuestion(false);
+    setFaq(evt.faq || []);
+    setEditingFaqId(null);
+    setIsAddingFaq(false);
+    setFaqQuestion('');
+    setFaqAnswer('');
     setUseCustomPix(!!evt.pixKey);
     setEventPixKey(evt.pixKey || '');
     setEventPixReceiver(evt.pixReceiver || '');
@@ -349,6 +366,64 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setDragOverQIndex(null);
   };
 
+  // Sugestões de perguntas comuns para agilizar o preenchimento do FAQ
+  const FAQ_SUGGESTIONS = [
+    { q: 'Crianças pagam entrada?', a: 'Crianças de até 10 anos não pagam ingresso, desde que acompanhadas pelos pais ou responsáveis legais.' },
+    { q: 'Haverá estacionamento no local?', a: 'Sim, dispomos de estacionamento interno e equipe de apoio para orientação dos veículos durante o evento.' },
+    { q: 'Qual o traje recomendado?', a: 'Recomendamos traje esporte fino ou confortável, adequado para um ambiente de celebração e adoração.' },
+    { q: 'Onde retiro minha credencial ou camisa?', a: 'A entrega das credenciais e camisas será feita no balcão de check-in na entrada principal 1 hora antes do início do evento.' },
+    { q: 'Posso transferir minha inscrição para outra pessoa?', a: 'Sim! Caso não possa comparecer, entre em contato com a organização pelo WhatsApp com antecedência para transferir a titularidade.' },
+  ];
+
+  const handleStartAddFaq = (suggestedQ = '', suggestedA = '') => {
+    setEditingFaqId(null);
+    setFaqQuestion(suggestedQ);
+    setFaqAnswer(suggestedA);
+    setIsAddingFaq(true);
+  };
+
+  const handleStartEditFaq = (item: EventFaqItem) => {
+    setEditingFaqId(item.id);
+    setFaqQuestion(item.question);
+    setFaqAnswer(item.answer);
+    setIsAddingFaq(true);
+  };
+
+  const handleSaveFaq = () => {
+    if (!faqQuestion.trim() || !faqAnswer.trim()) {
+      alert('Por favor, preencha a pergunta e a resposta do FAQ.');
+      return;
+    }
+
+    if (editingFaqId) {
+      setFaq(faq.map((f) => (f.id === editingFaqId ? { ...f, question: faqQuestion.trim(), answer: faqAnswer.trim() } : f)));
+    } else {
+      const newFaqItem: EventFaqItem = {
+        id: `faq_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+        question: faqQuestion.trim(),
+        answer: faqAnswer.trim(),
+      };
+      setFaq([...faq, newFaqItem]);
+    }
+
+    setEditingFaqId(null);
+    setFaqQuestion('');
+    setFaqAnswer('');
+    setIsAddingFaq(false);
+  };
+
+  const handleDeleteFaq = (id: string) => {
+    setFaq(faq.filter((f) => f.id !== id));
+  };
+
+  const handleMoveFaq = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= faq.length) return;
+    const updated = [...faq];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    setFaq(updated);
+  };
+
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -441,6 +516,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         detailedSchedule,
         whatsappGroupUrl: finalWhatsappGroupUrl,
         customQuestions,
+        faq,
         ...paymentConfig,
       });
       onNotify('success', `Evento "${title}" atualizado com sucesso!`);
@@ -466,6 +542,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         detailedSchedule,
         whatsappGroupUrl: finalWhatsappGroupUrl,
         customQuestions,
+        faq,
         ...paymentConfig,
       });
       onNotify('success', `Evento "${title}" criado com sucesso!`);
@@ -2377,6 +2454,25 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                           {evt.customQuestions.length} perguntas
                         </span>
                       )}
+                      {evt.faq && evt.faq.length > 0 && (
+                        <span
+                          style={{
+                            fontSize: '0.7rem',
+                            background: 'rgba(16, 185, 129, 0.12)',
+                            color: 'var(--status-success)',
+                            padding: '0.15rem 0.5rem',
+                            borderRadius: '4px',
+                            fontWeight: 700,
+                            border: '1px solid rgba(16, 185, 129, 0.25)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                          }}
+                        >
+                          <HelpCircle size={11} />
+                          <span>{evt.faq.length} FAQs</span>
+                        </span>
+                      )}
                       {evt.roomReserved && (
                         <span
                           style={{
@@ -3714,6 +3810,250 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
               >
                 Nenhuma pergunta personalizada adicionada. O formulário solicitará apenas Nome, WhatsApp e E-mail.
               </div>
+            )}
+          </div>
+
+          {/* SEÇÃO DE PERGUNTAS FREQUENTES (FAQ DO EVENTO) */}
+          <div
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-medium)',
+              borderRadius: '8px',
+              padding: '1.25rem',
+              marginTop: '1.5rem',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div>
+                <h4
+                  style={{
+                    fontSize: '0.98rem',
+                    fontWeight: 800,
+                    color: 'var(--text-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    margin: 0,
+                  }}
+                >
+                  <HelpCircle size={16} color="var(--accent-gold)" />
+                  <span>Perguntas Frequentes (FAQ do Evento) ({faq.length})</span>
+                </h4>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>
+                  Esclareça dúvidas comuns dos participantes. O público poderá consultar estas respostas diretamente na página do evento.
+                </p>
+              </div>
+
+              {!isAddingFaq && (
+                <button
+                  type="button"
+                  onClick={() => handleStartAddFaq()}
+                  className="btn btn-secondary btn-sm"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', fontWeight: 700 }}
+                >
+                  <Plus size={14} color="var(--accent-gold)" />
+                  <span>Adicionar Dúvida/FAQ</span>
+                </button>
+              )}
+            </div>
+
+            {/* Sugestões Rápidas de FAQ (1-clique) */}
+            {!isAddingFaq && (
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-gold)', marginBottom: '0.4rem' }}>
+                  💡 Sugestões de Perguntas Comuns (clique para preencher rápido):
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                  {FAQ_SUGGESTIONS.map((sug, sIdx) => {
+                    const alreadyAdded = faq.some((f) => f.question.toLowerCase() === sug.q.toLowerCase());
+                    return (
+                      <button
+                        key={sIdx}
+                        type="button"
+                        disabled={alreadyAdded}
+                        onClick={() => handleStartAddFaq(sug.q, sug.a)}
+                        style={{
+                          background: alreadyAdded ? 'var(--bg-tertiary)' : 'rgba(245, 158, 11, 0.08)',
+                          border: alreadyAdded ? '1px solid var(--border-subtle)' : '1px solid rgba(245, 158, 11, 0.25)',
+                          borderRadius: '6px',
+                          padding: '0.3rem 0.6rem',
+                          fontSize: '0.74rem',
+                          color: alreadyAdded ? 'var(--text-muted)' : 'var(--text-primary)',
+                          cursor: alreadyAdded ? 'default' : 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          transition: 'all 0.15s ease',
+                          opacity: alreadyAdded ? 0.6 : 1,
+                        }}
+                      >
+                        <Plus size={12} color={alreadyAdded ? 'var(--text-muted)' : 'var(--accent-gold)'} />
+                        <span>{sug.q}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Formulário de Criação / Edição de FAQ */}
+            {isAddingFaq && (
+              <div
+                style={{
+                  background: 'var(--bg-tertiary)',
+                  border: '1.5px solid var(--accent-gold)',
+                  borderRadius: '8px',
+                  padding: '1.1rem',
+                  marginBottom: '1rem',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                }}
+              >
+                <div style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--accent-gold)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <HelpCircle size={15} />
+                  <span>{editingFaqId ? 'Editar Pergunta do FAQ' : 'Nova Pergunta do FAQ'}</span>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                    Pergunta / Dúvida do Participante *
+                  </label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Ex: Crianças pagam ingresso?"
+                    value={faqQuestion}
+                    onChange={(e) => setFaqQuestion(e.target.value)}
+                    style={{ fontSize: '0.85rem' }}
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: '0.9rem' }}>
+                  <label className="form-label" style={{ fontSize: '0.8rem', fontWeight: 700 }}>
+                    Resposta Esclarecedora *
+                  </label>
+                  <textarea
+                    className="form-input"
+                    rows={3}
+                    placeholder="Ex: Crianças de até 10 anos não pagam ingresso quando acompanhadas dos pais..."
+                    value={faqAnswer}
+                    onChange={(e) => setFaqAnswer(e.target.value)}
+                    style={{ fontSize: '0.85rem', resize: 'vertical' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingFaq(false);
+                      setEditingFaqId(null);
+                      setFaqQuestion('');
+                      setFaqAnswer('');
+                    }}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveFaq}
+                    className="btn btn-primary btn-sm"
+                  >
+                    {editingFaqId ? 'Salvar Alterações' : 'Adicionar ao FAQ'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Lista de FAQs Cadastrados */}
+            {faq.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {faq.map((item, idx) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      background: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '6px',
+                      padding: '0.75rem 0.9rem',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--text-primary)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span style={{ color: 'var(--accent-gold)' }}>Q{idx + 1}:</span>
+                        <span>{item.question}</span>
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
+                        {item.answer}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+                      {/* Move Up */}
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() => handleMoveFaq(idx, idx - 1)}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.25rem 0.45rem', opacity: idx === 0 ? 0.3 : 1 }}
+                        title="Subir posição"
+                      >
+                        ▲
+                      </button>
+                      {/* Move Down */}
+                      <button
+                        type="button"
+                        disabled={idx === faq.length - 1}
+                        onClick={() => handleMoveFaq(idx, idx + 1)}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.25rem 0.45rem', opacity: idx === faq.length - 1 ? 0.3 : 1 }}
+                        title="Descer posição"
+                      >
+                        ▼
+                      </button>
+                      {/* Edit */}
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditFaq(item)}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.25rem 0.45rem' }}
+                        title="Editar pergunta"
+                      >
+                        <Edit2 size={13} />
+                      </button>
+                      {/* Delete */}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFaq(item.id)}
+                        className="btn btn-secondary btn-sm"
+                        style={{ color: 'var(--status-error)', padding: '0.25rem 0.45rem' }}
+                        title="Excluir do FAQ"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              !isAddingFaq && (
+                <div
+                  style={{
+                    background: 'var(--bg-tertiary)',
+                    borderRadius: '6px',
+                    padding: '0.85rem',
+                    textAlign: 'center',
+                    fontSize: '0.78rem',
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  Nenhuma pergunta frequente cadastrada para este evento. Clique em <strong>Adicionar Dúvida/FAQ</strong> ou selecione uma das sugestões acima.
+                </div>
+              )
             )}
           </div>
 

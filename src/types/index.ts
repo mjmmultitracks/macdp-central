@@ -219,6 +219,12 @@ export interface EventLocationDetails {
   googleMapsUrl?: string;
 }
 
+export interface EventFaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
 export interface ChurchEvent {
   id: string;
   title: string;
@@ -242,6 +248,7 @@ export interface ChurchEvent {
   speakerName?: string;
   detailedSchedule?: string;
   customQuestions?: EventCustomQuestion[];
+  faq?: EventFaqItem[]; // Perguntas frequentes específicas do evento
   registrations: EventRegistration[];
   // Configurações de Pagamento e PIX
   pixKey?: string; // Chave PIX específica do evento (opcional, se vazia usa a geral da igreja)
