@@ -17,16 +17,12 @@ interface AppDeviceTesterModalProps {
   isOpen: boolean;
   onClose: () => void;
   appName?: string;
-  isDesktopFrame: boolean;
-  onToggleDesktopFrame: () => void;
 }
 
 export const AppDeviceTesterModal: React.FC<AppDeviceTesterModalProps> = ({
   isOpen,
   onClose,
   appName = 'MACDP App',
-  isDesktopFrame,
-  onToggleDesktopFrame,
 }) => {
   const [copied, setCopied] = useState(false);
   const [appUrl, setAppUrl] = useState('');
@@ -338,39 +334,6 @@ export const AppDeviceTesterModal: React.FC<AppDeviceTesterModalProps> = ({
                     outline: 'none',
                   }}
                 />
-              </div>
-
-              {/* Modo de Visualização Desktop (Moldura de Smartphone) */}
-              <div
-                style={{
-                  width: '100%',
-                  padding: '1rem',
-                  borderRadius: '14px',
-                  background: 'rgba(245, 158, 11, 0.08)',
-                  border: '1px solid rgba(245, 158, 11, 0.25)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '1rem',
-                }}
-              >
-                <div style={{ textAlign: 'left' }}>
-                  <strong style={{ fontSize: '0.85rem', display: 'block', color: 'var(--text-primary)' }}>
-                    Simulador de Celular na Tela do PC
-                  </strong>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    {isDesktopFrame ? 'Modo moldura ativo (formato iPhone)' : 'Modo tela cheia responsiva ativo'}
-                  </span>
-                </div>
-
-                <button
-                  onClick={onToggleDesktopFrame}
-                  className="btn btn-primary btn-sm"
-                  style={{ gap: '0.4rem', whiteSpace: 'nowrap' }}
-                >
-                  <Smartphone size={15} />
-                  <span>{isDesktopFrame ? 'Desativar Moldura' : 'Ativar Moldura'}</span>
-                </button>
               </div>
             </div>
           )}

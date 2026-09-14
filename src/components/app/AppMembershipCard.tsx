@@ -383,55 +383,6 @@ export const AppMembershipCard: React.FC<AppMembershipCardProps> = ({
               <span>Acessar Carteirinha & Perfil</span>
             </button>
           </form>
-
-          {/* Atalho Rápido de Demonstração / Teste */}
-          <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-subtle)' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.6rem' }}>
-              Identificação Rápida de Teste:
-            </span>
-            <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  const pastor = members[0];
-                  if (pastor) {
-                    onLoginMember({
-                      id: pastor.id,
-                      name: pastor.name,
-                      email: pastor.email,
-                      role: 'pastor',
-                      roleTitle: pastor.roleInChurch,
-                      avatarUrl: pastor.photoUrl,
-                    });
-                    onNotify('success', `Identificado como ${pastor.name}`);
-                  }
-                }}
-                className="btn btn-secondary btn-sm"
-                style={{ fontSize: '0.75rem' }}
-              >
-                Pr. Oziel Gomes (Pastor Presidente)
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  onLoginMember({
-                    id: 'm_demo',
-                    name: 'Membro Ativo da MACDP',
-                    email: 'membro@macdp.com.br',
-                    role: 'voluntario',
-                    roleTitle: 'Membro em Comunhão',
-                    avatarUrl: '/images/logo.png',
-                  });
-                  onNotify('success', 'Identificado como Membro Ativo');
-                }}
-                className="btn btn-secondary btn-sm"
-                style={{ fontSize: '0.75rem' }}
-              >
-                Membro Geral
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

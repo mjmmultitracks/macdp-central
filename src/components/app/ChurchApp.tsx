@@ -85,14 +85,6 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isDeviceTesterOpen, setIsDeviceTesterOpen] = useState(false);
 
-  // Frame simulation mode on desktop
-  const [isDesktopFrame, setIsDesktopFrame] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth > 900;
-    }
-    return false;
-  });
-
   // Notifications State
   const [notifications, setNotifications] = useState<AppNotification[]>(() => getAppNotifications());
 
@@ -408,110 +400,29 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
     <div
       style={{
         minHeight: '100vh',
-        background: isDesktopFrame ? '#030712' : 'var(--bg-primary)',
+        background: 'var(--bg-primary)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: isDesktopFrame ? 'center' : 'flex-start',
-        padding: isDesktopFrame ? '1.5rem 1rem' : 0,
         position: 'relative',
       }}
     >
-      {/* Top Floating Utility Bar for Desktop */}
-      {isDesktopFrame && (
-        <div
-          style={{
-            width: '100%',
-            maxWidth: '520px',
-            marginBottom: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0.5rem 1rem',
-            background: 'rgba(15, 23, 42, 0.8)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: '16px',
-            backdropFilter: 'blur(10px)',
-          }}
-        >
-          <button
-            onClick={onBackToWebsite}
-            className="btn btn-secondary btn-sm"
-            style={{ gap: '0.35rem', fontSize: '0.775rem' }}
-          >
-            <ArrowLeft size={14} />
-            <span>Voltar ao Site</span>
-          </button>
-
-          <div style={{ display: 'flex', gap: '0.4rem' }}>
-            {!shouldHideAppButtons && (
-              <button
-                onClick={() => setIsDeviceTesterOpen(true)}
-                className="btn btn-primary btn-sm"
-                style={{ gap: '0.35rem', fontSize: '0.775rem' }}
-              >
-                <Smartphone size={14} />
-                <span>Testar no Celular</span>
-              </button>
-            )}
-
-            <button
-              onClick={() => setIsDesktopFrame(false)}
-              className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.75rem' }}
-            >
-              Tela Cheia
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Main App Container / Smartphone Frame */}
+      {/* Main App Container */}
       <div
         style={{
           width: '100%',
-          maxWidth: isDesktopFrame ? '430px' : '640px',
-          minHeight: isDesktopFrame ? '840px' : '100vh',
-          height: isDesktopFrame ? '860px' : 'auto',
+          maxWidth: '640px',
+          minHeight: '100vh',
           background: 'var(--bg-primary)',
-          borderRadius: isDesktopFrame ? '44px' : 0,
-          border: isDesktopFrame ? '10px solid #1F2937' : 'none',
-          boxShadow: isDesktopFrame
-            ? '0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.15)'
-            : 'none',
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          overflow: 'hidden',
         }}
       >
-        {/* Dynamic Island / Notch Simulation on Desktop */}
-        {isDesktopFrame && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '10px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '110px',
-              height: '24px',
-              background: '#000000',
-              borderRadius: '20px',
-              zIndex: 999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#1E293B', marginRight: '6px' }} />
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0F172A' }} />
-          </div>
-        )}
-
         {/* TOP APP BAR */}
         <header
           style={{
-            padding: isDesktopFrame ? '2.2rem 1.25rem 0.85rem 1.25rem' : '0.85rem 1.25rem',
+            padding: '0.85rem 1.25rem',
             background: 'var(--bg-primary)',
             borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
@@ -682,10 +593,12 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
         {/* BOTTOM NAVIGATION BAR */}
         <nav
           style={{
-            position: isDesktopFrame ? 'absolute' : 'fixed',
+            position: 'fixed',
             bottom: 0,
-            left: 0,
-            right: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '100%',
+            maxWidth: '640px',
             height: '64px',
             background: 'var(--bg-primary)',
             borderTop: '1px solid var(--border-subtle)',
@@ -786,8 +699,6 @@ export const ChurchApp: React.FC<ChurchAppProps> = ({
         isOpen={isDeviceTesterOpen}
         onClose={() => setIsDeviceTesterOpen(false)}
         appName={churchSettings?.appSettings?.appName || churchSettings?.name || 'MACDP App'}
-        isDesktopFrame={isDesktopFrame}
-        onToggleDesktopFrame={() => setIsDesktopFrame(!isDesktopFrame)}
       />
     </div>
   );

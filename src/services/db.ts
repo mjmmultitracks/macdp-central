@@ -102,7 +102,7 @@ export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
   description: 'Uma igreja acolhedora, profética e apaixonada pela presença manifesta de Deus em Manaus/AM. Pastores Presidentes Oziel Gomes Maduro e Midiã Gomes Maduro.',
   logoUrl: '/images/logo.png',
   pastorPresident: 'Pr. Oziel Gomes Maduro & Pra. Midiã Gomes Maduro',
-  cnpj: '34.567.890/0001-12',
+  cnpj: '',
   phone: '(92) 99127-9663',
   whatsapp: '92991279663',
   email: 'contato@macdp.com.br',
@@ -182,49 +182,7 @@ export const INITIAL_CHURCH_SETTINGS: ChurchSettings = {
   ],
 };
 
-export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [
-  {
-    id: 'acc_1',
-    name: 'Bradesco - Conta Principal',
-    bankName: 'Banco Bradesco (237)',
-    logoUrl: '/images/banks/bradesco.svg',
-    accountType: 'corrente',
-    agency: '3210-4',
-    accountNumber: '12345-6',
-    pixKey: '92991279663',
-    initialBalance: 12500.0,
-    color: '#dc2626',
-    isDefault: true,
-    status: 'ativo',
-    notes: 'Conta oficial para dízimos, ofertas e inscrições de eventos.',
-  },
-  {
-    id: 'acc_2',
-    name: 'Nubank - Reserva & Projetos',
-    bankName: 'Nu Pagamentos S.A. (260)',
-    logoUrl: '/images/banks/nubank.svg',
-    accountType: 'corrente',
-    agency: '0001',
-    accountNumber: '9876543-2',
-    pixKey: 'contato@macdp.com.br',
-    initialBalance: 5800.0,
-    color: '#8b5cf6',
-    isDefault: false,
-    status: 'ativo',
-    notes: 'Conta reserva para missões e projetos especiais.',
-  },
-  {
-    id: 'acc_3',
-    name: 'Caixa Físico / Tesouraria do Templo',
-    bankName: 'Dinheiro em Espécie',
-    accountType: 'caixa_fisico',
-    initialBalance: 850.0,
-    color: '#10b981',
-    isDefault: false,
-    status: 'ativo',
-    notes: 'Valores em espécie recebidos nos cultos presenciais.',
-  },
-];
+export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [];
 
 export const INITIAL_FINANCIAL_CATEGORIES: FinancialCategory[] = [
   // Receitas
@@ -397,68 +355,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
 
   transactions: [],
 
-  schedules: [
-    {
-      id: 'sch_1',
-      serviceDate: '2026-09-06',
-      serviceTime: '18:30',
-      serviceName: 'Culto da Família - Domingo Noite',
-      ministry: 'Louvor',
-      team: [
-        { memberId: 'm_2', memberName: 'Pra. Midiã Gomes Maduro', role: 'Ministração & Louvor', status: 'confirmado' },
-        { memberId: 'm_3', memberName: 'Pr. Jaziel Maduro', role: 'Palavra & Adoração', status: 'confirmado' },
-        { memberId: 'm_sub1', memberName: 'Ministério de Louvor MACDP', role: 'Banda & Vocais', status: 'confirmado' },
-      ],
-      notes: 'Ensaio geral no domingo às 17h no templo.',
-    },
-    {
-      id: 'sch_2',
-      serviceDate: '2026-09-06',
-      serviceTime: '18:30',
-      serviceName: 'Culto da Família - Domingo Noite',
-      ministry: 'Som e Mídia',
-      team: [
-        { memberId: 'usr_voluntario', memberName: 'Equipe de Transmissão YouTube', role: 'Transmissão Ao Vivo @_macdp', status: 'confirmado' },
-        { memberId: 'm_sub4', memberName: 'Operador de Som & Projeção', role: 'Mesa de Som (FOH)', status: 'confirmado' },
-      ],
-      notes: 'Checar links de transmissão ao vivo 30 min antes.',
-    },
-    {
-      id: 'sch_3',
-      serviceDate: '2026-09-06',
-      serviceTime: '18:30',
-      serviceName: 'Culto da Família - Domingo Noite',
-      ministry: 'Recepção',
-      team: [
-        { memberId: 'm_1', memberName: 'Pr. Oziel Gomes Maduro', role: 'Acolhimento da Presidência', status: 'confirmado' },
-        { memberId: 'm_sub5', memberName: 'Equipe de Recepção & Boas-Vindas', role: 'Porta Principal', status: 'confirmado' },
-      ],
-      notes: 'Atenção especial para acolher novos visitantes com carinho.',
-    },
-    {
-      id: 'sch_4',
-      serviceDate: '2026-09-06',
-      serviceTime: '18:30',
-      serviceName: 'Culto da Família - Domingo Noite',
-      ministry: 'Ministério Infantil',
-      team: [
-        { memberId: 'm_4', memberName: 'Pra. Abda Maduro', role: 'Coordenação Caçadores Kids', status: 'confirmado' },
-        { memberId: 'm_6', memberName: 'Pra. Daniely Trindade', role: 'Ensino Infantil', status: 'confirmado' },
-      ],
-      notes: 'Tema da aula: A Parábola do Bom Samaritano.',
-    },
-    {
-      id: 'sch_5',
-      serviceDate: '2026-09-09',
-      serviceTime: '19:30',
-      serviceName: 'Culto de Oração & Doutrina - Quarta',
-      ministry: 'Intercessão',
-      team: [
-        { memberId: 'm_2', memberName: 'Pra. Midiã Gomes Maduro', role: 'Direção do Clamor', status: 'confirmado' },
-        { memberId: 'm_5', memberName: 'Pr. Samuel Trindade', role: 'Apoio aos Pedidos do Altar', status: 'confirmado' },
-      ],
-    },
-  ],
+  schedules: [],
 
   cells: [
     {
@@ -763,360 +660,17 @@ export const INITIAL_DATABASE: DatabaseSchema = {
 
   prayers: [],
 
-  teachingClasses: [
-    {
-      id: 'tc_1',
-      name: 'Escola de Líderes da Presença',
-      teacher: 'Pr. Oziel Gomes Maduro',
-      schedule: 'Domingos às 09:00',
-      room: 'Sala 3 - Ensino & Discipulado',
-      studentsCount: 34,
-      category: 'Liderança',
-      description: 'Formação de líderes e discipuladores para expansão do Reino e pastoreio das células em Manaus.',
-    },
-    {
-      id: 'tc_2',
-      name: 'Curso de Membresia & Batismo',
-      teacher: 'Pra. Midiã Gomes Maduro',
-      schedule: 'Terças às 19:30',
-      room: 'Salão Social & Cafeteria',
-      studentsCount: 22,
-      category: 'Membresia',
-      description: 'Fundamentos da fé bíblica, doutrina apostólica e preparação para o batismo nas águas.',
-    },
-    {
-      id: 'tc_3',
-      name: 'Maturidade Cristã & Fundamentos da Fé',
-      teacher: 'Pr. Jaziel Maduro',
-      schedule: 'Quartas às 19:30',
-      room: 'Sala 2 - Reuniões',
-      studentsCount: 28,
-      category: 'Discipulado',
-      description: 'Aprofundamento na Palavra de Deus, oração profética e vida cristã prática vitoriosa.',
-    },
-    {
-      id: 'tc_4',
-      name: 'Capacitação Ministerial de Louvor & Adoração',
-      teacher: 'Pr. Samuel Trindade & Pr. Jaziel Maduro',
-      schedule: 'Sábados às 15:00',
-      room: 'Auditório Principal (Templo)',
-      studentsCount: 18,
-      category: 'Teologia',
-      description: 'Fundamentos bíblicos da adoração profética, sensibilidade à presença de Deus e excelência técnica musical.',
-    },
-    {
-      id: 'tc_5',
-      name: 'Discipulado Infantil & Professores Kids',
-      teacher: 'Pra. Abda Maduro & Equipe Kids',
-      schedule: 'Sábados às 10:00',
-      room: 'Sala 1 - Berçário & Kids',
-      studentsCount: 14,
-      category: 'Infantil',
-      description: 'Metodologias pedagógicas lúdicas e bíblicas para ministrar ao coração dos pequenos.',
-    },
-  ],
+  teachingClasses: [],
 
-  teachingMaterials: [
-    {
-      id: 'mat_1',
-      title: 'Roteiro Semanal de Célula: Rompendo Limites na Presença',
-      targetType: 'celulas',
-      targetAudience: 'Todas as Células',
-      author: 'Pr. Oziel Gomes Maduro',
-      date: '2026-09-01',
-      summary: 'Estudo para reuniões nas casas baseado em Isaías 54. Quebrando a esterilidade e alargando as tendas em Manaus.',
-      weekTopic: 'Semana 01 - Ampliando a Visão',
-      downloadCount: 42,
-    },
-    {
-      id: 'mat_2',
-      title: 'Manual Prático: Como Pastorear e Multiplicar sua Célula',
-      targetType: 'celulas',
-      targetAudience: 'Líderes de Célula',
-      author: 'Pra. Midiã Gomes Maduro',
-      date: '2026-08-28',
-      summary: 'Diretrizes apostólicas para acompanhamento dos membros, quebra-gelo, louvor nas casas e consolidação de novos convertidos.',
-      weekTopic: 'Multiplicação & Pastoreio',
-      downloadCount: 29,
-    },
-    {
-      id: 'mat_3',
-      title: 'Guia de Alinhamento e Postura Espiritual para Ministérios',
-      targetType: 'ministerios',
-      targetAudience: 'Todos os Ministérios',
-      author: 'Pr. Samuel Trindade',
-      date: '2026-08-25',
-      summary: 'Vida de oração, pontualidade, consagração e amor no serviço à igreja local.',
-      weekTopic: 'Consagração Ministerial',
-      downloadCount: 38,
-    },
-    {
-      id: 'mat_4',
-      title: 'Apostila de Cânticos Espontâneos e Adoração Profética',
-      targetType: 'ministerios',
-      targetAudience: 'Ministério de Louvor',
-      author: 'Pr. Jaziel Maduro',
-      date: '2026-08-20',
-      summary: 'Estudo das passagens dos Salmos sobre harpa e cântico novo no mover do Espírito Santo.',
-      weekTopic: 'Adoração Profética',
-      downloadCount: 19,
-    },
-  ],
+  teachingMaterials: [],
 
-  teachingLogs: [
-    {
-      id: 'log_1',
-      targetClass: 'Escola de Líderes da Presença',
-      channel: 'todos',
-      subject: 'Lembrete: Aula 04 neste Domingo às 09:00',
-      message: 'Paz do Senhor, amados alunos! Tragam a Bíblia e o caderno de anotações. Teremos dinâmica sobre multiplicação celular.',
-      sentAt: '2026-08-30T14:30:00Z',
-      recipientsCount: 34,
-      status: 'enviado',
-    },
-    {
-      id: 'log_2',
-      targetClass: 'Curso de Membresia & Batismo',
-      channel: 'push',
-      subject: 'Material complementar anexado no App',
-      message: 'A apostila da Lição 2 já está disponível para leitura no seu aplicativo.',
-      sentAt: '2026-08-27T18:00:00Z',
-      recipientsCount: 22,
-      status: 'enviado',
-    },
-  ],
+  teachingLogs: [],
 
-  kidsChildren: [
-    {
-      id: 'kid_1',
-      name: 'Enzo Gabriel Maduro',
-      birthDate: '2023-04-15',
-      age: 3,
-      room: 'Maternal (2 a 4 anos)',
-      guardianName: 'Pra. Midiã Gomes Maduro',
-      guardianPhone: '92984509989',
-      guardianRelationship: 'Mãe',
-      allergiesOrNotes: 'Nenhuma alergia. Bebe bastante água.',
-      securityCode: 'KID-101',
-      checkInStatus: 'presente',
-      checkInTime: '18:25',
-    },
-    {
-      id: 'kid_2',
-      name: 'Sophia Vitória Neves',
-      birthDate: '2019-08-20',
-      age: 7,
-      room: 'Primários (5 a 8 anos)',
-      guardianName: 'Tereza Cristina Neves',
-      guardianPhone: '92984509989',
-      guardianRelationship: 'Mãe',
-      allergiesOrNotes: 'Intolerância a lactose. Não dar derivados de leite.',
-      securityCode: 'KID-204',
-      checkInStatus: 'presente',
-      checkInTime: '18:15',
-    },
-    {
-      id: 'kid_3',
-      name: 'Davi Lucas Silva',
-      birthDate: '2016-02-10',
-      age: 10,
-      room: 'Juniores (9 a 12 anos)',
-      guardianName: 'Eduardo Silva',
-      guardianPhone: '92984509989',
-      guardianRelationship: 'Pai',
-      allergiesOrNotes: 'Participativo nas gincanas.',
-      securityCode: 'KID-305',
-      checkInStatus: 'presente',
-      checkInTime: '18:30',
-    },
-    {
-      id: 'kid_4',
-      name: 'Helena Beatriz Rocha',
-      birthDate: '2025-06-12',
-      age: 1,
-      room: 'Berçário (0 a 2 anos)',
-      guardianName: 'Beatriz Silveira',
-      guardianPhone: '92984509989',
-      guardianRelationship: 'Mãe',
-      allergiesOrNotes: 'Alergia severa a picada de insetos.',
-      securityCode: 'KID-082',
-      checkInStatus: 'retirada',
-      checkInTime: '18:10',
-      checkOutTime: '20:15',
-    },
-    {
-      id: 'kid_5',
-      name: 'Mateus Trindade',
-      birthDate: '2021-11-05',
-      age: 5,
-      room: 'Primários (5 a 8 anos)',
-      guardianName: 'Pr. Samuel Trindade',
-      guardianPhone: '92984509989',
-      guardianRelationship: 'Pai',
-      allergiesOrNotes: 'Sem restrições.',
-      securityCode: 'KID-210',
-      checkInStatus: 'ausente',
-    },
-  ],
+  kidsChildren: [],
 
-  kidsLessons: [
-    {
-      id: 'kl_1',
-      title: 'A Arca de Noé: O Barco da Obediência',
-      programType: 'EBD',
-      date: '2026-09-06',
-      targetRoom: 'Maternal & Primários',
-      teacherName: 'Camila Albuquerque Silva',
-      memoryVerse: 'Filhos, obedecei a vossos pais no Senhor, pois isto é justo. (Efésios 6:1)',
-      activities: 'Pintura em aquarela com arco-íris de promessa, fantoches dos bichinhos e louvor com palminhas.',
-      description: 'Ensinar às crianças que a obediência a Deus traz proteção para toda a família.',
-    },
-    {
-      id: 'kl_2',
-      title: 'Davi e o Gigante Golias: Coragem pela Fé',
-      programType: 'EBD',
-      date: '2026-08-30',
-      targetRoom: 'Primários & Juniores',
-      teacherName: 'Ana Paula Dias',
-      memoryVerse: 'O Senhor é a minha luz e a minha salvação; a quem temerei? (Salmos 27:1)',
-      activities: 'Teatro bíblico participativo, confecção da bolsinha do pastorzinho com as 5 pedrinhas da fé.',
-      description: 'As crianças aprenderam que na presença de Deus nenhum gigante pode nos derrotar.',
-    },
-    {
-      id: 'kl_3',
-      title: 'EBF 2026: Expedição Caçadores da Presença na Amazônia',
-      programType: 'EBF',
-      date: '2026-07-20',
-      targetRoom: 'Todas as Salas (Templo, Quadra & Pátio)',
-      teacherName: 'Liderança Caçadores Kids',
-      memoryVerse: 'Buscar-me-eis e me achareis quando me buscardes de todo o vosso coração. (Jeremias 29:13)',
-      activities: 'Gincana das tribos da selva, circuito de obstáculos com cordas, lanche bíblico temático e batismo no Espírito Santo.',
-      description: 'Semana inesquecível de férias escolares evangelizando e discipulando mais de 150 crianças em Manaus.',
-    },
-  ],
+  kidsLessons: [],
 
-  patrimonyAssets: [
-    {
-      id: 'ast_1',
-      tagNumber: 'PAT-00101',
-      name: 'Console de Áudio Digital Yamaha TF5 (32 Canais)',
-      category: 'Áudio & Instrumentos',
-      location: 'Auditório Principal (Cabine de Som)',
-      department: 'Louvor & Mídia',
-      status: 'ativo',
-      condition: 'Excelente',
-      acquisitionDate: '2024-03-15',
-      estimatedValue: 28500,
-      serialNumber: 'YMH-TF5-99281',
-      donorOrVendor: 'Importadora Manaus Áudio Pro',
-      notes: 'Mesa principal de operação dos cultos e conferências.',
-    },
-    {
-      id: 'ast_2',
-      tagNumber: 'PAT-00102',
-      name: 'Câmera Cinema Sony FX3 4K para Transmissão',
-      category: 'Vídeo & Iluminação',
-      location: 'Auditório Principal (Torre Central)',
-      department: 'Comunicação & Mídia',
-      status: 'ativo',
-      condition: 'Excelente',
-      acquisitionDate: '2024-08-10',
-      estimatedValue: 22000,
-      serialNumber: 'SNY-FX3-88210',
-      donorOrVendor: 'Equipamentos Audiovisuais AM',
-      notes: 'Câmera principal do YouTube oficial do MACDP.',
-    },
-    {
-      id: 'ast_3',
-      tagNumber: 'PAT-00103',
-      name: 'Sistema de Caixas Line Array Ativo (Par)',
-      category: 'Áudio & Instrumentos',
-      location: 'Auditório Principal (Altar Frontal)',
-      department: 'Louvor & Mídia',
-      status: 'ativo',
-      condition: 'Bom',
-      acquisitionDate: '2023-11-20',
-      estimatedValue: 34000,
-      serialNumber: 'RCF-LA-1029',
-      donorOrVendor: 'Áudio Norte Distribuidora',
-      notes: 'Sonorização de alta pressão acústica da nave do templo.',
-    },
-    {
-      id: 'ast_4',
-      tagNumber: 'PAT-00104',
-      name: 'Projetor Laser 6000 Lumens Full HD Epson',
-      category: 'Vídeo & Iluminação',
-      location: 'Auditório Principal (Teto Central)',
-      department: 'Comunicação & Mídia',
-      status: 'ativo',
-      condition: 'Bom',
-      acquisitionDate: '2023-06-05',
-      estimatedValue: 16500,
-      serialNumber: 'EPS-EB-7731',
-      donorOrVendor: 'Info Manaus Tech',
-      notes: 'Projeção das letras de louvor e transmissão do altar.',
-    },
-    {
-      id: 'ast_5',
-      tagNumber: 'PAT-00105',
-      name: 'Ar Condicionado Split Inverter 60.000 BTUs',
-      category: 'Climatização',
-      location: 'Auditório Principal (Lateral Esquerda)',
-      department: 'Administração & Manutenção',
-      status: 'ativo',
-      condition: 'Excelente',
-      acquisitionDate: '2025-01-18',
-      estimatedValue: 9800,
-      serialNumber: 'CAR-60K-4412',
-      donorOrVendor: 'Climatiza Manaus Refrigeração',
-      notes: 'Revisão periódica programada para cada 6 meses.',
-    },
-    {
-      id: 'ast_6',
-      tagNumber: 'PAT-00106',
-      name: 'Kit 4 Microfones Sem Fio Shure BLX24/B58',
-      category: 'Áudio & Instrumentos',
-      location: 'Cabine de Som / Altar',
-      department: 'Louvor & Mídia',
-      status: 'em_manutencao',
-      condition: 'Regular',
-      acquisitionDate: '2023-04-12',
-      estimatedValue: 7200,
-      serialNumber: 'SHR-B58-4X',
-      donorOrVendor: 'Loja Gospel Som',
-      notes: 'Cápsula do microfone 3 enviada para assistência técnica.',
-    },
-    {
-      id: 'ast_7',
-      tagNumber: 'PAT-00107',
-      name: 'Lote 150 Cadeiras Estofadas Longarinas',
-      category: 'Mobiliário',
-      location: 'Auditório Principal',
-      department: 'Patrimônio Geral',
-      status: 'ativo',
-      condition: 'Excelente',
-      acquisitionDate: '2024-02-10',
-      estimatedValue: 45000,
-      serialNumber: 'CAD-LONG-150X',
-      donorOrVendor: 'Móveis Corporativos Manaus',
-      notes: 'Cadeiras acolchoadas em tecido azul royal com porta-bíblia.',
-    },
-    {
-      id: 'ast_8',
-      tagNumber: 'PAT-00108',
-      name: 'Smart TV 65 Polegadas 4K para Retorno de Púlpito',
-      category: 'Vídeo & Iluminação',
-      location: 'Auditório Principal (Fundo da Nave)',
-      department: 'Comunicação & Mídia',
-      status: 'ativo',
-      condition: 'Excelente',
-      acquisitionDate: '2024-09-01',
-      estimatedValue: 3900,
-      serialNumber: 'LG-65UR-5501',
-      donorOrVendor: 'Doação Família Maduro',
-      notes: 'Display de retorno para os pregadores e cronômetro de mensagens.',
-    },
-  ],
+  patrimonyAssets: [],
 
   pastoralAppointments: [],
 
@@ -1448,6 +1002,62 @@ export function getDatabase(): DatabaseSchema {
           }
         }
       });
+    }
+
+    if (!parsed.schedules) {
+      parsed.schedules = [];
+      needsSave = true;
+    }
+
+    // Purga definitiva de quaisquer dados mockados/fictícios que ainda estejam em cache no localStorage
+    if (parsed.schedules && parsed.schedules.some((s) => s.id.startsWith('sch_'))) {
+      parsed.schedules = parsed.schedules.filter((s) => !s.id.startsWith('sch_'));
+      needsSave = true;
+    }
+    if (parsed.kidsChildren && parsed.kidsChildren.some((k) => k.id.startsWith('kid_'))) {
+      parsed.kidsChildren = parsed.kidsChildren.filter((k) => !k.id.startsWith('kid_'));
+      needsSave = true;
+    }
+    if (parsed.kidsLessons && parsed.kidsLessons.some((l) => l.id.startsWith('kl_') || l.id.startsWith('les_'))) {
+      parsed.kidsLessons = parsed.kidsLessons.filter((l) => !l.id.startsWith('kl_') && !l.id.startsWith('les_'));
+      needsSave = true;
+    }
+    if (parsed.patrimonyAssets && parsed.patrimonyAssets.some((a) => a.id.startsWith('ast_'))) {
+      parsed.patrimonyAssets = parsed.patrimonyAssets.filter((a) => !a.id.startsWith('ast_'));
+      needsSave = true;
+    }
+    if (parsed.teachingClasses && parsed.teachingClasses.some((c) => c.id.startsWith('tc_'))) {
+      parsed.teachingClasses = parsed.teachingClasses.filter((c) => !c.id.startsWith('tc_'));
+      needsSave = true;
+    }
+    if (parsed.teachingMaterials && parsed.teachingMaterials.some((m) => m.id.startsWith('mat_'))) {
+      parsed.teachingMaterials = parsed.teachingMaterials.filter((m) => !m.id.startsWith('mat_'));
+      needsSave = true;
+    }
+    if (parsed.teachingLogs && parsed.teachingLogs.some((l) => l.id.startsWith('log_'))) {
+      parsed.teachingLogs = parsed.teachingLogs.filter((l) => !l.id.startsWith('log_'));
+      needsSave = true;
+    }
+    if (
+      parsed.bankAccounts &&
+      parsed.bankAccounts.some(
+        (b) =>
+          ['acc_1', 'acc_2', 'acc_3'].includes(b.id) &&
+          (b.initialBalance === 12500 || b.initialBalance === 5800 || b.initialBalance === 850)
+      )
+    ) {
+      parsed.bankAccounts = parsed.bankAccounts.filter(
+        (b) =>
+          !(
+            ['acc_1', 'acc_2', 'acc_3'].includes(b.id) &&
+            (b.initialBalance === 12500 || b.initialBalance === 5800 || b.initialBalance === 850)
+          )
+      );
+      needsSave = true;
+    }
+    if (parsed.churchSettings?.cnpj === '34.567.890/0001-12') {
+      parsed.churchSettings.cnpj = '';
+      needsSave = true;
     }
 
     if (needsSave) {

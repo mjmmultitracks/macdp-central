@@ -1028,8 +1028,6 @@ export function App() {
         isOpen={isDeviceTesterModalOpen}
         onClose={() => setIsDeviceTesterModalOpen(false)}
         appName={db.churchSettings?.name || 'MACDP App'}
-        isDesktopFrame={true}
-        onToggleDesktopFrame={() => {}}
       />
     </div>
   );
