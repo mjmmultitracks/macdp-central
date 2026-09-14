@@ -110,5 +110,25 @@ export function sanitizeDatabase(rawDb: DatabaseSchema): { sanitized: DatabaseSc
     hasChanged = true;
   }
 
+  // 12. Células (cells)
+  if (!Array.isArray(db.cells)) {
+    db.cells = [];
+    hasChanged = true;
+  } else {
+    const isMockCell = (c: any) =>
+      ['cell_1', 'cell_2', 'cell_3', 'cell_4', 'cell_5', 'cell_6'].includes(c.id) ||
+      c.name === 'Célula Canaranas da Presença' ||
+      c.name === 'Célula Conexão Jovem Cidade Nova' ||
+      c.name === 'Célula Aliança de Casais Flores' ||
+      c.name === 'Célula Família da Fé Ponta Negra' ||
+      c.name === 'Célula Mulheres da Presença Adrianópolis' ||
+      c.name === 'Célula Homens da Presença Aleixo';
+
+    if (db.cells.some(isMockCell)) {
+      db.cells = db.cells.filter((c) => !isMockCell(c));
+      hasChanged = true;
+    }
+  }
+
   return { sanitized: db, hasChanged };
 }
