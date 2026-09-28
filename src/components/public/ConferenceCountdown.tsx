@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChurchEvent } from '../../types';
 import { formatDate } from '../../utils/formatters';
 import {
@@ -30,6 +31,17 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
   onRegister,
 }) => {
   const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (isSelectionModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isSelectionModalOpen]);
   const targetDate = event && event.date ? new Date(`${event.date}T${event.time || '19:30'}:00`) : new Date('2026-11-13T19:30:00');
 
   const calculateTimeLeft = () => {
@@ -392,13 +404,13 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
         </div>
       </div>
 
-      {/* Modal de Seleção: Adultos (DOROT) vs KIDS */}
-      {isSelectionModalOpen && (
+      {/* Modal de Seleção: Adultos (DOROT) vs KIDS (Renderizado via Portal na Raiz da Página) */}
+      {isSelectionModalOpen && typeof document !== 'undefined' && createPortal(
         <div
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 10000,
+            zIndex: 99999,
             background: 'rgba(5, 8, 16, 0.92)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
@@ -406,6 +418,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             padding: '1rem',
+            overflowY: 'auto',
           }}
         >
           <div
@@ -419,6 +432,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
               width: '100%',
               boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(245, 158, 11, 0.2)',
               position: 'relative',
+              margin: 'auto',
             }}
           >
             <button
@@ -548,7 +562,8 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <style>{`
