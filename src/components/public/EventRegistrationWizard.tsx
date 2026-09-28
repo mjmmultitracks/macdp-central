@@ -66,8 +66,8 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
 
   // Allowed Payment Methods & Mercado Pago Integration (memoized to avoid JSON.parse on every keystroke)
   const churchSettings = useMemo(() => getChurchSettings(), []);
-  // Mercado Pago está ativo por padrão, a não ser que desativado nas configurações da igreja
-  const isMercadoPagoConfigured = churchSettings.mercadoPago?.enabled !== false;
+  // Mercado Pago está ativo se habilitado e possuir token configurado
+  const isMercadoPagoConfigured = churchSettings.mercadoPago?.enabled !== false && !!churchSettings.mercadoPago?.accessToken?.trim();
   const isMercadoPagoAvailable = isMercadoPagoConfigured && event.mercadoPagoEnabled !== false;
 
   const allowedMethods = event.allowedPaymentMethods && event.allowedPaymentMethods.length > 0
@@ -114,8 +114,6 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [pdfDownloaded, setPdfDownloaded] = useState(false);
-
-  if (!isOpen) return null;
 
   const questions = event.customQuestions || [];
   const hasCustomQuestions = questions.length > 0;
@@ -250,6 +248,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   // Trigger Mercado Pago PIX generation when landing on Step 3
   useEffect(() => {
     if (
+      isOpen &&
       currentStep === 3 &&
       totalAmount > 0 &&
       isMercadoPagoAvailable &&
@@ -259,11 +258,12 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
     ) {
       createMercadoPagoPix();
     }
-  }, [currentStep, totalAmount, isMercadoPagoAvailable, paymentOption]);
+  }, [isOpen, currentStep, totalAmount, isMercadoPagoAvailable, paymentOption]);
 
   // Generate high-resolution, standards-compliant QR Code for Mercado Pago PIX (ONLY on Step 3)
   useEffect(() => {
-    if (currentStep === 3 && paymentOption === 'mp_pix' && mpPayment?.qrCode) {
+    let isMounted = true;
+    if (isOpen && currentStep === 3 && paymentOption === 'mp_pix' && mpPayment?.qrCode) {
       QRCode.toDataURL(mpPayment.qrCode, {
         width: 380,
         margin: 2,
@@ -273,14 +273,20 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
           light: '#ffffff',
         },
       })
-        .then((url) => setMpQrDataUrl(url))
+        .then((url) => {
+          if (isMounted) setMpQrDataUrl(url);
+        })
         .catch((err) => console.error('Erro ao gerar QR Code MP:', err));
     }
-  }, [currentStep, paymentOption, mpPayment?.qrCode]);
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, currentStep, paymentOption, mpPayment?.qrCode]);
 
   // Generate high-resolution QR Code for Direct PIX (ONLY on Step 3 when direct_pix is active)
   useEffect(() => {
-    if (currentStep === 3 && paymentOption === 'direct_pix' && pixCode) {
+    let isMounted = true;
+    if (isOpen && currentStep === 3 && paymentOption === 'direct_pix' && pixCode) {
       QRCode.toDataURL(pixCode, {
         width: 380,
         margin: 2,
@@ -290,10 +296,15 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
           light: '#ffffff',
         },
       })
-        .then((url) => setDirectPixQrDataUrl(url))
+        .then((url) => {
+          if (isMounted) setDirectPixQrDataUrl(url);
+        })
         .catch((err) => console.error('Erro ao gerar QR Code Direto:', err));
     }
-  }, [currentStep, paymentOption, pixCode]);
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, currentStep, paymentOption, pixCode]);
 
   // Validation handlers
   const isValidEmail = (val: string) => {
@@ -455,7 +466,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   };
 
   useEffect(() => {
-    if (currentStep === 3 && mpPayment?.paymentId && !isMpApproved && paymentOption === 'mp_pix') {
+    if (isOpen && currentStep === 3 && mpPayment?.paymentId && !isMpApproved && paymentOption === 'mp_pix') {
       pollingIntervalRef.current = setInterval(() => {
         checkPaymentStatus(true);
       }, 3500);
@@ -467,7 +478,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
         }
       };
     }
-  }, [currentStep, mpPayment?.paymentId, isMpApproved, paymentOption]);
+  }, [isOpen, currentStep, mpPayment?.paymentId, isMpApproved, paymentOption]);
 
   const handleFinalSubmit = async () => {
     if (totalAmount === 0) {
@@ -547,6 +558,8 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   };
 
   const whatsAppVoucherText = `Graça e Paz! Minha inscrição na *${event.title}* no MACDP foi confirmada com sucesso! 🏛️✨\n\n🎟️ *Comprovante de Inscrição:* ${confirmedRegistration?.id || ''}\n👤 *Participante:* ${name}\n📅 *Data:* ${formatEventDateRange(event.date, event.endDate)} às ${event.time}\n📍 *Local:* ${event.location}${includeShirt ? `\n👕 *Camisa Oficial:* Sim (Tamanho: ${shirtSize})` : ''}\n💰 *Valor Total:* ${totalAmount > 0 ? `R$ ${totalAmount.toFixed(2)}` : 'Gratuito'}${confirmedRegistration?.mercadoPagoPaymentId ? `\n⚡ *Mercado Pago ID:* ${confirmedRegistration.mercadoPagoPaymentId}` : ''}${event.whatsappGroupUrl ? `\n\n💬 *Grupo Oficial:* ${event.whatsappGroupUrl}` : ''}\n\n🔗 *Detalhes do Evento:* ${window.location.origin}/evento/${event.id}\n\nNos vemos lá na Presença de Deus!`;
+
+  if (!isOpen) return null;
 
   return (
     <div

@@ -497,7 +497,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
   events: [
     {
       id: 'evt_1',
-      title: 'Conferência Caçadores da Presença 2026',
+      title: 'Conferência Caçadores da Presença 2026 - DOROT',
       description:
         'Três dias inesquecíveis de louvor profético, ministração da Palavra e capacitação espiritual para toda a família na Chácara Paraiso Verde.',
       date: '2026-11-13',
@@ -568,6 +568,71 @@ export const INITIAL_DATABASE: DatabaseSchema = {
           id: 'q_1788975772098',
           type: 'text',
           label: 'Você tem alguma restrição a alguma medicação?',
+          required: true,
+        },
+      ],
+      registrations: [],
+    },
+    {
+      id: 'evt_kids',
+      title: 'Conferência Caçadores KIDS 2026',
+      description:
+        'Programação especial para as crianças com louvor infantil, teatrinhos, ministrações bíblicas e gincanas durante os três dias da Conferência.',
+      date: '2026-11-13',
+      endDate: '2026-11-15',
+      time: '19:30',
+      location: 'Chácara Paraíso Verde (Espaço Kids), Iranduba - AM',
+      locationDetails: {
+        placeName: 'Chácara Paraíso Verde (Salão Infantil)',
+        formattedAddress: 'Chácara Paraíso Verde, Estrada do Caldeirão, Iranduba - AM, 69405-000',
+        neighborhood: 'Estrada do Caldeirão (Ramal do Caldeirão)',
+        city: 'Iranduba',
+        state: 'AM',
+        latitude: -3.21338,
+        longitude: -60.2232,
+        googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=-3.21338,-60.2232',
+      },
+      roomReserved: 'Salão Infantil & Brinquedoteca',
+      category: 'Conferência',
+      imageUrl: '/images/fellowship.jpg',
+      isFree: false,
+      price: 100,
+      hasShirt: true,
+      shirtPrice: 40,
+      shirtSizes: ['Infantil 4', 'Infantil 6', 'Infantil 8', 'Infantil 10', 'Infantil 12', 'PP', 'P'],
+      totalCapacity: 100,
+      registeredCount: 0,
+      speakerName: 'Pra. Abda Maduro & Equipe Kids',
+      detailedSchedule: '',
+      customQuestions: [
+        {
+          id: 'q_kids_name',
+          type: 'text',
+          label: 'Nome Completo da Criança',
+          required: true,
+        },
+        {
+          id: 'q_kids_birth',
+          type: 'date',
+          label: 'Data de Nascimento da Criança',
+          required: true,
+        },
+        {
+          id: 'q_kids_parent',
+          type: 'text',
+          label: 'Nome do Responsável Legal',
+          required: true,
+        },
+        {
+          id: 'q_kids_phone',
+          type: 'number',
+          label: 'Telefone / WhatsApp do Responsável',
+          required: true,
+        },
+        {
+          id: 'q_kids_allergies',
+          type: 'text',
+          label: 'A criança tem alguma alergia ou restrição alimentar?',
           required: true,
         },
       ],
@@ -910,6 +975,10 @@ export function getDatabase(): DatabaseSchema {
       needsSave = true;
     }
     if (parsed.events) {
+      if (!parsed.events.some((e) => e.id === 'evt_kids')) {
+        parsed.events.push(INITIAL_DATABASE.events[1]);
+        needsSave = true;
+      }
       parsed.events.forEach((e) => {
         // Always ensure registeredCount is strictly synced with actual registrations
         if (e.registrations) {

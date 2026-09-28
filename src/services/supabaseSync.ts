@@ -155,6 +155,52 @@ export async function pullDatabaseFromSupabase(): Promise<DatabaseSchema | null>
     if (data && data.data) {
       const rawDb = data.data as DatabaseSchema;
       const { sanitized, hasChanged } = sanitizeDatabase(rawDb);
+
+      // Recompõe e mescla com inscrições salvas na tabela relacional event_registrations do Supabase
+      try {
+        const { data: regRows } = await supabase.from('event_registrations').select('*');
+        if (regRows && Array.isArray(regRows) && regRows.length > 0) {
+          const regMap = new Map<string, EventRegistration[]>();
+          regRows.forEach((row: any) => {
+            const reg: EventRegistration = {
+              id: row.id,
+              name: row.name || 'Participante',
+              email: row.email || '',
+              phone: row.phone || '',
+              checkedIn: Boolean(row.checked_in),
+              registeredAt: row.registered_at || new Date().toISOString(),
+              paymentMethod: row.payment_method || 'pix',
+              paymentStatus: row.payment_status || 'confirmed',
+              paymentNotes: row.payment_notes || undefined,
+              customAnswers: row.custom_answers || {},
+              totalPaid: row.price_paid || 0,
+            };
+            const evtId = row.event_id;
+            if (!regMap.has(evtId)) regMap.set(evtId, []);
+            regMap.get(evtId)!.push(reg);
+          });
+
+          if (sanitized.events && Array.isArray(sanitized.events)) {
+            sanitized.events.forEach((evt) => {
+              const remoteRegs = regMap.get(evt.id) || [];
+              const existingRegs = evt.registrations || [];
+              const existingMap = new Map(existingRegs.map((r) => [r.id, r]));
+              remoteRegs.forEach((r) => {
+                if (!existingMap.has(r.id)) {
+                  existingMap.set(r.id, r);
+                } else {
+                  existingMap.set(r.id, { ...r, ...existingMap.get(r.id) });
+                }
+              });
+              evt.registrations = Array.from(existingMap.values());
+              evt.registeredCount = evt.registrations.length;
+            });
+          }
+        }
+      } catch (regErr) {
+        console.warn('Erro ao mesclar event_registrations do Supabase:', regErr);
+      }
+
       if (hasChanged) {
         // Imediatamente atualiza o Supabase com o banco limpo para expurgar mockups da nuvem
         pushDatabaseToSupabase(sanitized).catch(() => {});

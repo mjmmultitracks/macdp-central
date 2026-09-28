@@ -61,10 +61,13 @@ export function formatPhone(phone: string): string {
 
 export function calculateAge(birthDateString: string): number | null {
   if (!birthDateString) return null;
-  // Handle YYYY-MM-DD or DD/MM/YYYY
+  // Handle YYYY-MM-DD or DD/MM/YYYY sem deslocamento UTC de fuso horário
   let birth: Date;
   if (birthDateString.includes('/')) {
     const [day, month, year] = birthDateString.split('/');
+    birth = new Date(Number(year), Number(month) - 1, Number(day));
+  } else if (birthDateString.includes('-')) {
+    const [year, month, day] = birthDateString.split('-');
     birth = new Date(Number(year), Number(month) - 1, Number(day));
   } else {
     birth = new Date(birthDateString);

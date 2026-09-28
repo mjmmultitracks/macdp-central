@@ -212,12 +212,28 @@ export function App() {
     // 1. Busca dados em nuvem do Supabase
     pullDatabaseFromSupabase().then((remoteDb) => {
       if (remoteDb) {
+        // Preserva e mescla quaisquer inscrições registradas localmente que ainda não estejam no remoteDb
+        const localDb = getDatabase();
+        if (localDb.events && remoteDb.events) {
+          remoteDb.events.forEach((remoteEvt) => {
+            const localEvt = localDb.events.find((e) => e.id === remoteEvt.id);
+            if (localEvt && localEvt.registrations && localEvt.registrations.length > 0) {
+              const remoteRegMap = new Map((remoteEvt.registrations || []).map((r) => [r.id, r]));
+              localEvt.registrations.forEach((localReg) => {
+                if (!remoteRegMap.has(localReg.id)) {
+                  remoteRegMap.set(localReg.id, localReg);
+                }
+              });
+              remoteEvt.registrations = Array.from(remoteRegMap.values());
+              remoteEvt.registeredCount = remoteEvt.registrations.length;
+            }
+          });
+        }
+
         const { sanitized, hasChanged } = sanitizeDatabase(remoteDb);
         setDb(sanitized);
         localStorage.setItem('macdp_db_data_v3', JSON.stringify(sanitized));
-        if (hasChanged) {
-          pushDatabaseToSupabase(sanitized).catch(() => {});
-        }
+        pushDatabaseToSupabase(sanitized).catch(() => {});
       } else {
         // Se ainda não houver dados no Supabase, sobe os dados locais atuais limpos como semente inicial
         const currentLocal = getDatabase();
@@ -487,7 +503,8 @@ export function App() {
 
               {/* Temporizador da Conferência Caçadores da Presença 2026 (13 de Novembro) */}
               <ConferenceCountdown
-                event={db.events.find((e) => e.id === 'evt_1' || e.date === '2026-11-13' || e.title.toLowerCase().includes('caçadores'))}
+                event={db.events.find((e) => e.id === 'evt_1' || e.title.includes('DOROT') || e.title.toLowerCase().includes('caçadores'))}
+                allEvents={db.events}
                 onOpenEvent={handleOpenEventPage}
                 onRegister={(evt) => setSelectedEventForWizard(evt)}
               />

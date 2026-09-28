@@ -34,8 +34,30 @@ export default async function handler(req, res) {
           const mpData = await mpResponse.json();
           console.log(`[Mercado Pago Webhook] Payment ${paymentId} status: ${mpData.status}`);
           // External reference is format eventId:registrationId
-          const externalRef = mpData.external_reference;
+          const externalRef = mpData.external_reference || '';
           console.log(`[Mercado Pago Webhook] External Ref: ${externalRef}`);
+
+          if (mpData.status === 'approved' && externalRef.includes(':')) {
+            const [eventId, regId] = externalRef.split(':');
+            const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://sbcecbylxoqqbsextkrt.supabase.co';
+            const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_m_UUQHfeR2u_oUc4M5vffw_Z9xm0jcM';
+
+            if (regId && regId !== 'undefined') {
+              await fetch(`${supabaseUrl}/rest/v1/event_registrations?id=eq.${encodeURIComponent(regId)}`, {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': supabaseKey,
+                  'Authorization': `Bearer ${supabaseKey}`,
+                  'Prefer': 'return=minimal',
+                },
+                body: JSON.stringify({
+                  payment_status: 'confirmed',
+                  payment_notes: `Aprovado via Webhook Mercado Pago (ID: ${paymentId}) em ${new Date().toISOString()}`,
+                }),
+              }).catch((err) => console.error('[Webhook Supabase Update Error]:', err));
+            }
+          }
         }
       }
     }

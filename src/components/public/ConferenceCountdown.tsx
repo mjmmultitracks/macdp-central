@@ -11,19 +11,25 @@ import {
   Flame,
   MapPin,
   Users,
+  X,
+  Baby,
+  UserCheck,
 } from 'lucide-react';
 
 interface ConferenceCountdownProps {
   event?: ChurchEvent;
+  allEvents?: ChurchEvent[];
   onOpenEvent: (event: ChurchEvent) => void;
   onRegister: (event: ChurchEvent) => void;
 }
 
 export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
   event,
+  allEvents = [],
   onOpenEvent,
   onRegister,
 }) => {
+  const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
   const targetDate = event && event.date ? new Date(`${event.date}T${event.time || '19:30'}:00`) : new Date('2026-11-13T19:30:00');
 
   const calculateTimeLeft = () => {
@@ -155,23 +161,21 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
 
             {/* Botões de Ação */}
             <div className="conference-countdown-buttons" style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              {event && (
-                <button
-                  type="button"
-                  onClick={() => onRegister(event)}
-                  className="btn btn-primary"
-                  style={{
-                    gap: '0.55rem',
-                    padding: '0.8rem 1.6rem',
-                    fontWeight: 900,
-                    fontSize: '0.95rem',
-                    boxShadow: '0 4px 20px rgba(245, 158, 11, 0.45)',
-                  }}
-                >
-                  <Ticket size={18} />
-                  <span>Garantir Minha Vaga</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setIsSelectionModalOpen(true)}
+                className="btn btn-primary"
+                style={{
+                  gap: '0.55rem',
+                  padding: '0.8rem 1.6rem',
+                  fontWeight: 900,
+                  fontSize: '0.95rem',
+                  boxShadow: '0 4px 20px rgba(245, 158, 11, 0.45)',
+                }}
+              >
+                <Ticket size={18} />
+                <span>Garantir Minha Vaga</span>
+              </button>
 
               {event && (
                 <button
@@ -387,6 +391,165 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Modal de Seleção: Adultos (DOROT) vs KIDS */}
+      {isSelectionModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            background: 'rgba(5, 8, 16, 0.92)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+          }}
+        >
+          <div
+            className="animate-modal-pop"
+            style={{
+              background: '#0f172a',
+              border: '1.5px solid rgba(245, 158, 11, 0.45)',
+              borderRadius: '24px',
+              padding: '2rem 1.75rem',
+              maxWidth: '620px',
+              width: '100%',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(245, 158, 11, 0.2)',
+              position: 'relative',
+            }}
+          >
+            <button
+              onClick={() => setIsSelectionModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '1.25rem',
+                right: '1.25rem',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: 'none',
+                color: '#94a3b8',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+              title="Fechar"
+            >
+              <X size={20} />
+            </button>
+
+            <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.35)', borderRadius: '20px', padding: '0.3rem 0.85rem', marginBottom: '0.75rem' }}>
+                <Flame size={14} color="#f59e0b" />
+                <span style={{ fontSize: '0.75rem', color: '#fcd34d', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Modalidade de Inscrição</span>
+              </div>
+              <h3 style={{ fontSize: '1.55rem', fontWeight: 900, color: '#ffffff', margin: '0 0 0.4rem 0' }}>
+                Quem irá participar da Conferência?
+              </h3>
+              <p style={{ fontSize: '0.9rem', color: '#94a3b8', margin: 0 }}>
+                Escolha a opção correspondente ao participante para abrir a tela de inscrição correta.
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
+              {/* Opção 1: Adultos & Jovens (DOROT) */}
+              <div
+                onClick={() => {
+                  const adultEvt = allEvents.find((e) => e.id === 'evt_1' || e.title.includes('DOROT') || (!e.title.toLowerCase().includes('kids') && e.title.toLowerCase().includes('caçadores'))) || event;
+                  if (adultEvt) onRegister(adultEvt);
+                  setIsSelectionModalOpen(false);
+                }}
+                style={{
+                  background: 'linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95))',
+                  border: '1.5px solid rgba(245, 158, 11, 0.5)',
+                  borderRadius: '18px',
+                  padding: '1.5rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.4)',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.2)', border: '1px solid rgba(245, 158, 11, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <UserCheck size={22} color="#f59e0b" />
+                    </div>
+                    <span style={{ fontSize: '0.72rem', background: '#d97706', color: '#0f172a', fontWeight: 900, padding: '0.25rem 0.65rem', borderRadius: '12px', textTransform: 'uppercase' }}>
+                      DOROT • Adultos
+                    </span>
+                  </div>
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.35rem 0' }}>
+                    Conferência DOROT (Adultos & Jovens)
+                  </h4>
+                  <p style={{ fontSize: '0.83rem', color: '#cbd5e1', lineHeight: 1.5, margin: 0 }}>
+                    Inscrição para adultos, jovens e adolescentes. Acesso às plenárias principais com ministração e louvor.
+                  </p>
+                </div>
+                <div style={{ paddingTop: '0.75rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>A partir de 12 anos</span>
+                  <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#f59e0b' }}>
+                    R$ {(allEvents.find((e) => e.id === 'evt_1')?.price ?? 250).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Opção 2: Caçadores KIDS (Infantil) */}
+              <div
+                onClick={() => {
+                  const kidsEvt = allEvents.find((e) => e.id === 'evt_kids' || e.title.toLowerCase().includes('kids')) || allEvents.find((e) => e.category?.toLowerCase().includes('infantil')) || event;
+                  if (kidsEvt) onRegister(kidsEvt);
+                  setIsSelectionModalOpen(false);
+                }}
+                style={{
+                  background: 'linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95))',
+                  border: '1.5px solid rgba(59, 130, 246, 0.5)',
+                  borderRadius: '18px',
+                  padding: '1.5rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.4)',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid rgba(59, 130, 246, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Baby size={22} color="#60a5fa" />
+                    </div>
+                    <span style={{ fontSize: '0.72rem', background: '#2563eb', color: '#ffffff', fontWeight: 900, padding: '0.25rem 0.65rem', borderRadius: '12px', textTransform: 'uppercase' }}>
+                      Caçadores KIDS
+                    </span>
+                  </div>
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.35rem 0' }}>
+                    Conferência Caçadores KIDS
+                  </h4>
+                  <p style={{ fontSize: '0.83rem', color: '#cbd5e1', lineHeight: 1.5, margin: 0 }}>
+                    Inscrição especial para crianças. Inclui espaço exclusivo, monitores capacitados, teatrinhos e gincanas.
+                  </p>
+                </div>
+                <div style={{ paddingTop: '0.75rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>Crianças (Até 11 anos)</span>
+                  <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#60a5fa' }}>
+                    R$ {(allEvents.find((e) => e.id === 'evt_kids')?.price ?? 100).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @media (max-width: 768px) {

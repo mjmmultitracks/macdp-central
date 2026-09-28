@@ -10,7 +10,7 @@ import {
   getChurchSettings,
 } from '../../services/db';
 import { GoogleLocationPicker } from './GoogleLocationPicker';
-import { createCustomLocationResult, toLocationDetails, ensureEventLocationDetails } from '../../services/googleMapsService';
+import { ensureEventLocationDetails } from '../../services/googleMapsService';
 import { ChurchEvent, EventCustomQuestion, EventQuestionType, EventLocationDetails, EventRegistration, EventFaqItem } from '../../types';
 import { formatDate, formatCurrency, calculateAge, formatEventDateRange } from '../../utils/formatters';
 import { generateEventRegistrationsListPDF } from '../../utils/pdfGenerator';
@@ -19,7 +19,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Users,
   CheckCircle2,
   Plus,
   QrCode,
@@ -28,12 +27,9 @@ import {
   Search,
   Edit2,
   Trash2,
-  DollarSign,
   X,
   HelpCircle,
-  ListPlus,
   Mic,
-  Tag,
   GripVertical,
   ArrowUpDown,
   List,
@@ -41,7 +37,6 @@ import {
   Download,
   Printer,
   MessageCircle,
-  AlertTriangle,
   ArrowLeft,
   Eye,
   CalendarRange,
