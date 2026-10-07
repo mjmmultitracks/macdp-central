@@ -383,16 +383,18 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
     if (reg) {
       setConfirmedRegistration(reg);
 
-      // Celebration Confetti
-      try {
-        confetti({
-          particleCount: 120,
-          spread: 85,
-          origin: { y: 0.6 },
-          colors: ['#009EE3', '#F59E0B', '#10B981', '#ffffff'],
-        });
-      } catch (e) {
-        console.log(e);
+      // Celebration Confetti - apenas se estiver de fato aprovado/gratuito
+      if (status === 'confirmed' || status === 'free') {
+        try {
+          confetti({
+            particleCount: 120,
+            spread: 85,
+            origin: { y: 0.6 },
+            colors: ['#009EE3', '#F59E0B', '#10B981', '#ffffff'],
+          });
+        } catch (e) {
+          console.log(e);
+        }
       }
 
       // 1. Transactional confirmation email
@@ -502,8 +504,8 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
     if (paymentOption === 'direct_pix') {
       await executeRegistrationSubmit({
         method: 'pix',
-        status: 'confirmed',
-        notes: `Pago via PIX Direto (Chave: ${pixKey})`,
+        status: 'pending',
+        notes: `Pagamento via PIX Direto da Igreja • Aguardando conferência do comprovante`,
         pixCodeUsed: pixCode,
       });
       return;
@@ -520,8 +522,23 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
     }
 
     if (paymentOption === 'mp_pix') {
+      // Se já foi aprovado em tempo real pelo polling do Mercado Pago:
+      if (isMpApproved) {
+        await executeRegistrationSubmit({
+          method: 'pix',
+          status: 'confirmed',
+          notes: `Pago via PIX Mercado Pago (ID: ${mpPayment?.paymentId}) • Aprovado instantaneamente`,
+          mpPaymentId: mpPayment?.paymentId ? String(mpPayment.paymentId) : undefined,
+          mpStatus: 'approved',
+          pixCodeUsed: mpPayment?.qrCode,
+        });
+        return;
+      }
+
+      // Se ainda não consta aprovado, consulta IMEDIATAMENTE a API do Mercado Pago:
       if (mpPayment?.paymentId) {
         setIsCheckingMpStatus(true);
+        setMpError(null);
         try {
           const tokenParam = churchSettings.mercadoPago?.accessToken
             ? `&token=${encodeURIComponent(churchSettings.mercadoPago.accessToken)}`
@@ -529,6 +546,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
           const res = await fetch(`/api/mercadopago-check-status?paymentId=${mpPayment.paymentId}${tokenParam}`);
           const data = await res.json();
           if (data.isApproved || data.status === 'approved') {
+            setIsMpApproved(true);
             await executeRegistrationSubmit({
               method: 'pix',
               status: 'confirmed',
@@ -538,23 +556,35 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
               pixCodeUsed: mpPayment.qrCode,
             });
             return;
+          } else {
+            // BLOQUEIO TOTAL: Pagamento ainda NÃO foi aprovado pelo Mercado Pago!
+            setMpError('⚠️ Pagamento ainda NÃO identificado pelo Mercado Pago. Por favor, conclua o pagamento no app do seu banco lendo o QR Code ou colando o código Copia e Cola. O sistema reconhece e aprova automaticamente em poucos segundos assim que você pagar!');
+            return;
           }
         } catch (err) {
           console.error('Check status error:', err);
+          setMpError('⚠️ Não foi possível verificar o pagamento no Mercado Pago agora. Por favor, tente novamente em alguns instantes.');
+          return;
         } finally {
           setIsCheckingMpStatus(false);
         }
+      } else {
+        setMpError('⚠️ Cobrança PIX ainda não gerada. Aguarde alguns instantes.');
+        return;
       }
-
-      await executeRegistrationSubmit({
-        method: 'pix',
-        status: 'confirmed',
-        notes: `Pago via PIX Mercado Pago (ID: ${mpPayment?.paymentId || 'gerado'}) • Aguardando conciliação bancária`,
-        mpPaymentId: mpPayment?.paymentId ? String(mpPayment.paymentId) : undefined,
-        mpStatus: mpPayment?.status || 'pending',
-        pixCodeUsed: mpPayment?.qrCode,
-      });
     }
+  };
+
+  // Permite salvar opcionalmente a inscrição como PENDENTE caso o participante queira pagar mais tarde
+  const handleSavePendingRegistration = async () => {
+    await executeRegistrationSubmit({
+      method: paymentOption === 'mp_card' ? 'credit_card' : (paymentOption === 'manual' ? 'manual' : 'pix'),
+      status: 'pending',
+      notes: `Inscrição registrada com status PENDENTE de pagamento (ID Mercado Pago: ${mpPayment?.paymentId || 'gerado'})`,
+      mpPaymentId: mpPayment?.paymentId ? String(mpPayment.paymentId) : undefined,
+      mpStatus: 'pending',
+      pixCodeUsed: mpPayment?.qrCode,
+    });
   };
 
   const whatsAppVoucherText = `Graça e Paz! Minha inscrição na *${event.title}* no MACDP foi confirmada com sucesso! 🏛️✨\n\n🎟️ *Comprovante de Inscrição:* ${confirmedRegistration?.id || ''}\n👤 *Participante:* ${name}\n📅 *Data:* ${formatEventDateRange(event.date, event.endDate)} às ${event.time}\n📍 *Local:* ${event.location}${includeShirt ? `\n👕 *Camisa Oficial:* Sim (Tamanho: ${shirtSize})` : ''}\n💰 *Valor Total:* ${totalAmount > 0 ? `R$ ${totalAmount.toFixed(2)}` : 'Gratuito'}${confirmedRegistration?.mercadoPagoPaymentId ? `\n⚡ *Mercado Pago ID:* ${confirmedRegistration.mercadoPagoPaymentId}` : ''}${event.whatsappGroupUrl ? `\n\n💬 *Grupo Oficial:* ${event.whatsappGroupUrl}` : ''}\n\n🔗 *Detalhes do Evento:* ${window.location.origin}/evento/${event.id}\n\nNos vemos lá na Presença de Deus!`;
@@ -2031,7 +2061,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                 )}
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
                 <button
                   type="button"
                   onClick={() => setCurrentStep(2)}
@@ -2041,23 +2071,43 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                   <ArrowLeft size={16} />
                   <span>Voltar</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleFinalSubmit}
-                  className="btn btn-primary"
-                  style={{ gap: '0.45rem', padding: '0.65rem 1.5rem', fontWeight: 900 }}
-                >
-                  <CheckCircle2 size={18} />
-                  <span>
-                    {paymentOption === 'manual' && totalAmount > 0
-                      ? 'Concluir Inscrição (Pagamento Manual)'
-                      : paymentOption === 'mp_card'
-                      ? 'Confirmar Inscrição com Cartão'
-                      : isMpApproved
-                      ? 'Concluir Inscrição (Aprovada)'
-                      : 'Confirmar Minha Vaga'}
-                  </span>
-                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+                  {paymentOption === 'mp_pix' && !isMpApproved && (
+                    <button
+                      type="button"
+                      onClick={handleSavePendingRegistration}
+                      className="btn btn-ghost btn-sm"
+                      style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}
+                      title="Salva a vaga como pendente para efetuar o pagamento mais tarde"
+                    >
+                      <span>Salvar Vaga como Pendente</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleFinalSubmit}
+                    disabled={isCheckingMpStatus}
+                    className="btn btn-primary"
+                    style={{ gap: '0.45rem', padding: '0.65rem 1.5rem', fontWeight: 900 }}
+                  >
+                    {isCheckingMpStatus ? (
+                      <RefreshCw size={18} className="animate-spin" />
+                    ) : (
+                      <CheckCircle2 size={18} />
+                    )}
+                    <span>
+                      {paymentOption === 'manual' && totalAmount > 0
+                        ? 'Concluir Inscrição (Pagamento Manual)'
+                        : paymentOption === 'mp_card'
+                        ? 'Confirmar Inscrição com Cartão'
+                        : paymentOption === 'mp_pix'
+                        ? (isMpApproved ? 'Concluir Inscrição (Aprovada ✓)' : isCheckingMpStatus ? 'Verificando Pagamento...' : 'Já Paguei / Verificar no Mercado Pago')
+                        : 'Confirmar Inscrição'}
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -2115,7 +2165,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                       Inscrição Registrada, {name}!
                     </h4>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', maxWidth: '480px', margin: '0.4rem auto 0 auto', lineHeight: 1.5 }}>
-                      Sua inscrição na <strong>{event.title}</strong> foi registrada no sistema. Como você escolheu <strong>Pagamento Manual / Presencial</strong>, seu status está <strong>PENDENTE</strong>. Nossa equipe da secretaria entrará em contato via WhatsApp (<strong>92 98402-9607</strong>) para orientar sobre o acerto do valor e validar sua vaga.
+                      Sua inscrição na <strong>{event.title}</strong> foi registrada no sistema. Sua inscrição na <strong>{event.title}</strong> foi registrada no sistema com status <strong>PENDENTE DE PAGAMENTO</strong>. Assim que o pagamento for aprovado pelo Mercado Pago ou validado pela secretaria, sua credencial de acesso será liberada.
                     </p>
                     <div style={{ marginTop: '0.85rem' }}>
                       <a
