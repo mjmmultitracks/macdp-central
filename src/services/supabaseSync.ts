@@ -184,16 +184,19 @@ export async function pullDatabaseFromSupabase(): Promise<DatabaseSchema | null>
             sanitized.events.forEach((evt) => {
               const remoteRegs = regMap.get(evt.id) || [];
               const existingRegs = evt.registrations || [];
-              const existingMap = new Map(existingRegs.map((r) => [r.id, r]));
-              remoteRegs.forEach((r) => {
-                if (!existingMap.has(r.id)) {
-                  existingMap.set(r.id, r);
-                } else {
-                  existingMap.set(r.id, { ...r, ...existingMap.get(r.id) });
-                }
-              });
-              evt.registrations = Array.from(existingMap.values());
-              evt.registeredCount = evt.registrations.length;
+              // Se o snapshot do church_store já possui lista de inscrições para este evento, respeitamos o snapshot
+              // apenas mesclando dados adicionais de pagamento/presença para inscrições existentes, ou se o evento estava vazio
+              if (existingRegs.length === 0 && remoteRegs.length > 0) {
+                evt.registrations = remoteRegs;
+                evt.registeredCount = remoteRegs.length;
+              } else if (existingRegs.length > 0 && remoteRegs.length > 0) {
+                const remoteMap = new Map(remoteRegs.map((r) => [r.id, r]));
+                evt.registrations = existingRegs.map((r) => {
+                  const rem = remoteMap.get(r.id);
+                  return rem ? { ...r, checkedIn: rem.checkedIn || r.checkedIn, paymentStatus: rem.paymentStatus || r.paymentStatus } : r;
+                });
+                evt.registeredCount = evt.registrations.length;
+              }
             });
           }
         }
@@ -250,5 +253,61 @@ export function subscribeToSupabaseRealtime(
   } catch (err) {
     console.error('Erro ao assinar canal em tempo real do Supabase:', err);
     return () => {};
+  }
+}
+
+
+/**
+ * Remove uma inscrição de evento diretamente no Supabase
+ */
+export async function deleteEventRegistrationFromSupabase(regId: string): Promise<boolean> {
+  if (!supabase || !isSupabaseConfigured) return false;
+  try {
+    const { error } = await supabase.from('event_registrations').delete().eq('id', regId);
+    if (error) {
+      console.warn('Erro ao deletar inscrição no Supabase:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Erro ao deletar inscrição no Supabase:', err);
+    return false;
+  }
+}
+
+/**
+ * Remove um evento e todas as suas inscrições no Supabase
+ */
+export async function deleteEventFromSupabase(eventId: string): Promise<boolean> {
+  if (!supabase || !isSupabaseConfigured) return false;
+  try {
+    await supabase.from('event_registrations').delete().eq('event_id', eventId);
+    const { error } = await supabase.from('events').delete().eq('id', eventId);
+    if (error) {
+      console.warn('Erro ao deletar evento no Supabase:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Erro ao deletar evento no Supabase:', err);
+    return false;
+  }
+}
+
+/**
+ * Remove um membro no Supabase
+ */
+export async function deleteMemberFromSupabase(memberId: string): Promise<boolean> {
+  if (!supabase || !isSupabaseConfigured) return false;
+  try {
+    const { error } = await supabase.from('members').delete().eq('id', memberId);
+    if (error) {
+      console.warn('Erro ao deletar membro no Supabase:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Erro ao deletar membro no Supabase:', err);
+    return false;
   }
 }

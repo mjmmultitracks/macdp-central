@@ -28,7 +28,7 @@ import {
   AppModuleId,
   RegularServiceItem,
 } from '../types';
-import { pushDatabaseToSupabase } from './supabaseSync';
+import { pushDatabaseToSupabase, deleteEventRegistrationFromSupabase, deleteEventFromSupabase, deleteMemberFromSupabase } from './supabaseSync';
 import { resolveBankLogo } from '../utils/bankLogos';
 import { sanitizeDatabase } from './dbSanitizer';
 export { sanitizeDatabase };
@@ -1261,6 +1261,10 @@ export function deleteMember(id: string): boolean {
   if (filtered.length === db.members.length) return false;
   db.members = filtered;
   saveDatabase(db);
+  // Deleta membro no Supabase remoto
+  deleteMemberFromSupabase(id).catch((err) => {
+    console.warn('Erro ao deletar membro no Supabase:', err);
+  });
   return true;
 }
 
@@ -1609,6 +1613,10 @@ export function deleteEvent(id: string): boolean {
   if (filtered.length === db.events.length) return false;
   db.events = filtered;
   saveDatabase(db);
+  // Deleta evento e inscrições no Supabase remoto
+  deleteEventFromSupabase(id).catch((err) => {
+    console.warn('Erro ao deletar evento no Supabase:', err);
+  });
   return true;
 }
 
@@ -1623,6 +1631,10 @@ export function deleteEventRegistration(eventId: string, regId: string): boolean
     // Remove transação financeira vinculada à inscrição excluída
     db.transactions = db.transactions.filter((t) => t.registrationId !== regId);
     saveDatabase(db);
+    // Deleta permanentemente no Supabase remoto
+    deleteEventRegistrationFromSupabase(regId).catch((err) => {
+      console.warn('Erro ao deletar inscrição no Supabase:', err);
+    });
     return true;
   }
   return false;
