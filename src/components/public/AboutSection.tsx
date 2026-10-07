@@ -274,231 +274,188 @@ export const AboutSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Pastoral Team Gallery */}
-        <div>
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+        {/* Pastoral Leadership Showcase - Grid Padronizado e Proporcional */}
+        <div style={{ marginTop: "1rem" }}>
+          <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
             <span className="section-tag">Corpo Pastoral</span>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Liderança com Coração Pastoral</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-              Homens e mulheres comprometidos em orar, pastorear e apoiar a sua caminhada espiritual
+            <h3 style={{ fontSize: "1.9rem", fontWeight: 800, marginTop: "0.25rem" }}>Nossos Pastores</h3>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", maxWidth: "600px", margin: "0.4rem auto 0 auto" }}>
+              Homens e mulheres comprometidos em orar, pastorear e apoiar a caminhada espiritual de cada família
             </p>
           </div>
 
-          {/* Senior Pastoral Couple (Single Featured Card) */}
+          {/* Grid Compacto com Todos os Pastores Padronizados */}
           <div
-            className="card"
             style={{
-              marginBottom: '3.5rem',
-              overflow: 'hidden',
-              padding: 0,
-              border: '1px solid rgba(245, 158, 11, 0.4)',
-              boxShadow: '0 16px 40px rgba(0, 0, 0, 0.35), 0 0 25px rgba(245, 158, 11, 0.15)',
-              background: 'linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%)',
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "1.5rem",
+              alignItems: "stretch",
             }}
           >
+            {/* 1. Pastores Presidentes */}
             <div
+              className="card card-hover"
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-                alignItems: 'stretch',
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+                padding: 0,
+                borderRadius: "var(--radius-xl)",
+                border: "1.5px solid rgba(245, 158, 11, 0.45)",
+                background: "var(--bg-tertiary)",
+                boxShadow: "0 10px 25px rgba(0, 0, 0, 0.25), 0 0 18px rgba(245, 158, 11, 0.12)",
               }}
             >
-              {/* Photo */}
-              <div style={{ minHeight: '460px', position: 'relative', overflow: 'hidden' }}>
+              {/* Foto Reduzida e Padronizada */}
+              <div style={{ height: "250px", overflow: "hidden", position: "relative" }}>
                 <img
                   src={seniorPastoralCouple.photoUrl}
                   alt={seniorPastoralCouple.names}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: "center top",
+                    display: "block",
+                  }}
                 />
                 <div
                   style={{
-                    position: 'absolute',
+                    position: "absolute",
                     inset: 0,
-                    background: 'linear-gradient(to top, rgba(11,17,32,0.85) 0%, transparent 55%)',
+                    background: "linear-gradient(to top, rgba(11, 17, 32, 0.92) 0%, rgba(11, 17, 32, 0.25) 50%, transparent 80%)",
                   }}
                 />
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: '1.25rem',
-                    left: '1.5rem',
-                    right: '1.5rem',
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '0.5rem',
-                  }}
-                >
+                <div style={{ position: "absolute", bottom: "0.85rem", left: "1rem", right: "1rem" }}>
                   <span
                     style={{
-                      background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-                      color: '#0B1120',
-                      padding: '0.4rem 1rem',
-                      borderRadius: 'var(--radius-full)',
-                      fontWeight: 800,
-                      fontSize: '0.8rem',
-                      letterSpacing: '0.04em',
-                      textTransform: 'uppercase',
-                      boxShadow: '0 4px 15px rgba(245, 158, 11, 0.4)',
+                      display: "inline-block",
+                      background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                      color: "#0b1120",
+                      fontWeight: 900,
+                      fontSize: "0.7rem",
+                      padding: "0.2rem 0.65rem",
+                      borderRadius: "9999px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                      marginBottom: "0.3rem",
                     }}
                   >
-                    👑 Pastores Presidentes & Fundadores
+                    👑 Presidência Geral
                   </span>
-                </div>
-              </div>
-
-              {/* Information */}
-              <div
-                style={{
-                  padding: '2.5rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                }}
-              >
-                <div style={{ marginBottom: '1.25rem' }}>
-                  <span
-                    style={{
-                      color: 'var(--accent-gold)',
-                      fontSize: '0.85rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.08em',
-                      display: 'block',
-                      marginBottom: '0.4rem',
-                    }}
-                  >
-                    Presidência Geral • Casal Pastoral
-                  </span>
-                  <h4 style={{ fontSize: '1.85rem', fontWeight: 800, lineHeight: 1.2, color: 'var(--text-primary)' }}>
+                  <h4 style={{ color: "#ffffff", fontSize: "1.1rem", fontWeight: 800, lineHeight: 1.25, margin: 0 }}>
                     {seniorPastoralCouple.names}
                   </h4>
                 </div>
+              </div>
 
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.98rem', lineHeight: 1.7, marginBottom: '1.75rem' }}>
+              {/* Texto Padronizado */}
+              <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", flex: 1, gap: "0.85rem" }}>
+                <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", lineHeight: 1.6, margin: 0, flex: 1 }}>
                   {seniorPastoralCouple.bio}
                 </p>
 
                 <div
                   style={{
-                    background: 'var(--bg-primary)',
-                    borderLeft: '4px solid var(--accent-gold)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '1.25rem',
-                    display: 'flex',
-                    gap: '0.75rem',
-                    fontStyle: 'italic',
-                    fontSize: '0.92rem',
-                    color: 'var(--text-primary)',
-                    boxShadow: 'var(--shadow-sm)',
+                    background: "var(--bg-secondary)",
+                    borderLeft: "3px solid var(--accent-gold)",
+                    borderRadius: "var(--radius-md)",
+                    padding: "0.75rem 0.85rem",
+                    display: "flex",
+                    gap: "0.5rem",
+                    fontSize: "0.8rem",
+                    fontStyle: "italic",
+                    color: "var(--text-primary)",
                   }}
                 >
-                  <Quote size={22} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <Quote size={15} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: "2px" }} />
                   <span>"{seniorPastoralCouple.quote}"</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Auxiliary Pastors Header */}
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <span
-              style={{
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                color: 'var(--accent-gold)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-              }}
-            >
-              Liderança Pastoral
-            </span>
-            <h4 style={{ fontSize: '1.6rem', fontWeight: 800, marginTop: '0.25rem' }}>Pastores Auxiliares</h4>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '600px', margin: '0 auto' }}>
-              Casais pastorais que caminham juntos na edificação, aconselhamento e cuidado das famílias do MACDP
-            </p>
-          </div>
-
-          {/* Auxiliary Pastors Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '2rem',
-            }}
-          >
+            {/* 2 & 3. Pastores Auxiliares */}
             {assistantPastors.map((couple, idx) => (
               <div
                 key={idx}
                 className="card card-hover"
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'hidden',
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "hidden",
                   padding: 0,
-                  border: '1px solid var(--border-medium)',
+                  borderRadius: "var(--radius-xl)",
+                  border: "1px solid var(--border-medium)",
+                  background: "var(--bg-tertiary)",
+                  boxShadow: "var(--shadow-sm)",
                 }}
               >
-                <div style={{ height: '460px', overflow: 'hidden', position: 'relative' }}>
+                {/* Foto Reduzida e Padronizada */}
+                <div style={{ height: "250px", overflow: "hidden", position: "relative" }}>
                   <img
                     src={couple.photoUrl}
                     alt={couple.names}
                     style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: couple.objectPosition || 'center top',
-                      display: 'block',
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: couple.objectPosition || "center top",
+                      display: "block",
                     }}
                   />
                   <div
                     style={{
-                      position: 'absolute',
+                      position: "absolute",
                       inset: 0,
-                      background: 'linear-gradient(to top, rgba(11,17,32,0.92) 0%, rgba(11,17,32,0.2) 45%, transparent 68%)',
+                      background: "linear-gradient(to top, rgba(11, 17, 32, 0.92) 0%, rgba(11, 17, 32, 0.25) 50%, transparent 80%)",
                     }}
                   />
-                  <div style={{ position: 'absolute', bottom: '1.25rem', left: '1.5rem', right: '1.5rem' }}>
+                  <div style={{ position: "absolute", bottom: "0.85rem", left: "1rem", right: "1rem" }}>
                     <span
                       style={{
-                        display: 'inline-block',
-                        background: 'rgba(245, 158, 11, 0.2)',
-                        color: 'var(--accent-gold-light)',
-                        border: '1px solid rgba(245, 158, 11, 0.4)',
-                        padding: '0.25rem 0.75rem',
-                        borderRadius: 'var(--radius-full)',
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        marginBottom: '0.4rem',
-                        backdropFilter: 'blur(4px)',
+                        display: "inline-block",
+                        background: "rgba(15, 23, 42, 0.8)",
+                        border: "1px solid rgba(255, 255, 255, 0.25)",
+                        color: "#93c5fd",
+                        fontWeight: 800,
+                        fontSize: "0.7rem",
+                        padding: "0.2rem 0.65rem",
+                        borderRadius: "9999px",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.04em",
+                        marginBottom: "0.3rem",
+                        backdropFilter: "blur(4px)",
                       }}
                     >
                       {couple.role}
                     </span>
-                    <h4 style={{ color: '#ffffff', fontSize: '1.3rem', fontWeight: 800, lineHeight: 1.2 }}>
+                    <h4 style={{ color: "#ffffff", fontSize: "1.1rem", fontWeight: 800, lineHeight: 1.25, margin: 0 }}>
                       {couple.names}
                     </h4>
                   </div>
                 </div>
 
-                <div style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: '1.25rem', flex: 1 }}>
+                {/* Texto Padronizado */}
+                <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", flex: 1, gap: "0.85rem" }}>
+                  <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", lineHeight: 1.6, margin: 0, flex: 1 }}>
                     {couple.bio}
                   </p>
 
                   <div
                     style={{
-                      background: 'var(--bg-tertiary)',
-                      borderRadius: 'var(--radius-md)',
-                      padding: '1rem',
-                      display: 'flex',
-                      gap: '0.65rem',
-                      fontStyle: 'italic',
-                      fontSize: '0.825rem',
-                      color: 'var(--text-secondary)',
+                      background: "var(--bg-secondary)",
+                      borderLeft: "3px solid var(--accent-blue-light)",
+                      borderRadius: "var(--radius-md)",
+                      padding: "0.75rem 0.85rem",
+                      display: "flex",
+                      gap: "0.5rem",
+                      fontSize: "0.8rem",
+                      fontStyle: "italic",
+                      color: "var(--text-primary)",
                     }}
                   >
-                    <Quote size={18} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+                    <Quote size={15} color="var(--accent-blue-light)" style={{ flexShrink: 0, marginTop: "2px" }} />
                     <span>"{couple.quote}"</span>
                   </div>
                 </div>
