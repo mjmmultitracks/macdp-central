@@ -130,9 +130,9 @@ export function sanitizeDatabase(rawDb: DatabaseSchema): { sanitized: DatabaseSc
     }
   }
 
-  // 13. Eventos indevidos (expurgar evt_kids / conferência kids residual de R$ 100)
-  if (Array.isArray(db.events) && db.events.some((e) => e.id === 'evt_kids' || (e.title?.toLowerCase().includes('kids') && e.price === 100))) {
-    db.events = db.events.filter((e) => e.id !== 'evt_kids' && !(e.title?.toLowerCase().includes('kids') && e.price === 100));
+  // 13. Eventos indevidos (expurgar apenas se for mockup residual com preco antigo de R$ 100)
+  if (Array.isArray(db.events) && db.events.some((e) => e.title?.toLowerCase().includes('kids') && e.price === 100)) {
+    db.events = db.events.filter((e) => !(e.title?.toLowerCase().includes('kids') && e.price === 100));
     hasChanged = true;
   }
 
