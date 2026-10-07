@@ -98,7 +98,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
         style={{
           background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.92) 50%, rgba(20, 15, 5, 0.96) 100%)',
           border: '1.5px solid rgba(245, 158, 11, 0.45)',
-          borderRadius: 'var(--radius-2xl)',
+          borderRadius: '36px',
           padding: '2rem 1.75rem',
           boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(245, 158, 11, 0.15)',
           backdropFilter: 'blur(16px)',
@@ -570,7 +570,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
         @media (max-width: 768px) {
           .conference-countdown-card {
             padding: 1.5rem 1rem !important;
-            border-radius: var(--radius-xl) !important;
+            border-radius: 28px !important;
           }
           .conference-countdown-grid {
             grid-template-columns: 1fr !important;
