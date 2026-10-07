@@ -915,3 +915,145 @@ button, input, select, textarea {
 }
 
 
+
+
+/* ==========================================================================
+   ADMIN EXECUTIVE DESIGN SYSTEM — PADRÃO SUÍTE PROFISSIONAL (MACDP CENTRAL)
+   ========================================================================== */
+
+/* Main wrapper & layout */
+.admin-main-wrapper {
+  background-color: var(--bg-primary) !important;
+  font-family: var(--font-body);
+}
+
+.admin-sidebar-drawer {
+  background: var(--bg-secondary) !important;
+  border-right: 1px solid var(--border-subtle) !important;
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-theme="dark"] .admin-sidebar-drawer {
+  background: #0d1322 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Header executivo */
+.admin-header {
+  background: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  height: 68px !important;
+  padding: 0 2rem !important;
+}
+
+[data-theme="dark"] .admin-header {
+  background: rgba(13, 19, 34, 0.85) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+/* Main Content Padding & Max Width */
+.admin-main-content {
+  padding: 2rem 2.25rem 3.5rem 2.25rem !important;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .admin-main-content {
+    padding: 1.5rem 1.25rem 3rem 1.25rem !important;
+  }
+}
+
+/* Tabelas Administrativas - Padrão Executivo Limpo */
+.admin-main-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.admin-main-content thead th {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.76rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 0.85rem 1.15rem !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+[data-theme="dark"] .admin-main-content thead th {
+  background: rgba(30, 41, 59, 0.7) !important;
+  color: #94a3b8 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.admin-main-content tbody tr {
+  transition: background-color 0.15s ease !important;
+}
+
+.admin-main-content tbody tr:hover {
+  background-color: rgba(245, 158, 11, 0.04) !important;
+}
+
+[data-theme="dark"] .admin-main-content tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.025) !important;
+}
+
+.admin-main-content tbody td {
+  padding: 0.95rem 1.15rem !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  font-size: 0.88rem !important;
+}
+
+[data-theme="dark"] .admin-main-content tbody td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Cards Administrativos */
+.admin-main-content .card {
+  border-radius: 16px !important;
+  border: 1px solid var(--border-subtle) !important;
+  background: var(--bg-secondary) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02) !important;
+}
+
+[data-theme="dark"] .admin-main-content .card {
+  background: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Inputs e Selects Administrativos */
+.admin-main-content input,
+.admin-main-content select,
+.admin-main-content textarea {
+  border-radius: 10px !important;
+  border: 1px solid var(--border-medium) !important;
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  padding: 0.6rem 0.9rem !important;
+  font-size: 0.88rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-main-content input:focus,
+.admin-main-content select:focus,
+.admin-main-content textarea:focus {
+  outline: none !important;
+  border-color: var(--accent-gold) !important;
+  box-shadow: 0 0 0 3px var(--accent-gold-soft) !important;
+}
+
+/* Badges Administrativas */
+.badge {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  padding: 0.25rem 0.65rem !important;
+  border-radius: 8px !important;
+  letter-spacing: 0.02em !important;
+}
