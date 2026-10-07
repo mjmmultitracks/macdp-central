@@ -574,16 +574,41 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       registrations: [],
     },
     {
-      id: 'evt_kids',
-      title: 'Conferência Caçadores KIDS 2026',
-      description:
-        'Programação especial para as crianças com louvor infantil, teatrinhos, ministrações bíblicas e gincanas durante os três dias da Conferência.',
+      id: 'evt_1789349292800',
+      title: 'Conferência Caçadores da Presença KIDS 2026',
+      description: `SOBRE O EVENTO — CAÇADORES DA PRESENÇA KIDS
+
+A Conferência Profética Caçadores da Presença KIDS é um encontro de três dias dedicado a ensinar e alinhar o coração das crianças à busca pela presença de Deus, à adoração sincera e ao crescimento espiritual desde a infância.
+
+Nascida do mesmo propósito do movimento iniciado em 2016, a versão KIDS tem como objetivo despertar e equipar os pequenos para viverem uma vida de intimidade com Deus, compreendendo seu chamado, desenvolvendo uma fé ativa e descobrindo que não existe idade para ser participante daquilo que Deus está realizando na Terra.
+
+Ao longo da nossa história, acompanhamos e vivemos as mesmas direções e temas que marcaram as edições gerais, traduzidos em uma linguagem acessível e marcante para os Caçadores KIDS:
+
+2016 — Até Te Encontrar
+2017 — Santidade
+2021 — Sem Limites
+2022 — A Unção dos 4 Seres
+2023 — Maior é o que Serve
+2024 — Do Natural ao Sobrenatural
+2025 — HINENI (Eis-me Aqui)
+
+Mais do que um espaço de recreação, cada edição é um capítulo de formação espiritual: uma nova geração de pequenos soldados que escolhe buscar a Deus de todo o coração.
+
+A estética militar e o conceito de “exército KIDS” fazem parte da nossa identidade visual e pedagógica. A linguagem de alistamento e missão representa valores como disciplina, preparo, propósito e disposição de forma lúdica e profunda. Ensinamos aos pequenos que a nossa batalha não é física, e que um verdadeiro caçador aprende desde cedo a ser um adorador valente e preparado para responder ao chamado de Deus.
+
+Realizada em formato presencial ao longo de três dias no município de Iranduba, no Amazonas, a conferência oferece um ambiente seguro e totalmente preparado para ministração da Palavra, louvor, comunhão, aprendizado e experiências transformadoras com Deus.
+
+Caçadores KIDS é sobre buscar.
+É sobre adorar.
+É sobre servir.
+É sobre responder ao chamado desde a infância.
+E, acima de tudo, é sobre ensinar nossas crianças a carregarem a presença de Deus para dentro de casa, da escola e do seu dia a dia.`,
       date: '2026-11-13',
       endDate: '2026-11-15',
       time: '19:30',
-      location: 'Chácara Paraíso Verde (Espaço Kids), Iranduba - AM',
+      location: 'Chácara Paraíso Verde, Estrada do Caldeirão, Iranduba - AM, 69405-000',
       locationDetails: {
-        placeName: 'Chácara Paraíso Verde (Salão Infantil)',
+        placeName: 'Chácara Paraíso Verde (Auditório Principal & Espaço Kids)',
         formattedAddress: 'Chácara Paraíso Verde, Estrada do Caldeirão, Iranduba - AM, 69405-000',
         neighborhood: 'Estrada do Caldeirão (Ramal do Caldeirão)',
         city: 'Iranduba',
@@ -592,7 +617,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
         longitude: -60.2232,
         googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=-3.21338,-60.2232',
       },
-      roomReserved: 'Salão Infantil & Brinquedoteca',
+      roomReserved: 'Auditório Principal',
       category: 'Conferência',
       imageUrl: '/images/fellowship.jpg',
       isFree: false,
@@ -600,43 +625,196 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       hasShirt: true,
       shirtPrice: 50,
       shirtSizes: ['Infantil 4', 'Infantil 6', 'Infantil 8', 'Infantil 10', 'Infantil 12', 'PP', 'P'],
-      totalCapacity: 100,
-      registeredCount: 0,
+      totalCapacity: 120,
+      registeredCount: 5,
       speakerName: 'Pra. Abda Maduro & Equipe Kids',
       detailedSchedule: '',
       customQuestions: [
         {
-          id: 'q_kids_name',
+          id: 'q_1789348660904',
           type: 'text',
-          label: 'Nome Completo da Criança',
+          label: 'Nome Completo da criança',
           required: true,
         },
         {
-          id: 'q_kids_birth',
+          id: 'q_1789348675322',
           type: 'date',
-          label: 'Data de Nascimento da Criança',
+          label: 'Data de Nascimento',
           required: true,
         },
         {
-          id: 'q_kids_parent',
+          id: 'q_1789349009580',
+          type: 'radio',
+          label: 'Gênero/Sexo',
+          options: ['Masculino', 'Feminino'],
+          required: true,
+        },
+        {
+          id: 'q_1789349038882',
           type: 'text',
-          label: 'Nome do Responsável Legal',
+          label: 'Nome completo do responsável principal',
           required: true,
         },
         {
-          id: 'q_kids_phone',
+          id: 'q_1789348807530',
+          type: 'radio',
+          label: 'Grau de parentesco',
+          options: ['Pai', 'Mãe', 'Tio', 'Tia', 'Avô', 'Avó', 'Irmão', 'Irmã', 'Responsável Legal'],
+          required: true,
+        },
+        {
+          id: 'q_1789349083563',
           type: 'number',
-          label: 'Telefone / WhatsApp do Responsável',
+          label: 'Telefone / WhatsApp principal (para recados e emergências)',
           required: true,
         },
         {
-          id: 'q_kids_allergies',
+          id: 'q_1789349118763',
           type: 'text',
-          label: 'A criança tem alguma alergia ou restrição alimentar?',
+          label: 'A criança possui alguma alergia? (Alimentar, a medicamentos, picada de inseto, etc.)',
+          required: true,
+        },
+        {
+          id: 'q_1789349129279',
+          type: 'text',
+          label: 'Faz uso contínuo de algum medicamento? (Se sim, qual e em qual horário?)',
+          required: true,
+        },
+        {
+          id: 'q_1789349140946',
+          type: 'text',
+          label: 'Possui alguma restrição alimentar? (Ex: Intolerância a lactose, celíaco, vegetariano)',
+          required: true,
+        },
+        {
+          id: 'q_1789349152180',
+          type: 'text',
+          label: 'Possui alguma necessidade especial ou condição de saúde que a equipe precise saber? (Ex: Autismo, TDAH, asma, diabetes)',
           required: true,
         },
       ],
-      registrations: [],
+      registrations: [
+        {
+          id: 'reg_1791296983494_nker',
+          name: 'Jhullie Aylla dos Santos Maduro',
+          email: 'maduroabda@gmail.com',
+          phone: '92995178271',
+          totalPaid: 0,
+          paymentMethod: 'manual',
+          paymentStatus: 'pending',
+          paymentNotes: 'Pagamento manual presencial / a combinar com a secretaria',
+          checkedIn: false,
+          registeredAt: '2026-10-06T00:00:00+00:00',
+          customAnswers: {
+            'q_1789348660904': 'Jhullie Aylla dos Santos Maduro ',
+            'q_1789348675322': '2015-11-13',
+            'q_1789348807530': 'Mãe',
+            'q_1789349009580': 'Feminino',
+            'q_1789349038882': 'Abda Maduro ',
+            'q_1789349083563': '92995178271',
+            'q_1789349118763': 'Não ',
+            'q_1789349129279': 'Não ',
+            'q_1789349140946': 'Não ',
+            'q_1789349152180': 'Não ',
+          },
+        },
+        {
+          id: 'reg_1791335630439_q1cs',
+          name: 'Isadora Sousa trindade',
+          email: 'daniely.silvasouza@gmail.com',
+          phone: '92993879740',
+          totalPaid: 0,
+          paymentMethod: 'manual',
+          paymentStatus: 'pending',
+          paymentNotes: 'Pagamento manual presencial / a combinar com a secretaria',
+          checkedIn: false,
+          registeredAt: '2026-10-07T00:00:00+00:00',
+          customAnswers: {
+            'q_1789348660904': 'Isadora Sousa trindade',
+            'q_1789348675322': '2021-01-30',
+            'q_1789348807530': 'Mãe',
+            'q_1789349009580': 'Feminino',
+            'q_1789349038882': 'Daniely Sousa trindade',
+            'q_1789349083563': '92993870740',
+            'q_1789349118763': 'Nao',
+            'q_1789349129279': 'Nao',
+            'q_1789349140946': 'Nao',
+            'q_1789349152180': 'Nao',
+          },
+        },
+        {
+          id: 'reg_1789349418265_k4vo',
+          name: 'Mikael da Silva Caldas Maduro',
+          email: 'mikaelmaduro14@gmail.com',
+          phone: '9298601-4992',
+          totalPaid: 0,
+          paymentMethod: 'manual',
+          paymentStatus: 'pending',
+          paymentNotes: 'Pagamento manual presencial / a combinar com a secretaria',
+          checkedIn: false,
+          registeredAt: '2026-09-14T00:00:00+00:00',
+          customAnswers: {
+            'q_1789348660904': 'Mikael da Silva Caldas Maduro',
+            'q_1789348675322': '2000-09-19',
+            'q_1789348807530': 'Pai',
+            'q_1789349009580': 'Masculino',
+            'q_1789349038882': 'Oziel Gomes Maduro',
+            'q_1789349083563': '92986014982',
+            'q_1789349118763': 'Não',
+            'q_1789349129279': 'Não',
+            'q_1789349140946': 'Não',
+            'q_1789349152180': 'Não',
+          },
+        },
+        {
+          id: 'reg_1791335805000_xtne',
+          name: 'Marcha Victoria',
+          email: 'mikamaduro@gmail.con',
+          phone: '92984029607',
+          totalPaid: 0,
+          paymentMethod: 'manual',
+          paymentStatus: 'pending',
+          paymentNotes: 'Pagamento manual presencial / a combinar com a secretaria',
+          checkedIn: false,
+          registeredAt: '2026-10-07T00:00:00+00:00',
+          customAnswers: {
+            'q_1789348660904': 'Marcha Victoria ',
+            'q_1789348675322': '2026-10-06',
+            'q_1789348807530': 'Irmã',
+            'q_1789349009580': 'Feminino',
+            'q_1789349038882': 'Mikaelly',
+            'q_1789349083563': '92984029606',
+            'q_1789349118763': 'Não ',
+            'q_1789349129279': 'Não ',
+            'q_1789349140946': 'Não ',
+            'q_1789349152180': 'Não ',
+          },
+        },
+        {
+          id: 'reg_1790608522424_ib7i',
+          name: 'Mirela Evie Maduro',
+          email: 'mikamaduro@gmail.com',
+          phone: '92984029607',
+          totalPaid: 0,
+          paymentMethod: 'manual',
+          paymentStatus: 'pending',
+          paymentNotes: 'Pagamento manual presencial / a combinar com a secretaria',
+          checkedIn: false,
+          registeredAt: '2026-09-28T00:00:00+00:00',
+          customAnswers: {
+            'q_1789348660904': 'Mirela Evie Maduro ',
+            'q_1789348675322': '2025-06-23',
+            'q_1789348807530': 'Mãe',
+            'q_1789349009580': 'Feminino',
+            'q_1789349038882': 'Mikaelly Maduro ',
+            'q_1789349083563': '92984029607',
+            'q_1789349118763': 'Picadas de inseto ',
+            'q_1789349129279': 'Não ',
+            'q_1789349140946': 'não ',
+            'q_1789349152180': 'Não ',
+          },
+        },
+      ],
     },
   ],
 
@@ -975,7 +1153,7 @@ export function getDatabase(): DatabaseSchema {
       needsSave = true;
     }
     if (parsed.events) {
-      if (!parsed.events.some((e) => e.id === 'evt_kids' || e.title.toLowerCase().includes('kids'))) {
+      if (!parsed.events.some((e) => e.id === 'evt_1789349292800' || e.title.toLowerCase().includes('kids'))) {
         parsed.events.push(INITIAL_DATABASE.events[1]);
         needsSave = true;
       }

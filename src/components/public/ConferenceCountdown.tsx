@@ -519,7 +519,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
               {/* Opção 2: Caçadores KIDS (Infantil) */}
               <div
                 onClick={() => {
-                  const kidsEvt = allEvents.find((e) => e.id === 'evt_kids' || e.title.toLowerCase().includes('kids') || e.category?.toLowerCase().includes('infantil')) || event;
+                  const kidsEvt = allEvents.find((e) => e.id === 'evt_1789349292800' || e.title.toLowerCase().includes('kids') || e.category?.toLowerCase().includes('infantil')) || event;
                   if (kidsEvt) onRegister(kidsEvt);
                   setIsSelectionModalOpen(false);
                 }}
@@ -547,7 +547,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
                     </span>
                   </div>
                   <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff', margin: '0 0 0.35rem 0' }}>
-                    {allEvents.find((e) => e.id === 'evt_kids' || e.title.toLowerCase().includes('kids'))?.title || 'Conferência Caçadores KIDS 2026'}
+                    {allEvents.find((e) => e.id === 'evt_1789349292800' || e.title.toLowerCase().includes('kids'))?.title || 'Conferência Caçadores da Presença KIDS 2026'}
                   </h4>
                   <p style={{ fontSize: '0.83rem', color: '#cbd5e1', lineHeight: 1.5, margin: 0 }}>
                     Inscrição especial para crianças. Inclui espaço exclusivo, monitores capacitados, teatrinhos e gincanas.
@@ -556,7 +556,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
                 <div style={{ paddingTop: '0.75rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>Crianças (Até 11 anos)</span>
                   <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#60a5fa' }}>
-                    R$ {(allEvents.find((e) => e.id === 'evt_kids' || e.title.toLowerCase().includes('kids'))?.price ?? 150).toFixed(2)}
+                    R$ {(allEvents.find((e) => e.id === 'evt_1789349292800' || e.title.toLowerCase().includes('kids'))?.price ?? 150).toFixed(2)}
                   </span>
                 </div>
               </div>
