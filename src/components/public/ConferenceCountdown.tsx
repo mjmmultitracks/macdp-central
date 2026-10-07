@@ -87,7 +87,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
     <section
       style={{
         position: 'relative',
-        margin: '-2.5rem auto 3.5rem auto',
+        margin: '-2rem auto 3.5rem auto',
         maxWidth: '1200px',
         padding: '0 1.5rem',
         zIndex: 10,
@@ -99,7 +99,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
           background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.92) 50%, rgba(20, 15, 5, 0.96) 100%)',
           border: '1.5px solid rgba(245, 158, 11, 0.45)',
           borderRadius: 'var(--radius-2xl)',
-          padding: '2.5rem 2rem',
+          padding: '2rem 1.75rem',
           boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(245, 158, 11, 0.15)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
