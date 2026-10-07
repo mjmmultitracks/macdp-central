@@ -665,6 +665,12 @@ export function App() {
                   ? 'eventos_caixa'
                   : 'fluxo'
               }
+              onSubTabChange={(subTab) => {
+                if (subTab === 'contas') setAdminTab('financeiro_contas');
+                else if (subTab === 'categorias') setAdminTab('financeiro_categorias');
+                else if (subTab === 'eventos_caixa') setAdminTab('financeiro_eventos');
+                else setAdminTab('financeiro_fluxo');
+              }}
               onNotify={addNotification}
             />
           )}

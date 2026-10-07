@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FinancialTransaction,
   PaymentMethod,
@@ -21,6 +21,7 @@ import { formatCurrency, formatDate } from '../../utils/formatters';
 import { Modal } from '../common/Modal';
 import {
   DollarSign,
+  Landmark,
   Plus,
   Filter,
   Download,
@@ -62,6 +63,7 @@ interface FinancialManagerProps {
   financialCategories?: FinancialCategory[];
   events?: ChurchEvent[];
   activeSubTab?: FinancialSubTab;
+  onSubTabChange?: (tab: FinancialSubTab) => void;
   onNotify: (type: 'success' | 'error' | 'info', text: string) => void;
 }
 
@@ -76,8 +78,20 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
   financialCategories = [],
   events = [],
   activeSubTab = 'fluxo',
+  onSubTabChange,
   onNotify,
 }) => {
+  const [internalSubTab, setInternalSubTab] = useState<FinancialSubTab>(activeSubTab);
+  
+  useEffect(() => {
+    setInternalSubTab(activeSubTab);
+  }, [activeSubTab]);
+
+  const currentTab = onSubTabChange ? activeSubTab : internalSubTab;
+  const handleTabSelect = (tab: FinancialSubTab) => {
+    setInternalSubTab(tab);
+    if (onSubTabChange) onSubTabChange(tab);
+  };
 
   // Filters for General Ledger (Fluxo)
   const [filterType, setFilterType] = useState<'todos' | 'entrada' | 'saida'>('todos');
@@ -789,12 +803,12 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
 
   return (
     <div className="animate-page-enter" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem', width: '100%', minHeight: '85vh', paddingBottom: '3rem' }}>
-      {/* Module Title and Sub-menus */}
+      {/* Module Executive Header & Segmented Pill Navigation */}
       <div
         style={{
           background: 'var(--bg-secondary)',
           borderRadius: 'var(--radius-xl)',
-          padding: '1.25rem 1.75rem',
+          padding: '1.25rem 1.5rem',
           border: '1px solid var(--border-medium)',
           boxShadow: 'var(--shadow-sm)',
           display: 'flex',
@@ -803,50 +817,67 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <div
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '10px',
-                  background: 'var(--accent-gold-soft)',
-                  color: 'var(--accent-gold)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <DollarSign size={22} />
-              </div>
-              <div>
-                <h2 style={{ fontSize: '1.45rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-                  {activeSubTab === 'contas'
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <div
+              style={{
+                width: '42px',
+                height: '42px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(245, 158, 11, 0.05))',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                color: 'var(--accent-gold)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                flexShrink: 0,
+              }}
+            >
+              <DollarSign size={22} />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
+                  {currentTab === 'contas'
                     ? 'Contas Bancárias & Caixas'
-                    : activeSubTab === 'categorias'
+                    : currentTab === 'categorias'
                     ? 'Plano de Contas / Categorias'
-                    : activeSubTab === 'eventos_caixa'
+                    : currentTab === 'eventos_caixa'
                     ? 'Caixa dos Eventos'
                     : 'Gestão Financeira & Tesouraria'}
                 </h2>
-                <span style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
-                  {activeSubTab === 'contas'
-                    ? `Gestão de contas correntes, caixas físicos e conciliação bancária (${bankAccounts.length} cadastradas)`
-                    : activeSubTab === 'categorias'
-                    ? `Centros de custos e categorias de receitas e despesas (${financialCategories.length} cadastradas)`
-                    : activeSubTab === 'eventos_caixa'
-                    ? `Controle financeiro isolado e arrecadação das inscrições e camisetas dos eventos`
-                    : 'Fluxo de caixa geral, entradas de dízimos/ofertas e saídas operacionais da igreja'}
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    padding: '0.15rem 0.55rem',
+                    borderRadius: 'var(--radius-full)',
+                    background: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border-medium)',
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  {currentTab === 'contas' ? `${bankAccounts.length} Contas` : currentTab === 'categorias' ? `${financialCategories.length} Categorias` : currentTab === 'eventos_caixa' ? `${events.length} Eventos` : `${transactions.length} Lançamentos`}
                 </span>
               </div>
+              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                {currentTab === 'contas'
+                  ? 'Gestão de contas correntes, caixas físicos e conciliação bancária'
+                  : currentTab === 'categorias'
+                  ? 'Centros de custos e categorias de receitas e despesas da igreja'
+                  : currentTab === 'eventos_caixa'
+                  ? 'Controle financeiro isolado e arrecadação de inscrições e camisetas'
+                  : 'Fluxo de caixa geral, entradas de dízimos/ofertas e saídas operacionais'}
+              </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
             <button
               onClick={() => setIsReportModalOpen(true)}
               className="btn btn-secondary btn-sm"
-              style={{ gap: '0.45rem' }}
+              style={{ gap: '0.45rem', fontWeight: 600, fontSize: '0.82rem' }}
             >
               <Printer size={15} />
               <span>Balancete Mensal</span>
@@ -855,107 +886,206 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             <button
               onClick={() => openNewTxModal()}
               className="btn btn-primary btn-sm"
-              style={{ gap: '0.45rem' }}
+              style={{ gap: '0.45rem', fontWeight: 700, fontSize: '0.82rem' }}
             >
-              <Plus size={16} />
+              <Plus size={15} />
               <span>Novo Lançamento</span>
             </button>
           </div>
         </div>
+
+        {/* Segmented Pill Navigation */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            padding: '4px',
+            background: 'var(--bg-tertiary)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border-medium)',
+            overflowX: 'auto',
+          }}
+        >
+          {[
+            { id: 'fluxo' as const, label: 'Lançamentos & Fluxo Geral', icon: FileText, count: transactions.length },
+            { id: 'contas' as const, label: 'Contas Bancárias & Caixas', icon: Landmark, count: bankAccounts.length },
+            { id: 'categorias' as const, label: 'Plano de Contas', icon: Tag, count: financialCategories.length },
+            { id: 'eventos_caixa' as const, label: 'Caixa dos Eventos', icon: Ticket, count: events.length },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = currentTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleTabSelect(tab.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  padding: '0.48rem 0.85rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: isActive ? '1px solid rgba(245, 158, 11, 0.35)' : '1px solid transparent',
+                  background: isActive ? 'var(--bg-secondary)' : 'transparent',
+                  color: isActive ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap',
+                  boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
+                }}
+              >
+                <Icon size={15} style={{ opacity: isActive ? 1 : 0.7 }} />
+                <span>{tab.label}</span>
+                <span
+                  style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    padding: '0.1rem 0.4rem',
+                    borderRadius: 'var(--radius-full)',
+                    background: isActive ? 'var(--accent-gold-soft)' : 'rgba(255, 255, 255, 0.05)',
+                    color: isActive ? 'var(--accent-gold)' : 'var(--text-muted)',
+                  }}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* ======================================================== */}
-      {/* SUB-MENU 1: LANÇAMENTOS & FLUXO DE CAIXA GERAL           */}
-      {/* ======================================================== */}
-      {activeSubTab === 'fluxo' && (
+      {currentTab === 'fluxo' && (
         <div className="animate-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Summary KPI Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+          {/* Summary KPI Cards - Executive Modern Metrics */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.1rem' }}>
+            {/* ENTRADAS */}
             <div
-              className="card"
               style={{
-                borderLeft: '4px solid var(--success)',
                 background: 'var(--bg-secondary)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '1.15rem 1.35rem',
+                border: '1px solid var(--border-medium)',
                 boxShadow: 'var(--shadow-sm)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '0.75rem',
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'var(--success)' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                  <span style={{ fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-muted)', fontWeight: 700 }}>
                     Entradas Realizadas
                   </span>
-                  <h3 style={{ fontSize: '1.65rem', fontWeight: 800, marginTop: '0.35rem', color: 'var(--text-primary)' }}>
+                  <h3 style={{ fontSize: '1.45rem', fontWeight: 800, margin: '0.35rem 0 0 0', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
                     {formatCurrency(totalInflow)}
                   </h3>
                 </div>
                 <div
                   style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
                     background: 'var(--success-soft)',
                     color: 'var(--success)',
-                    padding: '0.6rem',
-                    borderRadius: 'var(--radius-md)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
-                  <ArrowUpRight size={22} />
+                  <ArrowUpRight size={18} />
                 </div>
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', display: 'block' }}>
-                {transactions.filter((t) => t.type === 'entrada').length} receitas registradas
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.74rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.6rem' }}>
+                <span>{transactions.filter((t) => t.type === 'entrada').length} receitas confirmadas</span>
+                <span style={{ color: 'var(--success)', fontWeight: 600 }}>Dízimos & Ofertas</span>
+              </div>
             </div>
 
+            {/* SAÍDAS */}
             <div
-              className="card"
               style={{
-                borderLeft: '4px solid var(--danger)',
                 background: 'var(--bg-secondary)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '1.15rem 1.35rem',
+                border: '1px solid var(--border-medium)',
                 boxShadow: 'var(--shadow-sm)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '0.75rem',
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'var(--danger)' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                    Saídas / Despesas
+                  <span style={{ fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-muted)', fontWeight: 700 }}>
+                    Saídas & Despesas
                   </span>
-                  <h3 style={{ fontSize: '1.65rem', fontWeight: 800, marginTop: '0.35rem', color: 'var(--text-primary)' }}>
+                  <h3 style={{ fontSize: '1.45rem', fontWeight: 800, margin: '0.35rem 0 0 0', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
                     {formatCurrency(totalOutflow)}
                   </h3>
                 </div>
                 <div
                   style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
                     background: 'var(--danger-soft)',
                     color: 'var(--danger)',
-                    padding: '0.6rem',
-                    borderRadius: 'var(--radius-md)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
-                  <ArrowDownRight size={22} />
+                  <ArrowDownRight size={18} />
                 </div>
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', display: 'block' }}>
-                {transactions.filter((t) => t.type === 'saida').length} despesas quitadas
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.74rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.6rem' }}>
+                <span>{transactions.filter((t) => t.type === 'saida').length} despesas quitadas</span>
+                <span style={{ color: 'var(--danger)', fontWeight: 600 }}>Custos Operacionais</span>
+              </div>
             </div>
 
+            {/* SALDO CONSOLIDADO */}
             <div
-              className="card"
               style={{
-                borderLeft: `4px solid ${netBalance >= 0 ? 'var(--accent-gold)' : 'var(--danger)'}`,
                 background: 'var(--bg-secondary)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '1.15rem 1.35rem',
+                border: '1px solid var(--border-medium)',
                 boxShadow: 'var(--shadow-sm)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '0.75rem',
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: netBalance >= 0 ? 'var(--accent-gold)' : 'var(--danger)' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <span style={{ fontSize: '0.825rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                    Saldo Operacional Consolidado
+                  <span style={{ fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-muted)', fontWeight: 700 }}>
+                    Saldo Operacional Líquido
                   </span>
                   <h3
                     style={{
-                      fontSize: '1.65rem',
+                      fontSize: '1.45rem',
                       fontWeight: 800,
-                      marginTop: '0.35rem',
-                      color: netBalance >= 0 ? 'var(--text-primary)' : 'var(--danger)',
+                      margin: '0.35rem 0 0 0',
+                      color: netBalance >= 0 ? 'var(--accent-gold)' : 'var(--danger)',
+                      letterSpacing: '-0.3px',
                     }}
                   >
                     {formatCurrency(netBalance)}
@@ -963,38 +1093,47 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                 </div>
                 <div
                   style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
                     background: 'var(--accent-gold-soft)',
                     color: 'var(--accent-gold)',
-                    padding: '0.6rem',
-                    borderRadius: 'var(--radius-md)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
-                  <DollarSign size={22} />
+                  <DollarSign size={18} />
                 </div>
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', display: 'block' }}>
-                Distribuído em {bankAccounts.length} contas bancárias
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.74rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.6rem' }}>
+                <span>Em {bankAccounts.length} contas bancárias & caixas</span>
+                <span style={{ color: netBalance >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 700 }}>
+                  {netBalance >= 0 ? 'Superávit' : 'Déficit'}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Filters Bar */}
+          {/* Filters Bar - Compact Toolbar */}
           <div
-            className="card"
             style={{
               display: 'flex',
-              gap: '0.85rem',
+              gap: '0.75rem',
               flexWrap: 'wrap',
               alignItems: 'center',
               background: 'var(--bg-secondary)',
               border: '1px solid var(--border-medium)',
-              padding: '1rem',
+              borderRadius: 'var(--radius-lg)',
+              padding: '0.75rem 1rem',
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
-            <div style={{ position: 'relative', flex: '1 1 220px' }}>
+            <div style={{ position: 'relative', flex: '1 1 240px' }}>
               <Search
-                size={16}
-                style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
+                size={14}
+                style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
               />
               <input
                 type="text"
@@ -1002,7 +1141,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="form-input"
-                style={{ paddingLeft: '2.4rem', fontSize: '0.88rem' }}
+                style={{ paddingLeft: '2.1rem', fontSize: '0.82rem', height: '36px', borderRadius: 'var(--radius-md)' }}
               />
             </div>
 
@@ -1012,7 +1151,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                 className="form-input"
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value as any)}
-                style={{ fontSize: '0.88rem' }}
+                style={{ fontSize: '0.82rem', height: '36px', borderRadius: 'var(--radius-md)' }}
               >
                 <option value="todos">Todos os Tipos</option>
                 <option value="entrada">Entradas (+)</option>
@@ -1021,14 +1160,14 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             </div>
 
             {/* Category Filter */}
-            <div style={{ minWidth: '160px' }}>
+            <div style={{ minWidth: '150px' }}>
               <select
                 className="form-input"
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                style={{ fontSize: '0.88rem' }}
+                style={{ fontSize: '0.82rem', height: '36px', borderRadius: 'var(--radius-md)' }}
               >
-                <option value="todos">Todas as Categorias</option>
+                <option value="todos">Todas Categorias</option>
                 {financialCategories.map((c) => (
                   <option key={c.id} value={c.name}>
                     {c.name} ({c.type === 'entrada' ? '+' : '-'})
@@ -1038,12 +1177,12 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             </div>
 
             {/* Account Filter */}
-            <div style={{ minWidth: '160px' }}>
+            <div style={{ minWidth: '150px' }}>
               <select
                 className="form-input"
                 value={filterAccount}
                 onChange={(e) => setFilterAccount(e.target.value)}
-                style={{ fontSize: '0.88rem' }}
+                style={{ fontSize: '0.82rem', height: '36px', borderRadius: 'var(--radius-md)' }}
               >
                 <option value="todos">Todas as Contas</option>
                 {bankAccounts.map((a) => (
@@ -1055,12 +1194,12 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             </div>
 
             {/* Event Filter */}
-            <div style={{ minWidth: '160px' }}>
+            <div style={{ minWidth: '150px' }}>
               <select
                 className="form-input"
                 value={filterEvent}
                 onChange={(e) => setFilterEvent(e.target.value)}
-                style={{ fontSize: '0.88rem' }}
+                style={{ fontSize: '0.82rem', height: '36px', borderRadius: 'var(--radius-md)' }}
               >
                 <option value="todos">Todos os Eventos</option>
                 {events.map((ev) => (
@@ -1070,6 +1209,24 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                 ))}
               </select>
             </div>
+
+            {(searchTerm || filterType !== 'todos' || filterCategory !== 'todos' || filterAccount !== 'todos' || filterEvent !== 'todos') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterType('todos');
+                  setFilterCategory('todos');
+                  setFilterAccount('todos');
+                  setFilterEvent('todos');
+                }}
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.78rem', height: '36px', padding: '0 0.65rem', whiteSpace: 'nowrap' }}
+                title="Limpar todos os filtros"
+              >
+                Limpar Filtros
+              </button>
+            )}
           </div>
 
           {/* Transactions Table */}
@@ -1083,17 +1240,17 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             }}
           >
             <div className="table-responsive">
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
                 <thead>
                   <tr style={{ background: 'var(--bg-tertiary)', borderBottom: '1px solid var(--border-medium)', color: 'var(--text-muted)' }}>
-                    <th style={{ padding: '0.85rem 1rem', fontWeight: 700 }}>DATA</th>
-                    <th style={{ padding: '0.85rem 1rem', fontWeight: 700 }}>DESCRIÇÃO & VÍNCULO</th>
-                    <th style={{ padding: '0.85rem 1rem', fontWeight: 700 }}>CATEGORIA</th>
-                    <th style={{ padding: '0.85rem 1rem', fontWeight: 700 }}>CONTA / CAIXA</th>
-                    <th style={{ padding: '0.85rem 1rem', fontWeight: 700 }}>MEMBRO / FORNECEDOR</th>
-                    <th style={{ padding: '0.85rem 1rem', fontWeight: 700 }}>MÉTODO</th>
-                    <th style={{ padding: '0.85rem 1rem', fontWeight: 700, textAlign: 'right' }}>VALOR</th>
-                    <th style={{ padding: '0.85rem 1rem', fontWeight: 700, textAlign: 'center' }}>AÇÕES</th>
+                    <th style={{ padding: '0.7rem 0.95rem', fontWeight: 700, fontSize: '0.74rem', letterSpacing: '0.4px', textTransform: 'uppercase' }}>DATA</th>
+                    <th style={{ padding: '0.7rem 0.95rem', fontWeight: 700, fontSize: '0.74rem', letterSpacing: '0.4px', textTransform: 'uppercase' }}>DESCRIÇÃO & VÍNCULO</th>
+                    <th style={{ padding: '0.7rem 0.95rem', fontWeight: 700, fontSize: '0.74rem', letterSpacing: '0.4px', textTransform: 'uppercase' }}>CATEGORIA</th>
+                    <th style={{ padding: '0.7rem 0.95rem', fontWeight: 700, fontSize: '0.74rem', letterSpacing: '0.4px', textTransform: 'uppercase' }}>CONTA / CAIXA</th>
+                    <th style={{ padding: '0.7rem 0.95rem', fontWeight: 700, fontSize: '0.74rem', letterSpacing: '0.4px', textTransform: 'uppercase' }}>MEMBRO / FORNECEDOR</th>
+                    <th style={{ padding: '0.7rem 0.95rem', fontWeight: 700, fontSize: '0.74rem', letterSpacing: '0.4px', textTransform: 'uppercase' }}>MÉTODO</th>
+                    <th style={{ padding: '0.7rem 0.95rem', fontWeight: 700, fontSize: '0.74rem', letterSpacing: '0.4px', textTransform: 'uppercase', textAlign: 'right' }}>VALOR</th>
+                    <th style={{ padding: '0.7rem 0.95rem', fontWeight: 700, fontSize: '0.74rem', letterSpacing: '0.4px', textTransform: 'uppercase', textAlign: 'center' }}>AÇÕES</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1116,10 +1273,10 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                             transition: 'background 0.15s ease',
                           }}
                         >
-                          <td style={{ padding: '0.85rem 1rem', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
+                          <td style={{ padding: '0.65rem 0.85rem', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
                             {formatDate(tx.date)}
                           </td>
-                          <td style={{ padding: '0.85rem 1rem' }}>
+                          <td style={{ padding: '0.65rem 0.85rem' }}>
                             <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{tx.description}</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
                               {tx.receiptNumber && (
@@ -1157,7 +1314,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                               )}
                             </div>
                           </td>
-                          <td style={{ padding: '0.85rem 1rem' }}>
+                          <td style={{ padding: '0.65rem 0.85rem' }}>
                             <span
                               style={{
                                 padding: '0.25rem 0.6rem',
@@ -1171,7 +1328,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                               {tx.category}
                             </span>
                           </td>
-                          <td style={{ padding: '0.85rem 1rem', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '0.65rem 0.85rem', whiteSpace: 'nowrap' }}>
                             {account ? (
                               <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
                                 {account.logoUrl ? (
@@ -1201,53 +1358,54 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                               <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Padrão</span>
                             )}
                           </td>
-                          <td style={{ padding: '0.85rem 1rem', color: 'var(--text-secondary)' }}>
+                          <td style={{ padding: '0.65rem 0.85rem', color: 'var(--text-secondary)' }}>
                             {tx.memberOrVendor}
                           </td>
-                          <td style={{ padding: '0.85rem 1rem' }}>
+                          <td style={{ padding: '0.65rem 0.85rem' }}>
                             <span style={{ textTransform: 'uppercase', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>
                               {tx.paymentMethod}
                             </span>
                           </td>
                           <td
                             style={{
-                              padding: '0.85rem 1rem',
+                              padding: '0.65rem 0.85rem',
                               textAlign: 'right',
                               fontWeight: 800,
                               whiteSpace: 'nowrap',
                               color: tx.type === 'entrada' ? 'var(--success)' : 'var(--danger)',
+                              fontSize: '0.88rem',
                             }}
                           >
                             {tx.type === 'entrada' ? `+ ${formatCurrency(tx.amount)}` : `- ${formatCurrency(tx.amount)}`}
                           </td>
-                          <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem' }}>
+                          <td style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.3rem' }}>
                               <button
                                 type="button"
                                 onClick={() => setReceiptTx(tx)}
                                 className="btn btn-secondary btn-sm"
-                                style={{ padding: '0.35rem 0.6rem' }}
+                                style={{ padding: '0.28rem 0.45rem', borderRadius: '6px' }}
                                 title="Visualizar e Imprimir Recibo"
                               >
-                                <FileText size={14} />
+                                <FileText size={13} />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => openEditTxModal(tx)}
                                 className="btn btn-secondary btn-sm"
-                                style={{ padding: '0.35rem 0.6rem' }}
+                                style={{ padding: '0.28rem 0.45rem', borderRadius: '6px' }}
                                 title="Editar Lançamento"
                               >
-                                <Edit2 size={14} />
+                                <Edit2 size={13} />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteTransaction(tx)}
                                 className="btn btn-secondary btn-sm"
-                                style={{ padding: '0.35rem 0.6rem', color: 'var(--danger)' }}
+                                style={{ padding: '0.28rem 0.45rem', borderRadius: '6px', color: 'var(--danger)' }}
                                 title="Excluir Lançamento"
                               >
-                                <Trash2 size={14} />
+                                <Trash2 size={13} />
                               </button>
                             </div>
                           </td>
@@ -1265,7 +1423,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
       {/* ======================================================== */}
       {/* SUB-MENU 2: CONTAS BANCÁRIAS & CAIXAS                    */}
       {/* ======================================================== */}
-      {activeSubTab === 'contas' && (
+      {currentTab === 'contas' && (
         <div className="animate-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Header Action */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -1809,7 +1967,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
       {/* ======================================================== */}
       {/* SUB-MENU 3: CATEGORIAS DE RECEITAS & DESPESAS           */}
       {/* ======================================================== */}
-      {activeSubTab === 'categorias' && (
+      {currentTab === 'categorias' && (
         <div className="animate-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Header Actions */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -2081,52 +2239,54 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
       {/* ======================================================== */}
       {/* SUB-MENU 4: CAIXA ESPECÍFICO DOS EVENTOS                 */}
       {/* ======================================================== */}
-      {activeSubTab === 'eventos_caixa' && (
+      {currentTab === 'eventos_caixa' && (
         <div className="animate-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Event Selector Card */}
+          {/* Event Selector Card - Executive Style */}
           <div
-            className="card"
             style={{
               background: 'var(--bg-secondary)',
               border: '1px solid var(--border-medium)',
-              borderRadius: 'var(--radius-xl)',
-              padding: '1.25rem 1.5rem',
+              borderRadius: 'var(--radius-lg)',
+              padding: '1rem 1.25rem',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
               gap: '1rem',
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <div
                 style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '10px',
                   background: 'var(--accent-gold-soft)',
                   color: 'var(--accent-gold)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  flexShrink: 0,
                 }}
               >
-                <Ticket size={22} />
+                <Ticket size={20} />
               </div>
               <div>
-                <label style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-gold)', letterSpacing: '0.5px', display: 'block' }}>
-                  Selecionar Evento para Prestação de Contas
+                <label style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-gold)', letterSpacing: '0.5px', display: 'block' }}>
+                  Evento Ativo para Prestação de Contas
                 </label>
                 <select
                   className="form-input"
                   value={selectedEventId}
                   onChange={(e) => setSelectedEventId(e.target.value)}
                   style={{
-                    fontSize: '1rem',
-                    fontWeight: 800,
-                    marginTop: '0.25rem',
-                    minWidth: '280px',
-                    padding: '0.4rem 0.8rem',
+                    fontSize: '0.92rem',
+                    fontWeight: 700,
+                    marginTop: '0.2rem',
+                    minWidth: '270px',
+                    height: '36px',
+                    borderRadius: 'var(--radius-md)',
                   }}
                 >
                   {events.map((ev) => (
@@ -2138,15 +2298,15 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 onClick={() => openNewTxModal(selectedEventId)}
                 className="btn btn-secondary btn-sm"
-                style={{ gap: '0.4rem', color: 'var(--danger)' }}
+                style={{ gap: '0.4rem', color: 'var(--danger)', fontSize: '0.82rem', height: '36px' }}
               >
                 <ArrowDownRight size={15} />
-                <span>Lançar Despesa do Evento</span>
+                <span>Lançar Despesa</span>
               </button>
 
               <button
@@ -2156,7 +2316,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                   setTxType('entrada');
                 }}
                 className="btn btn-primary btn-sm"
-                style={{ gap: '0.4rem' }}
+                style={{ gap: '0.4rem', fontSize: '0.82rem', height: '36px' }}
               >
                 <Plus size={15} />
                 <span>Nova Receita Avulsa</span>
@@ -2164,67 +2324,106 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             </div>
           </div>
 
-          {/* Event Financial KPIs */}
+          {/* Event Financial KPIs - Modern Executive Cards */}
           {currentEvent && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.15rem' }}>
-              <div className="card" style={{ background: 'var(--bg-secondary)', borderLeft: '4px solid var(--success)' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                  Receita Total Arrecadada
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1rem' }}>
+              <div
+                style={{
+                  background: 'var(--bg-secondary)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1rem 1.15rem',
+                  border: '1px solid var(--border-medium)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'var(--success)' }} />
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', fontWeight: 700 }}>
+                  Receita Arrecadada
                 </span>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--success)', margin: '0.35rem 0 0 0' }}>
+                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--success)', margin: '0.3rem 0 0 0', letterSpacing: '-0.3px' }}>
                   {formatCurrency(eventTotalRevenue)}
                 </h3>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.35rem', display: 'block' }}>
-                  {eventPaidRegistrationsCount} inscrições confirmadas
-                </span>
-              </div>
-
-              <div className="card" style={{ background: 'var(--bg-secondary)', borderLeft: '4px solid #3b82f6' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                  👕 Camisas Vendidas
-                </span>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#3b82f6', margin: '0.35rem 0 0 0' }}>
-                  {eventShirtsCount} un
-                </h3>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.35rem', display: 'block' }}>
-                  Total em camisas: {formatCurrency(eventShirtsCount * (currentEvent.shirtPrice || 0))}
-                </span>
-              </div>
-
-              <div className="card" style={{ background: 'var(--bg-secondary)', borderLeft: '4px solid var(--danger)' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                  Custos & Despesas Alocadas
-                </span>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--danger)', margin: '0.35rem 0 0 0' }}>
-                  {formatCurrency(eventTotalExpenses)}
-                </h3>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.35rem', display: 'block' }}>
-                  Locação, alimentação e logística
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                  {eventPaidRegistrationsCount} inscrições pagas
                 </span>
               </div>
 
               <div
-                className="card"
                 style={{
                   background: 'var(--bg-secondary)',
-                  borderLeft: `4px solid ${eventNetBalance >= 0 ? 'var(--accent-gold)' : 'var(--danger)'}`,
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1rem 1.15rem',
+                  border: '1px solid var(--border-medium)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: 'var(--shadow-sm)',
                 }}
               >
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                  Saldo Líquido do Evento
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#3b82f6' }} />
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', fontWeight: 700 }}>
+                  👕 Camisas Vendidas
+                </span>
+                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#3b82f6', margin: '0.3rem 0 0 0', letterSpacing: '-0.3px' }}>
+                  {eventShirtsCount} un
+                </h3>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                  {formatCurrency(eventShirtsCount * (currentEvent.shirtPrice || 0))} em camisetas
+                </span>
+              </div>
+
+              <div
+                style={{
+                  background: 'var(--bg-secondary)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1rem 1.15rem',
+                  border: '1px solid var(--border-medium)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'var(--danger)' }} />
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', fontWeight: 700 }}>
+                  Custos & Despesas
+                </span>
+                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--danger)', margin: '0.3rem 0 0 0', letterSpacing: '-0.3px' }}>
+                  {formatCurrency(eventTotalExpenses)}
+                </h3>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                  Locação, refeições e estrutura
+                </span>
+              </div>
+
+              <div
+                style={{
+                  background: 'var(--bg-secondary)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1rem 1.15rem',
+                  border: '1px solid var(--border-medium)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: eventNetBalance >= 0 ? 'var(--accent-gold)' : 'var(--danger)' }} />
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', fontWeight: 700 }}>
+                  Resultado Líquido
                 </span>
                 <h3
                   style={{
-                    fontSize: '1.5rem',
+                    fontSize: '1.35rem',
                     fontWeight: 800,
                     color: eventNetBalance >= 0 ? 'var(--accent-gold)' : 'var(--danger)',
-                    margin: '0.35rem 0 0 0',
+                    margin: '0.3rem 0 0 0',
+                    letterSpacing: '-0.3px',
                   }}
                 >
                   {formatCurrency(eventNetBalance)}
                 </h3>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.35rem', display: 'block' }}>
-                  Resultado financeiro final
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem', display: 'block' }}>
+                  {eventNetBalance >= 0 ? 'Superávit do evento' : 'Déficit operacional'}
                 </span>
               </div>
             </div>
@@ -2272,16 +2471,16 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                   ) : (
                     eventTransactions.map((tx) => (
                       <tr key={tx.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                        <td style={{ padding: '0.85rem 1rem', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
+                        <td style={{ padding: '0.65rem 0.85rem', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
                           {formatDate(tx.date)}
                         </td>
-                        <td style={{ padding: '0.85rem 1rem' }}>
+                        <td style={{ padding: '0.65rem 0.85rem' }}>
                           <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{tx.description}</div>
                           <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
                             {tx.memberOrVendor} {tx.receiptNumber ? `• Recibo: ${tx.receiptNumber}` : ''}
                           </div>
                         </td>
-                        <td style={{ padding: '0.85rem 1rem' }}>
+                        <td style={{ padding: '0.65rem 0.85rem' }}>
                           <span
                             style={{
                               padding: '0.2rem 0.55rem',
@@ -2298,7 +2497,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
                         <td style={{ padding: '0.85rem 1rem', textTransform: 'uppercase', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>
                           {tx.paymentMethod}
                         </td>
-                        <td style={{ padding: '0.85rem 1rem' }}>
+                        <td style={{ padding: '0.65rem 0.85rem' }}>
                           <span
                             style={{
                               padding: '0.2rem 0.55rem',
