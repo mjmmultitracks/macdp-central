@@ -205,7 +205,7 @@ export function App() {
     return () => window.removeEventListener('igreja_db_updated', handleDbUpdate);
   }, []);
 
-  // Inicialização e Sincronização em Tempo Real com Supabase
+  // Inicialização e Sincronização em Tempo Real com Supabase (Multi-dispositivos e Nuvem)
   useEffect(() => {
     if (!isSupabaseConfigured) return;
 
@@ -215,24 +215,51 @@ export function App() {
         const { sanitized } = sanitizeDatabase(remoteDb);
         setDb(sanitized);
         localStorage.setItem('macdp_db_data_v3', JSON.stringify(sanitized));
-      } else {
-        // Se ainda não houver dados no Supabase, sobe os dados locais atuais limpos como semente inicial
-        const currentLocal = getDatabase();
-        pushDatabaseToSupabase(currentLocal);
       }
     });
 
-    // 2. Conecta canal em tempo real para sincronização instantânea
+    // 2. Conecta canal em tempo real para sincronização instantânea via WebSockets
     const unsubscribe = subscribeToSupabaseRealtime((updatedDb) => {
       setDb(updatedDb);
       localStorage.setItem('macdp_db_data_v3', JSON.stringify(updatedDb));
-      if (isAdminRoute()) {
-        addNotification('info', 'Dados sincronizados com o Supabase em tempo real!');
-      }
     });
+
+    // 3. Polling contínuo ativo (a cada 6s) para sincronização multidispositivo entre computadores e celulares
+    const pollInterval = setInterval(() => {
+      pullDatabaseFromSupabase().then((remoteDb) => {
+        if (remoteDb) {
+          const { sanitized } = sanitizeDatabase(remoteDb);
+          setDb((prevDb) => {
+            if (JSON.stringify(prevDb) !== JSON.stringify(sanitized)) {
+              localStorage.setItem('macdp_db_data_v3', JSON.stringify(sanitized));
+              return sanitized;
+            }
+            return prevDb;
+          });
+        }
+      });
+    }, 6000);
+
+    // 4. Sincronização imediata ao focar na janela ou alternar de aba no celular/computador
+    const handleWindowFocus = () => {
+      if (document.visibilityState === 'visible') {
+        pullDatabaseFromSupabase().then((remoteDb) => {
+          if (remoteDb) {
+            const { sanitized } = sanitizeDatabase(remoteDb);
+            setDb(sanitized);
+            localStorage.setItem('macdp_db_data_v3', JSON.stringify(sanitized));
+          }
+        });
+      }
+    };
+    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener('visibilitychange', handleWindowFocus);
 
     return () => {
       unsubscribe();
+      clearInterval(pollInterval);
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleWindowFocus);
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   checkInGuest,
   addEventRegistration,
@@ -62,7 +62,11 @@ interface EventsManagerProps {
 
 export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }) => {
   // Check-in modal state
-  const [selectedEventForCheckin, setSelectedEventForCheckin] = useState<ChurchEvent | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const selectedEventForCheckin = useMemo(() => {
+    if (!selectedEventId) return null;
+    return events.find((e) => e.id === selectedEventId) || null;
+  }, [events, selectedEventId]);
   const [searchGuest, setSearchGuest] = useState('');
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
@@ -556,16 +560,12 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
   const handleToggleCheckin = (eventId: string, regId: string, name: string) => {
     checkInGuest(eventId, regId);
     onNotify('success', `Check-in de ${name} atualizado!`);
-    const updated = events.find((e) => e.id === eventId);
-    if (updated) setSelectedEventForCheckin({ ...updated });
   };
 
   const handleDeleteRegistration = (eventId: string, regId: string, name: string) => {
     if (window.confirm(`Deseja cancelar a inscrição de ${name}?`)) {
       deleteEventRegistration(eventId, regId);
-      onNotify('info', `Inscrição de ${name} cancelada.`);
-      const updated = events.find((e) => e.id === eventId);
-      if (updated) setSelectedEventForCheckin({ ...updated });
+      onNotify('info', `Inscrição de ${name} cancelada com sucesso.`);
     }
   };
 
@@ -584,16 +584,11 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setGuestName('');
     setGuestPhone('');
     setGuestEmail('');
-
-    const updated = events.find((ev) => ev.id === selectedEventForCheckin.id);
-    if (updated) setSelectedEventForCheckin({ ...updated });
   };
 
   const handleApprovePayment = (eventId: string, regId: string, regName: string) => {
     updateEventRegistrationPayment(eventId, regId, 'confirmed');
     onNotify('success', `Pagamento de ${regName} aprovado com sucesso!`);
-    const updated = events.find((e) => e.id === eventId);
-    if (updated) setSelectedEventForCheckin({ ...updated });
   };
 
   // Rooms CRUD
@@ -711,7 +706,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
             <button
               type="button"
-              onClick={() => setSelectedEventForCheckin(null)}
+              onClick={() => setSelectedEventId(null)}
               className="btn btn-secondary"
               style={{
                 gap: '0.6rem',
@@ -1873,7 +1868,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         >
           <button
             type="button"
-            onClick={() => setSelectedEventForCheckin(null)}
+            onClick={() => setSelectedEventId(null)}
             className="btn btn-secondary"
             style={{ gap: '0.6rem', fontWeight: 800, padding: '0.65rem 1.25rem' }}
           >
@@ -2526,7 +2521,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                   {/* Actions Column */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
                     <button
-                      onClick={() => setSelectedEventForCheckin(evt)}
+                      onClick={() => setSelectedEventId(evt.id)}
                       className="btn btn-secondary btn-sm"
                       style={{ gap: '0.4rem', padding: '0.5rem 0.85rem' }}
                     >
@@ -2693,7 +2688,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                       }}
                     >
                       <button
-                        onClick={() => setSelectedEventForCheckin(evt)}
+                        onClick={() => setSelectedEventId(evt.id)}
                         className="btn btn-secondary btn-sm"
                         style={{ gap: '0.4rem', flex: 1 }}
                       >

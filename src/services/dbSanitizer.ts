@@ -136,5 +136,40 @@ export function sanitizeDatabase(rawDb: DatabaseSchema): { sanitized: DatabaseSc
     hasChanged = true;
   }
 
+  
+  // 14. Expurgar inscrições de teste antigas excluídas de quaisquer caches de navegador
+  if (Array.isArray(db.events)) {
+    const testRegIds = new Set([
+      'reg_1789349418265_k4vo',
+      'reg_1788802938024_gp5n',
+      'reg_1788473065225_pk83',
+      'reg_1790608022782_hti8',
+      'reg_1788821138376_h3li',
+      'reg_1791349533241_m1yl',
+    ]);
+    db.events.forEach((evt) => {
+      if (Array.isArray(evt.registrations)) {
+        const initialCount = evt.registrations.length;
+        evt.registrations = evt.registrations.filter((r) => {
+          if (!r) return false;
+          if (testRegIds.has(r.id)) return false;
+          const cleanName = (r.name || '').toLowerCase().trim();
+          if (
+            cleanName === 'mikael maduro' ||
+            cleanName === 'mikal maduro' ||
+            cleanName === 'mikael da silva caldas maduro'
+          ) {
+            return false;
+          }
+          return true;
+        });
+        if (evt.registrations.length !== initialCount) {
+          evt.registeredCount = evt.registrations.length;
+          hasChanged = true;
+        }
+      }
+    });
+  }
+
   return { sanitized: db, hasChanged };
 }
