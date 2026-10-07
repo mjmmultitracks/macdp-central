@@ -28,7 +28,7 @@ import {
   AppModuleId,
   RegularServiceItem,
 } from '../types';
-import { pushDatabaseToSupabase, deleteEventRegistrationFromSupabase, deleteEventFromSupabase, deleteMemberFromSupabase } from './supabaseSync';
+import { pushDatabaseToSupabase, deleteEventRegistrationFromSupabase, deleteEventFromSupabase, deleteMemberFromSupabase, deletePrayerFromSupabase, deleteTransactionFromSupabase } from './supabaseSync';
 import { resolveBankLogo } from '../utils/bankLogos';
 import { sanitizeDatabase } from './dbSanitizer';
 export { sanitizeDatabase };
@@ -1311,6 +1311,9 @@ export function deleteTransaction(id: string): void {
   const db = getDatabase();
   db.transactions = db.transactions.filter((t) => t.id !== id);
   saveDatabase(db);
+  deleteTransactionFromSupabase(id).catch((err) => {
+    console.warn('Erro ao deletar transação no Supabase:', err);
+  });
 }
 
 export function updateVolunteerScheduleStatus(
@@ -1685,6 +1688,9 @@ export function deletePrayerRequest(id: string): boolean {
   if (filtered.length === db.prayers.length) return false;
   db.prayers = filtered;
   saveDatabase(db);
+  deletePrayerFromSupabase(id).catch((err) => {
+    console.warn('Erro ao deletar oração no Supabase:', err);
+  });
   return true;
 }
 

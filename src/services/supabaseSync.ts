@@ -8,6 +8,7 @@ let lastSyncTimestamp = 0;
 
 /**
  * Salva e sincroniza o banco completo no Supabase
+ * Atualiza o snapshot central (church_store) e as tabelas relacionais do Supabase
  */
 export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<boolean> {
   if (!supabase || !isSupabaseConfigured) return false;
@@ -16,7 +17,7 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
     isSyncing = true;
     lastSyncTimestamp = Date.now();
 
-    // 1. Snapshot centralizado para consistência e carregamento rápido
+    // 1. Snapshot centralizado (Single Source of Truth de todas as entidades)
     const { error: storeError } = await supabase
       .from('church_store')
       .upsert({ key: STORE_KEY, data, updated_at: new Date().toISOString() });
@@ -25,9 +26,9 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
       console.warn('Erro ao sincronizar snapshot no Supabase church_store:', storeError);
     }
 
-    // 2. Sincroniza tabelas relacionais de alta prioridade (para visualização no Supabase Dashboard)
-    // Sincroniza Eventos
-    if (data.events && data.events.length > 0) {
+    // 2. Sincroniza Eventos e Inscrições nas tabelas relacionais
+    if (data.events && Array.isArray(data.events)) {
+      const activeEventIds = data.events.map((e) => e.id);
       const formattedEvents = data.events.map((e) => ({
         id: e.id,
         title: e.title,
@@ -50,12 +51,31 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
         detailed_schedule: e.detailedSchedule || null,
         custom_questions: e.customQuestions || [],
       }));
-      await supabase.from('events').upsert(formattedEvents);
+
+      if (formattedEvents.length > 0) {
+        await supabase.from('events').upsert(formattedEvents);
+      }
+
+      // Reconciliação: remove eventos órfãos que foram deletados no painel
+      try {
+        const { data: remoteEvents } = await supabase.from('events').select('id');
+        if (remoteEvents) {
+          const orphanEventIds = remoteEvents.map((e) => e.id).filter((id) => !activeEventIds.includes(id));
+          if (orphanEventIds.length > 0) {
+            await supabase.from('events').delete().in('id', orphanEventIds);
+          }
+        }
+      } catch (err) {
+        console.warn('Reconciliação de eventos no Supabase:', err);
+      }
 
       // Sincroniza Inscrições de cada evento
       const allRegistrations: any[] = [];
+      const activeRegIds: string[] = [];
+
       data.events.forEach((evt) => {
         (evt.registrations || []).forEach((r) => {
+          activeRegIds.push(r.id);
           allRegistrations.push({
             id: r.id,
             event_id: evt.id,
@@ -63,7 +83,7 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
             email: r.email,
             phone: r.phone,
             ticket_type: (r as any).ticketType || null,
-            price_paid: (r as any).pricePaid || 0,
+            price_paid: (r as any).pricePaid || r.totalPaid || 0,
             payment_method: r.paymentMethod || 'free',
             payment_status: r.paymentStatus || 'free',
             payment_notes: r.paymentNotes || null,
@@ -78,10 +98,24 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
       if (allRegistrations.length > 0) {
         await supabase.from('event_registrations').upsert(allRegistrations);
       }
+
+      // Reconciliação: remove inscrições órfãs que foram deletadas no painel
+      try {
+        const { data: remoteRegs } = await supabase.from('event_registrations').select('id');
+        if (remoteRegs) {
+          const orphanRegIds = remoteRegs.map((r) => r.id).filter((id) => !activeRegIds.includes(id));
+          if (orphanRegIds.length > 0) {
+            await supabase.from('event_registrations').delete().in('id', orphanRegIds);
+          }
+        }
+      } catch (err) {
+        console.warn('Reconciliação de inscrições no Supabase:', err);
+      }
     }
 
-    // Sincroniza Pedidos de Oração
-    if (data.prayers && data.prayers.length > 0) {
+    // 3. Sincroniza Pedidos de Oração
+    if (data.prayers && Array.isArray(data.prayers)) {
+      const activePrayerIds = data.prayers.map((p) => p.id);
       const formattedPrayers = data.prayers.map((p) => ({
         id: p.id,
         requester_name: p.requesterName,
@@ -96,11 +130,28 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
         pastoral_notes: p.pastoralNotes || null,
         created_at: p.createdAt || new Date().toISOString(),
       }));
-      await supabase.from('prayers').upsert(formattedPrayers);
+
+      if (formattedPrayers.length > 0) {
+        await supabase.from('prayers').upsert(formattedPrayers);
+      }
+
+      // Reconciliação de orações deletadas
+      try {
+        const { data: remotePrayers } = await supabase.from('prayers').select('id');
+        if (remotePrayers) {
+          const orphanPrayerIds = remotePrayers.map((p) => p.id).filter((id) => !activePrayerIds.includes(id));
+          if (orphanPrayerIds.length > 0) {
+            await supabase.from('prayers').delete().in('id', orphanPrayerIds);
+          }
+        }
+      } catch (err) {
+        console.warn('Reconciliação de orações no Supabase:', err);
+      }
     }
 
-    // Sincroniza Membros (CRM)
-    if (data.members && data.members.length > 0) {
+    // 4. Sincroniza Membros (CRM)
+    if (data.members && Array.isArray(data.members)) {
+      const activeMemberIds = data.members.map((m) => m.id);
       const formattedMembers = data.members.map((m) => ({
         id: m.id,
         name: m.name,
@@ -120,7 +171,57 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
         attendance_rate: m.attendanceRate || 100,
         notes: m.notes || null,
       }));
-      await supabase.from('members').upsert(formattedMembers);
+
+      if (formattedMembers.length > 0) {
+        await supabase.from('members').upsert(formattedMembers);
+      }
+
+      // Reconciliação de membros deletados
+      try {
+        const { data: remoteMembers } = await supabase.from('members').select('id');
+        if (remoteMembers) {
+          const orphanMemberIds = remoteMembers.map((m) => m.id).filter((id) => !activeMemberIds.includes(id));
+          if (orphanMemberIds.length > 0) {
+            await supabase.from('members').delete().in('id', orphanMemberIds);
+          }
+        }
+      } catch (err) {
+        console.warn('Reconciliação de membros no Supabase:', err);
+      }
+    }
+
+    // 5. Sincroniza Transações Financeiras
+    if (data.transactions && Array.isArray(data.transactions)) {
+      const activeTxIds = data.transactions.map((t) => t.id);
+      const formattedTx = data.transactions.map((t) => ({
+        id: t.id,
+        type: t.type,
+        category: t.category,
+        description: t.description || '',
+        amount: t.amount || 0,
+        date: t.date || new Date().toISOString().split('T')[0],
+        payment_method: t.paymentMethod || 'pix',
+        member_or_vendor: t.memberOrVendor || null,
+        receipt_number: t.receiptNumber || null,
+        status: t.status || 'confirmado',
+      }));
+
+      if (formattedTx.length > 0) {
+        await supabase.from('financial_transactions').upsert(formattedTx);
+      }
+
+      // Reconciliação de transações deletadas
+      try {
+        const { data: remoteTx } = await supabase.from('financial_transactions').select('id');
+        if (remoteTx) {
+          const orphanTxIds = remoteTx.map((t) => t.id).filter((id) => !activeTxIds.includes(id));
+          if (orphanTxIds.length > 0) {
+            await supabase.from('financial_transactions').delete().in('id', orphanTxIds);
+          }
+        }
+      } catch (err) {
+        console.warn('Reconciliação de transações no Supabase:', err);
+      }
     }
 
     return true;
@@ -135,7 +236,7 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
 }
 
 /**
- * Busca o banco completo salvo no Supabase
+ * Busca o banco completo salvo no Supabase (Single Source of Truth)
  */
 export async function pullDatabaseFromSupabase(): Promise<DatabaseSchema | null> {
   if (!supabase || !isSupabaseConfigured) return null;
@@ -156,56 +257,7 @@ export async function pullDatabaseFromSupabase(): Promise<DatabaseSchema | null>
       const rawDb = data.data as DatabaseSchema;
       const { sanitized, hasChanged } = sanitizeDatabase(rawDb);
 
-      // Recompõe e mescla com inscrições salvas na tabela relacional event_registrations do Supabase
-      try {
-        const { data: regRows } = await supabase.from('event_registrations').select('*');
-        if (regRows && Array.isArray(regRows) && regRows.length > 0) {
-          const regMap = new Map<string, EventRegistration[]>();
-          regRows.forEach((row: any) => {
-            const reg: EventRegistration = {
-              id: row.id,
-              name: row.name || 'Participante',
-              email: row.email || '',
-              phone: row.phone || '',
-              checkedIn: Boolean(row.checked_in),
-              registeredAt: row.registered_at || new Date().toISOString(),
-              paymentMethod: row.payment_method || 'pix',
-              paymentStatus: row.payment_status || 'confirmed',
-              paymentNotes: row.payment_notes || undefined,
-              customAnswers: row.custom_answers || {},
-              totalPaid: row.price_paid || 0,
-            };
-            const evtId = row.event_id;
-            if (!regMap.has(evtId)) regMap.set(evtId, []);
-            regMap.get(evtId)!.push(reg);
-          });
-
-          if (sanitized.events && Array.isArray(sanitized.events)) {
-            sanitized.events.forEach((evt) => {
-              const remoteRegs = regMap.get(evt.id) || [];
-              const existingRegs = evt.registrations || [];
-              // Se o snapshot do church_store já possui lista de inscrições para este evento, respeitamos o snapshot
-              // apenas mesclando dados adicionais de pagamento/presença para inscrições existentes, ou se o evento estava vazio
-              if (existingRegs.length === 0 && remoteRegs.length > 0) {
-                evt.registrations = remoteRegs;
-                evt.registeredCount = remoteRegs.length;
-              } else if (existingRegs.length > 0 && remoteRegs.length > 0) {
-                const remoteMap = new Map(remoteRegs.map((r) => [r.id, r]));
-                evt.registrations = existingRegs.map((r) => {
-                  const rem = remoteMap.get(r.id);
-                  return rem ? { ...r, checkedIn: rem.checkedIn || r.checkedIn, paymentStatus: rem.paymentStatus || r.paymentStatus } : r;
-                });
-                evt.registeredCount = evt.registrations.length;
-              }
-            });
-          }
-        }
-      } catch (regErr) {
-        console.warn('Erro ao mesclar event_registrations do Supabase:', regErr);
-      }
-
       if (hasChanged) {
-        // Imediatamente atualiza o Supabase com o banco limpo para expurgar mockups da nuvem
         pushDatabaseToSupabase(sanitized).catch(() => {});
       }
       return sanitized;
@@ -233,7 +285,6 @@ export function subscribeToSupabaseRealtime(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'church_store' },
         (payload) => {
-          // Ignora eventos gerados por este próprio cliente recente
           if (isSyncing || Date.now() - lastSyncTimestamp < 1500) return;
 
           const newRow = payload.new as { key: string; data: DatabaseSchema };
@@ -255,7 +306,6 @@ export function subscribeToSupabaseRealtime(
     return () => {};
   }
 }
-
 
 /**
  * Remove uma inscrição de evento diretamente no Supabase
@@ -308,6 +358,42 @@ export async function deleteMemberFromSupabase(memberId: string): Promise<boolea
     return true;
   } catch (err) {
     console.error('Erro ao deletar membro no Supabase:', err);
+    return false;
+  }
+}
+
+/**
+ * Remove um pedido de oração no Supabase
+ */
+export async function deletePrayerFromSupabase(prayerId: string): Promise<boolean> {
+  if (!supabase || !isSupabaseConfigured) return false;
+  try {
+    const { error } = await supabase.from('prayers').delete().eq('id', prayerId);
+    if (error) {
+      console.warn('Erro ao deletar oração no Supabase:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Erro ao deletar oração no Supabase:', err);
+    return false;
+  }
+}
+
+/**
+ * Remove uma transação financeira no Supabase
+ */
+export async function deleteTransactionFromSupabase(transactionId: string): Promise<boolean> {
+  if (!supabase || !isSupabaseConfigured) return false;
+  try {
+    const { error } = await supabase.from('financial_transactions').delete().eq('id', transactionId);
+    if (error) {
+      console.warn('Erro ao deletar transação no Supabase:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Erro ao deletar transação no Supabase:', err);
     return false;
   }
 }
