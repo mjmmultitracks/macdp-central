@@ -269,7 +269,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
           gap: '1.5rem',
         }}
       >
@@ -382,7 +382,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: isFinanceAllowed ? 'repeat(auto-fit, minmax(400px, 1fr))' : '1fr',
+          gridTemplateColumns: isFinanceAllowed ? 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' : '1fr',
           gap: '1.5rem',
         }}
       >

@@ -1655,7 +1655,8 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
           ) : (
             /* Modo Tabela Completa */
             <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-medium)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
-              <table className="table" style={{ fontSize: '0.96rem', width: '100%' }}>
+              <div className="table-responsive" style={{ margin: 0, border: 'none' }}>
+                <table className="table" style={{ fontSize: '0.96rem', width: '100%' }}>
                 <thead>
                   <tr style={{ background: 'var(--bg-tertiary)' }}>
                     <th style={{ padding: '1.1rem 1.3rem' }}>Participante</th>
@@ -1852,6 +1853,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </div>
@@ -2576,7 +2578,7 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
             className="animate-fade-scale"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
               gap: '1.5rem',
             }}
           >

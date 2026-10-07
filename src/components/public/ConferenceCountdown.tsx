@@ -84,10 +84,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
   const shareWhatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 
   return (
-    <section
-      style={{
-        position: 'relative',
-        margin: '-2rem auto 3.5rem auto',
+    <section className="conference-countdown-section" style={{ position: 'relative', margin: '-1.25rem auto 3.5rem auto',
         maxWidth: '1200px',
         padding: '0 1.5rem',
         zIndex: 10,
@@ -249,6 +246,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
             >
               {/* Dias */}
               <div
+                className="countdown-box"
                 style={{
                   background: 'rgba(11, 17, 32, 0.85)',
                   border: '1.5px solid rgba(245, 158, 11, 0.45)',
@@ -260,8 +258,9 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
                 }}
               >
                 <div
+                  className="countdown-num"
                   style={{
-                    fontSize: 'clamp(2rem, 4vw, 3rem)',
+                    fontSize: 'clamp(1.75rem, 4vw, 3rem)',
                     fontWeight: 900,
                     color: 'var(--accent-gold-light)',
                     lineHeight: 1,
@@ -272,6 +271,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
                   {formatNumber(timeLeft.days)}
                 </div>
                 <div
+                  className="countdown-lbl"
                   style={{
                     fontSize: '0.72rem',
                     fontWeight: 800,
@@ -287,6 +287,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
 
               {/* Horas */}
               <div
+                className="countdown-box"
                 style={{
                   background: 'rgba(11, 17, 32, 0.85)',
                   border: '1.5px solid rgba(245, 158, 11, 0.45)',
@@ -297,8 +298,9 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
                 }}
               >
                 <div
+                  className="countdown-num"
                   style={{
-                    fontSize: 'clamp(2rem, 4vw, 3rem)',
+                    fontSize: 'clamp(1.75rem, 4vw, 3rem)',
                     fontWeight: 900,
                     color: '#ffffff',
                     lineHeight: 1,
@@ -308,6 +310,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
                   {formatNumber(timeLeft.hours)}
                 </div>
                 <div
+                  className="countdown-lbl"
                   style={{
                     fontSize: '0.72rem',
                     fontWeight: 800,
@@ -323,6 +326,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
 
               {/* Minutos */}
               <div
+                className="countdown-box"
                 style={{
                   background: 'rgba(11, 17, 32, 0.85)',
                   border: '1.5px solid rgba(245, 158, 11, 0.45)',
@@ -333,8 +337,9 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
                 }}
               >
                 <div
+                  className="countdown-num"
                   style={{
-                    fontSize: 'clamp(2rem, 4vw, 3rem)',
+                    fontSize: 'clamp(1.75rem, 4vw, 3rem)',
                     fontWeight: 900,
                     color: '#ffffff',
                     lineHeight: 1,
@@ -344,6 +349,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
                   {formatNumber(timeLeft.minutes)}
                 </div>
                 <div
+                  className="countdown-lbl"
                   style={{
                     fontSize: '0.72rem',
                     fontWeight: 800,
@@ -359,6 +365,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
 
               {/* Segundos */}
               <div
+                className="countdown-box"
                 style={{
                   background: 'rgba(245, 158, 11, 0.12)',
                   border: '1.5px solid var(--accent-gold)',
@@ -369,8 +376,9 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
                 }}
               >
                 <div
+                  className="countdown-num"
                   style={{
-                    fontSize: 'clamp(2rem, 4vw, 3rem)',
+                    fontSize: 'clamp(1.75rem, 4vw, 3rem)',
                     fontWeight: 900,
                     color: 'var(--accent-gold)',
                     lineHeight: 1,
@@ -381,6 +389,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
                   {formatNumber(timeLeft.seconds)}
                 </div>
                 <div
+                  className="countdown-lbl"
                   style={{
                     fontSize: '0.72rem',
                     fontWeight: 800,
@@ -470,7 +479,7 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '1.25rem' }}>
               {/* Opção 1: Adultos & Jovens (DOROT) */}
               <div
                 onClick={() => {
@@ -566,8 +575,12 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
         document.body
       )}
 
-      <style>{`
+            <style>{`
         @media (max-width: 768px) {
+          .conference-countdown-section {
+            margin: 0 auto 2.5rem auto !important;
+            padding: 0 1rem !important;
+          }
           .conference-countdown-card {
             padding: 1.5rem 1rem !important;
             border-radius: 28px !important;
@@ -584,6 +597,17 @@ export const ConferenceCountdown: React.FC<ConferenceCountdownProps> = ({
           .conference-countdown-buttons a {
             width: 100% !important;
             justify-content: center !important;
+          }
+          .countdown-box {
+            padding: 0.75rem 0.25rem !important;
+            border-radius: 14px !important;
+          }
+          .countdown-num {
+            font-size: clamp(1.35rem, 5.2vw, 1.85rem) !important;
+          }
+          .countdown-lbl {
+            font-size: 0.65rem !important;
+            letter-spacing: 0.4px !important;
           }
         }
       `}</style>

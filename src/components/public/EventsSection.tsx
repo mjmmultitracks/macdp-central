@@ -348,7 +348,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
               className="animate-fade-scale"
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
                 gap: '2rem',
               }}
             >
@@ -480,11 +480,11 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
             }}
           >
             {/* Location Info */}
-            <div style={{ padding: '2.5rem' }}>
+            <div style={{ padding: 'clamp(1.25rem, 4vw, 2.5rem)' }}>
               <span className="section-tag">
                 <Navigation size={14} /> Como Chegar
               </span>

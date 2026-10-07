@@ -292,11 +292,11 @@ export const GivingSection: React.FC<GivingSectionProps> = ({ onNotify }) => {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                  gap: '2.5rem',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
+                  gap: '2rem',
                   alignItems: 'center',
                   background: 'var(--bg-tertiary)',
-                  padding: '2rem',
+                  padding: 'clamp(1.15rem, 3.5vw, 2rem)',
                   borderRadius: 'var(--radius-lg)',
                   border: '1px solid var(--border-subtle)',
                 }}

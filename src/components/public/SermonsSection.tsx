@@ -66,7 +66,7 @@ export const SermonsSection: React.FC<SermonsSectionProps> = ({ sermons, onPlayS
               marginBottom: '4rem',
               boxShadow: 'var(--shadow-lg)',
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
             }}
           >
             {/* Thumbnail with overlay play */}

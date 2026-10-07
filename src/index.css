@@ -1163,3 +1163,114 @@ button, input, select, textarea {
   padding: 0.15rem 0.5rem !important;
   font-size: 0.68rem !important;
 }
+
+
+/* ==========================================================================
+   MOBILE EXCELLENCE & HIGH-PERFORMANCE RESPONSIVENESS (MACDP CENTRAL & ADMIN)
+   ========================================================================== */
+
+/* Utilitário para ocultar barra de rolagem mantendo swipe suave */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tabelas responsivas com rolagem por inércia suave em qualquer tela de celular */
+.table-responsive,
+.table-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-x !important;
+}
+
+/* Modais em estilo Bottom-Sheet ergonômico no mobile */
+@media (max-width: 768px) {
+  /* Prevenção Absoluta de Auto-Zoom no iOS Safari (font-size >= 16px em todo input/select/textarea) */
+  input,
+  select,
+  textarea,
+  .admin-main-content input,
+  .admin-main-content select,
+  .admin-main-content textarea,
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 16px !important;
+    min-height: 42px !important;
+  }
+
+  /* Padding interno do Admin otimizado para celulares sem desperdício de tela */
+  .admin-main-content {
+    padding: 0.85rem 0.65rem 2.25rem 0.65rem !important;
+  }
+
+  .admin-header {
+    height: 56px !important;
+    padding: 0 0.85rem !important;
+  }
+
+  /* Botões no Admin confortáveis para o polegar no toque */
+  .admin-main-content .btn {
+    min-height: 40px !important;
+    padding: 0.5rem 0.85rem !important;
+    font-size: 0.84rem !important;
+  }
+
+  .admin-main-content .btn-sm {
+    min-height: 36px !important;
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  /* Cards e métricas fluídas */
+  .admin-main-content .card {
+    padding: 1rem 0.85rem !important;
+    border-radius: 14px !important;
+  }
+
+  /* Tabelas densas com scroll nativo suave */
+  .admin-main-content table {
+    min-width: 580px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Header do Admin enxuto para caber perfeitamente em telas de 320px a 420px */
+  .admin-breadcrumb-prefix {
+    display: none !important;
+  }
+
+  .admin-status-text {
+    display: none !important;
+  }
+
+  .admin-btn-text {
+    display: none !important;
+  }
+
+  .admin-hide-mobile {
+    display: none !important;
+  }
+
+  /* Grids de formulário com 2 colunas colapsam em 1 coluna para não espremer campos */
+  .grid-2,
+  .form-grid-2,
+  .modal-body [style*="gridTemplateColumns: '1fr 1fr'"],
+  .modal-body [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+
+  /* Modais com aproveitamento máximo de tela */
+  .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 1.25rem 0.95rem !important;
+  }
+}

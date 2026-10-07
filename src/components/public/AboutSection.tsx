@@ -71,7 +71,7 @@ export const AboutSection: React.FC = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
             gap: '3rem',
             alignItems: 'center',
             marginBottom: '5rem',
@@ -99,7 +99,7 @@ export const AboutSection: React.FC = () => {
               Nosso lema é claro e libertador: <strong>"Proibido a Entrada de Pessoas Perfeitas."</strong> Se você errou, se está cansado ou machucado pela vida, há um lugar reservado para você no altar do Senhor!
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '1.25rem' }}>
               <div
                 style={{
                   background: 'var(--bg-tertiary)',

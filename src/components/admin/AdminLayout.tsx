@@ -514,12 +514,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             >
               <Menu size={20} />
             </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Painel</span><span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>/</span><h2 style={{ fontSize: '1.12rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><span className="admin-breadcrumb-prefix" style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Painel</span><span className="admin-breadcrumb-prefix" style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>/</span><h2 style={{ fontSize: '1.12rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
               {currentTabTitle}</h2></div>
           </div>
 
           {/* Right Header Actions: App, Role Switcher & Theme */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}><div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.25rem 0.65rem', borderRadius: '9999px', background: 'var(--success-soft)', color: 'var(--success)', fontSize: '0.74rem', fontWeight: 700 }}><span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }} /><span>Online • Supabase</span></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}><div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.25rem 0.65rem', borderRadius: '9999px', background: 'var(--success-soft)', color: 'var(--success)', fontSize: '0.74rem', fontWeight: 700 }}><span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }} /><span className="admin-status-text">Online • Supabase</span></div>
             {onOpenApp && !shouldHideAppButtons && (
               <button
                 type="button"
@@ -529,7 +529,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 title="Abrir o Aplicativo Mobile da Igreja"
               >
                 <Smartphone size={15} color="var(--accent-gold)" />
-                <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>Abrir App</span>
+                <span className="admin-btn-text" style={{ fontSize: '0.8rem', fontWeight: 700 }}>Abrir App</span>
               </button>
             )}
 
@@ -537,7 +537,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <button
                 type="button"
                 onClick={onOpenDeviceTester}
-                className="btn btn-secondary btn-sm"
+                className="btn btn-secondary btn-sm admin-hide-mobile"
                 style={{ gap: '0.35rem', borderRadius: '10px' }}
                 title="Testar no Celular Real via QR Code"
               >

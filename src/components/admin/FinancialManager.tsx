@@ -905,7 +905,9 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--border-medium)',
             overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
           }}
+          className="hide-scrollbar" 
         >
           {[
             { id: 'fluxo' as const, label: 'Lançamentos & Fluxo Geral', icon: FileText, count: transactions.length },
@@ -1752,7 +1754,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
             </div>
           ) : (
             /* Accounts Grid (Cards) */
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
               {bankAccounts.length === 0 ? (
                 <div style={{ gridColumn: '1 / -1', padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' }}>
                   Nenhuma conta bancária ou caixa cadastrado. Clique em "Nova Conta Bancária" para começar.
@@ -1992,7 +1994,7 @@ export const FinancialManager: React.FC<FinancialManagerProps> = ({
           </div>
 
           {/* Two-column layout: Receitas (Left) & Despesas (Right) */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.5rem' }}>
             {/* INCOMES COLUMN */}
             <div
               className="card"

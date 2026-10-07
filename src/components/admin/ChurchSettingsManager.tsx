@@ -1083,7 +1083,7 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
             </div>
 
             {/* Custom Color Pickers */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
               {/* Primary Color Card */}
               <div
                 className="card"
@@ -2469,7 +2469,7 @@ export const ChurchSettingsManager: React.FC<ChurchSettingsManagerProps> = ({
             </div>
 
             {/* Credenciais Form */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1.25rem' }}>
               <div className="form-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                   <label className="form-label" style={{ margin: 0 }}>Access Token (Produção ou Teste) *</label>
