@@ -66,7 +66,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
         }}
       >
         {/* Card 1: Membros Ativos */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.35rem', borderRadius: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
               Membros Ativos
@@ -96,7 +96,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
         </div>
 
         {/* Card 2: Presença Média */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.35rem', borderRadius: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
               Presença Média nos Cultos
@@ -126,7 +126,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
         </div>
 
         {/* Card 3: Visitantes do Mês */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.35rem', borderRadius: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
               Novos Visitantes / Decididos
@@ -156,7 +156,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
 
         {/* Card 4: Saldo Financeiro Líquido ou Comunhão */}
         {isFinanceAllowed ? (
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.35rem', borderRadius: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 Saldo Financeiro Mensal
@@ -191,7 +191,7 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
             </div>
           </div>
         ) : (
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.35rem', borderRadius: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 Células & Comunhão

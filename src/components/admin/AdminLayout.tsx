@@ -271,8 +271,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      padding: '0.75rem 1rem',
-                      borderRadius: 'var(--radius-md)',
+                      padding: '0.65rem 0.9rem',
+                      borderRadius: '12px',
                       background: isFinanceActive ? 'var(--accent-gold-soft)' : 'transparent',
                       color: isFinanceActive
                         ? 'var(--accent-gold)'
@@ -282,7 +282,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                       fontWeight: isFinanceActive ? 700 : 500,
                       cursor: 'pointer',
                       textAlign: 'left',
-                      transition: 'all 0.15s',
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                     title="Clique para abrir ou recolher os sub-menus de Gestão Financeira"
                   >
@@ -368,8 +368,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '0.75rem 1rem',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '0.65rem 0.9rem',
+                  borderRadius: '12px',
                   background: isActive ? 'var(--accent-gold-soft)' : 'transparent',
                   color: isActive
                     ? 'var(--accent-gold)'
@@ -379,7 +379,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   fontWeight: isActive ? 700 : 500,
                   cursor: 'pointer',
                   textAlign: 'left',
-                  transition: 'all 0.15s',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
