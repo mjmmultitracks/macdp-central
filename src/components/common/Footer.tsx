@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Church,
   MapPin,
   Phone,
   Mail,
@@ -8,12 +7,15 @@ import {
   Heart,
   Compass,
   Video,
+
+  Shield,
+  ArrowUpRight,
 } from 'lucide-react';
 import { ChurchSettings } from '../../types';
 
 interface FooterProps {
   onNavigate: (section: string) => void;
-  onOpenAdmin: () => void;
+  onOpenAdmin?: () => void;
   churchSettings?: ChurchSettings;
 }
 
@@ -23,92 +25,82 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, churchS
       style={{
         background: 'var(--bg-secondary)',
         borderTop: '1px solid var(--border-subtle)',
-        padding: '4rem 0 2rem 0',
-        marginTop: '4rem',
+        padding: '3.5rem 0 2rem 0',
+        marginTop: 'auto',
       }}
     >
       <div className="container">
+        {/* Main Clean Grid (4 colunas objetivas) */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-            gap: '2.5rem',
-            marginBottom: '3.5rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+            gap: '2.5rem 2rem',
+            marginBottom: '2.5rem',
           }}
         >
-          {/* Brand Col */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+          {/* Coluna 1: Identidade da Igreja & Redes Sociais */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <div
-                className="church-logo-frame"
                 style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '10px',
-                  background: '#0f172a',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '12px',
+                  background: '#0b1120',
                   border: '1.5px solid rgba(245, 158, 11, 0.4)',
+                  padding: '3px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '3px',
-                  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
                   overflow: 'hidden',
                   flexShrink: 0,
                 }}
               >
                 <img
                   src={churchSettings?.logoUrl || '/images/logo.png'}
-                  alt={churchSettings?.name || 'Logo Oficial MACDP'}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/images/logo.png';
-                  }}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    borderRadius: '8px',
-                  }}
+                  alt="MACDP"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 />
               </div>
               <div>
-                <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '0.2rem' }}>
-                  {churchSettings?.subtitle || 'Ministério Apostólico'}
+                <span style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', lineHeight: 1 }}>
+                  Ministério Apostólico
                 </span>
-                <h4 style={{ fontSize: '1.2rem', fontWeight: 900, lineHeight: 1.1, margin: 0 }}>
-                  {churchSettings?.name || 'Caçadores da Presença'}
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--text-primary)', margin: '0.2rem 0 0 0', lineHeight: 1.1 }}>
+                  Caçadores da Presença
                 </h4>
               </div>
             </div>
-            {churchSettings?.slogan && (
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.75rem', lineHeight: 1.6 }}>
-                <strong>"{churchSettings.slogan}"</strong>
-              </p>
-            )}
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-              {churchSettings?.description || 'Uma igreja acolhedora, profética e apaixonada pela presença manifesta de Deus em Manaus/AM.'}
+
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.55, margin: 0 }}>
+              "Proibido a entrada de pessoas perfeitas." Um hospital de almas e uma família em Manaus que caça a Presença de Deus.
             </p>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+
+            {/* Redes Sociais Compactas */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
               {churchSettings?.social?.instagram && (
                 <a
                   href={churchSettings.social.instagram}
                   target="_blank"
                   rel="noreferrer"
-                  title="Instagram Oficial"
                   style={{
-                    padding: '0.4rem 0.85rem',
-                    borderRadius: 'var(--radius-full)',
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '9999px',
                     background: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border-subtle)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.76rem',
+                    fontWeight: 700,
+                    textDecoration: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.4rem',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    transition: 'background 0.2s',
-                    border: '1px solid var(--border-subtle)',
+                    gap: '0.35rem',
+                    transition: 'all 0.2s ease',
                   }}
                 >
-                  📸 {churchSettings.social.instagramHandle || '@_macdp'}
+                  <span>📸</span>
+                  <span>Instagram</span>
                 </a>
               )}
               {churchSettings?.social?.youtube && (
@@ -116,149 +108,151 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, churchS
                   href={churchSettings.social.youtube}
                   target="_blank"
                   rel="noreferrer"
-                  title="YouTube Oficial"
                   style={{
-                    padding: '0.4rem 0.85rem',
-                    borderRadius: 'var(--radius-full)',
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '9999px',
                     background: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border-subtle)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.76rem',
+                    fontWeight: 700,
+                    textDecoration: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.4rem',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.8rem',
-                    fontWeight: 700,
-                    border: '1px solid var(--border-subtle)',
+                    gap: '0.35rem',
+                    transition: 'all 0.2s ease',
                   }}
                 >
-                  ▶ Canal do YouTube
+                  <span>▶</span>
+                  <span>YouTube</span>
                 </a>
               )}
             </div>
           </div>
 
-          {/* Horários dos Cultos */}
+          {/* Coluna 2: Cultos Semanais Compactos */}
           <div>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Clock size={18} color="var(--accent-gold)" />
-              <span>Nossas Reuniões</span>
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.9rem' }}>
-              {(() => {
-                const services = (churchSettings?.regularServices || [
-                  { id: '1', day: 'Domingo', time: '10:00', title: 'Culto de Celebração & Ceia', active: true },
-                  { id: '2', day: 'Domingo', time: '18:30', title: 'Culto da Família na Presença', active: true },
-                  { id: '3', day: 'Quarta-feira', time: '19:30', title: 'Noite Profética & Ensino', active: true },
-                  { id: '4', day: 'Sábado', time: '19:00', title: 'Conexão Caçadores Youth', active: true },
-                ]).filter((s) => s.active !== false);
-
-                const days = Array.from(new Set(services.map((s) => s.day)));
-
-                return days.map((day, idx) => (
-                  <div
-                    key={day}
-                    style={{
-                      paddingBottom: idx < days.length - 1 ? '0.6rem' : 0,
-                      borderBottom: idx < days.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-                    }}
-                  >
-                    <strong style={{ color: 'var(--text-primary)', display: 'block' }}>{day}</strong>
-                    {services
-                      .filter((s) => s.day === day)
-                      .map((s) => (
-                        <div key={s.id} style={{ color: 'var(--text-secondary)' }}>
-                          {s.time} - {s.title}
-                        </div>
-                      ))}
-                  </div>
-                ));
-              })()}
+            <h5 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Clock size={15} color="var(--accent-gold)" />
+              <span>Cultos & Reuniões</span>
+            </h5>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.84rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <strong>Domingo (Manhã)</strong>
+                <span>10:00</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <strong>Domingo (Família)</strong>
+                <span>18:30</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <strong>Quarta-feira (Ensino)</strong>
+                <span>19:30</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <strong>Sábado (Jovens)</strong>
+                <span>19:00</span>
+              </div>
             </div>
           </div>
 
-          {/* Endereço e Contato */}
+          {/* Coluna 3: Endereço & Contato Direto */}
           <div>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <MapPin size={18} color="var(--accent-gold)" />
-              <span>Onde Estamos</span>
-            </h4>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.5 }}>
-              {churchSettings?.address.street || 'Rua Lagoa Grande, 382'}
-              <br />
-              {churchSettings?.address.neighborhood || 'Conj. Canaranas - Cidade Nova'}
-              <br />
-              {churchSettings?.address.city || 'Manaus'} - {churchSettings?.address.state || 'AM'}, CEP {churchSettings?.address.zip || '69097-750'}
+            <h5 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <MapPin size={15} color="var(--accent-gold)" />
+              <span>Templo Sede</span>
+            </h5>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem', lineHeight: 1.5, margin: '0 0 0.65rem 0' }}>
+              {churchSettings?.address.street || 'Rua Lagoa Grande, 382'} • Canaranas, Cidade Nova, Manaus - AM
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Phone size={15} color="var(--accent-gold)" /> WhatsApp / Tel: {churchSettings?.phone || '(92) 99127-9663'}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <Phone size={13} color="var(--accent-gold)" /> {churchSettings?.phone || '(92) 99127-9663'}
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Mail size={15} color="var(--accent-gold)" /> {churchSettings?.email || 'contato@macdp.com.br'}
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <Mail size={13} color="var(--accent-gold)" /> {churchSettings?.email || 'contato@macdp.com.br'}
               </span>
             </div>
           </div>
 
-          {/* Links Rápidos */}
+          {/* Coluna 4: Ações & Acesso Rápido */}
           <div>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '1.25rem' }}>Acesso Rápido</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.9rem' }}>
+            <h5 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Acesso Rápido
+            </h5>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.84rem' }}>
               <button
-                onClick={() => onNavigate('oracao')}
-                style={{ background: 'none', border: 'none', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+                onClick={() => onNavigate('eventos')}
+                style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                <Heart size={15} color="var(--accent-gold)" /> Pedir Oração (Sigiloso)
+                <ArrowUpRight size={13} color="var(--accent-gold)" /> Inscrição em Conferências
               </button>
               <button
                 onClick={() => onNavigate('celulas')}
-                style={{ background: 'none', border: 'none', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+                style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                <Compass size={15} color="var(--accent-gold)" /> Localizador de Células
+                <Compass size={13} color="var(--accent-gold)" /> Encontrar uma Célula
               </button>
               <button
                 onClick={() => onNavigate('dizimos')}
-                style={{ background: 'none', border: 'none', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+                style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                <Heart size={15} color="var(--accent-gold)" /> Contribuir via Pix
+                <Heart size={13} color="var(--accent-gold)" /> Contribuição via PIX
               </button>
               <button
-                onClick={() => onNavigate('mensagens')}
-                style={{ background: 'none', border: 'none', textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+                onClick={() => onNavigate('oracao')}
+                style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                <Video size={15} color="var(--accent-gold)" /> Ouvir Mensagens / Podcasts
+                <Mail size={13} color="var(--accent-gold)" /> Pedido de Oração
               </button>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Linha Inferior Limpa & Copyright */}
         <div
           style={{
-            paddingTop: '2rem',
+            paddingTop: '1.5rem',
             borderTop: '1px solid var(--border-subtle)',
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '1rem',
-            fontSize: '0.825rem',
+            gap: '0.75rem',
+            fontSize: '0.78rem',
             color: 'var(--text-muted)',
           }}
         >
           <div
             onClick={(e) => {
-              // Gesto discreto de triplo-clique para pastores/liderança em dispositivos móveis
-              if (e.detail >= 3 && onOpenAdmin) {
-                onOpenAdmin();
-              }
+              if (e.detail >= 3 && onOpenAdmin) onOpenAdmin();
             }}
             style={{ userSelect: 'none', cursor: 'default' }}
           >
-            © {new Date().getFullYear()} Ministério Apostólico Caçadores da Presença (MACDP) • Manaus - AM. Todos os direitos reservados.
+            © {new Date().getFullYear()} Ministério Apostólico Caçadores da Presença • Manaus/AM. Todos os direitos reservados.
           </div>
-          <div style={{ display: 'flex', gap: '1.5rem' }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
             <span>Declaração de Fé</span>
-            <span>Política de Privacidade & LGPD</span>
-            <span>Estatuto Social</span>
+            <span>Privacidade & LGPD</span>
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.78rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                }}
+              >
+                <Shield size={12} />
+                <span>Acesso Pastoral</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
