@@ -149,7 +149,7 @@ export const AboutSection: React.FC = () => {
               }}
             >
               <img
-                src="/images/macdp_comunhao.jpg"
+                src="/images/macdp_adoracao_evento.jpg"
                 alt="Comunhão e Oração dos Membros do Ministério Apostólico Caçadores da Presença (MACDP)"
                 style={{
                   width: '100%',
