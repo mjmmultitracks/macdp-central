@@ -509,19 +509,7 @@ export function App() {
                 onRegister={(evt) => setSelectedEventForWizard(evt)}
               />
 
-              <AboutSection />
-
-              <CellsLocator
-                cells={db.cells}
-                ministries={db.ministries}
-                onVolunteerMinistry={(name) => setVolunteerMinistryName(name)}
-              />
-
-              <SermonsSection
-                sermons={db.sermons}
-                onPlaySermon={(sermon) => setActiveSermon(sermon)}
-              />
-
+              {/* Agenda de Cultos & Próximos Eventos (Acesso Imediato) */}
               <EventsSection
                 events={db.events}
                 regularServices={db.churchSettings?.regularServices}
@@ -529,8 +517,26 @@ export function App() {
                 onOpenEventDetail={handleOpenEventPage}
               />
 
+              {/* Quem Somos & Liderança Pastoral */}
+              <AboutSection />
+
+              {/* Comunidade: Células por Bairro & Ministérios */}
+              <CellsLocator
+                cells={db.cells}
+                ministries={db.ministries}
+                onVolunteerMinistry={(name) => setVolunteerMinistryName(name)}
+              />
+
+              {/* Edificação: Mensagens & Transmissões */}
+              <SermonsSection
+                sermons={db.sermons}
+                onPlaySermon={(sermon) => setActiveSermon(sermon)}
+              />
+
+              {/* Generosidade: Dízimos & Ofertas */}
               <GivingSection onNotify={addNotification} />
 
+              {/* Cuidado & Intercessão: Pedido de Oração */}
               <PrayerForm onNotify={addNotification} />
             </main>
           )}

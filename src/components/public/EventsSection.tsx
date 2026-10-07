@@ -93,8 +93,8 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-subtle)',
             borderRadius: 'var(--radius-xl)',
-            padding: '2rem',
-            marginBottom: '4rem',
+            padding: '1.75rem 1.5rem',
+            marginBottom: '3.5rem',
             boxShadow: 'var(--shadow-md)',
           }}
         >
@@ -105,9 +105,9 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
               justifyContent: 'space-between',
               flexWrap: 'wrap',
               gap: '1rem',
-              marginBottom: '2rem',
+              marginBottom: '1.5rem',
               borderBottom: '1px solid var(--border-subtle)',
-              paddingBottom: '1.25rem',
+              paddingBottom: '1rem',
             }}
           >
             <div>
