@@ -38,6 +38,7 @@ import { formatCurrency, formatDate, calculateAge, formatEventDateRange } from '
 import confetti from 'canvas-confetti';
 import { generateEventVoucherPDF } from '../../utils/pdfGenerator';
 import { sendEventConfirmationEmail, SentEmailRecord } from '../../services/emailService';
+import { Shirt3DModal } from '../common/Shirt3DModal';
 
 interface EventRegistrationWizardProps {
   event: ChurchEvent;
@@ -63,6 +64,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   const [customAnswers, setCustomAnswers] = useState<Record<string, any>>({});
   const [includeShirt, setIncludeShirt] = useState(false);
   const [shirtSize, setShirtSize] = useState('M');
+  const [isShirt3DModalOpen, setIsShirt3DModalOpen] = useState(false);
 
   // Allowed Payment Methods & Mercado Pago Integration (memoized to avoid JSON.parse on every keystroke)
   const churchSettings = useMemo(() => getChurchSettings(), []);
@@ -1055,29 +1057,52 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setIncludeShirt(!includeShirt)}
-                      className={`btn ${includeShirt ? 'btn-primary' : 'btn-secondary'}`}
-                      style={{
-                        padding: '0.55rem 1.15rem',
-                        fontSize: '0.86rem',
-                        fontWeight: 800,
-                        gap: '0.45rem',
-                        borderRadius: '8px',
-                      }}
-                    >
-                      {includeShirt ? (
-                        <>
-                          <CheckCircle2 size={16} />
-                          <span>Camisa Inclusa</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Quero Adicionar (+ {formatCurrency(event.shirtPrice)})</span>
-                        </>
-                      )}
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => setIsShirt3DModalOpen(true)}
+                        className="btn btn-secondary"
+                        style={{
+                          padding: '0.55rem 1rem',
+                          fontSize: '0.86rem',
+                          fontWeight: 800,
+                          gap: '0.45rem',
+                          borderRadius: '8px',
+                          background: 'rgba(245, 158, 11, 0.12)',
+                          borderColor: 'var(--accent-gold)',
+                          color: 'var(--accent-gold)',
+                          cursor: 'pointer',
+                        }}
+                        title="Ver o modelo 3D da camisa com rotação 360°"
+                      >
+                        <Sparkles size={16} />
+                        <span>Ver em 3D (360°)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setIncludeShirt(!includeShirt)}
+                        className={`btn ${includeShirt ? 'btn-primary' : 'btn-secondary'}`}
+                        style={{
+                          padding: '0.55rem 1.15rem',
+                          fontSize: '0.86rem',
+                          fontWeight: 800,
+                          gap: '0.45rem',
+                          borderRadius: '8px',
+                        }}
+                      >
+                        {includeShirt ? (
+                          <>
+                            <CheckCircle2 size={16} />
+                            <span>Camisa Inclusa</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Quero Adicionar (+ {formatCurrency(event.shirtPrice)})</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Seletor de Tamanhos quando a camisa for incluída */}
@@ -2639,6 +2664,24 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
             </div>
           </div>
         )}
+
+        {/* Modal 3D Interativo da Camisa Oficial */}
+        <Shirt3DModal
+          isOpen={isShirt3DModalOpen}
+          onClose={() => setIsShirt3DModalOpen(false)}
+          eventTitle={event.title}
+          category={event.category}
+          isKids={event.title.toLowerCase().includes('kids')}
+          shirtPrice={event.shirtPrice}
+          availableSizes={availableShirtSizes}
+          selectedSize={shirtSize}
+          onSelectSize={setShirtSize}
+          isShirtIncluded={includeShirt}
+          onToggleIncludeShirt={setIncludeShirt}
+          frontImageUrl={event.shirtFrontImageUrl}
+          backImageUrl={event.shirtBackImageUrl}
+          shirtColor={event.shirtColor}
+        />
       </div>
     </div>
   );

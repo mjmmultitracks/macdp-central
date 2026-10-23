@@ -28,7 +28,48 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
 
     // 2. Sincroniza Eventos e Inscrições nas tabelas relacionais
     if (data.events && Array.isArray(data.events)) {
-      const activeEventIds = data.events.map((e) => e.id);
+      // Merge safeguard: Garante que um cliente com dados locais desatualizados nunca apague inscrições da nuvem
+      try {
+        const { data: tableRegs } = await supabase.from('event_registrations').select('*');
+        if (tableRegs && tableRegs.length > 0) {
+          const regsByEvent: Record<string, any[]> = {};
+          tableRegs.forEach((r: any) => {
+            if (!regsByEvent[r.event_id]) regsByEvent[r.event_id] = [];
+            regsByEvent[r.event_id].push(r);
+          });
+
+          data.events.forEach((evt) => {
+            const remoteList = regsByEvent[evt.id] || [];
+            if (remoteList.length > (evt.registrations?.length || 0)) {
+              const clientRegMap = new Map((evt.registrations || []).map((r) => [r.id, r]));
+              remoteList.forEach((r: any) => {
+                if (!clientRegMap.has(r.id)) {
+                  clientRegMap.set(r.id, {
+                    id: r.id,
+                    name: r.name,
+                    email: r.email,
+                    phone: r.phone,
+                    checkedIn: Boolean(r.checked_in),
+                    registeredAt: r.registered_at,
+                    paymentMethod: r.payment_method || 'manual',
+                    paymentStatus: r.payment_status || 'pending',
+                    paymentNotes: r.payment_notes || undefined,
+                    totalPaid: r.price_paid || 0,
+                    customAnswers: r.custom_answers || {},
+                    includeShirt: (r.price_paid >= 200),
+                    shirtPrice: (r.price_paid >= 200 ? 50 : undefined),
+                  });
+                }
+              });
+              evt.registrations = Array.from(clientRegMap.values());
+              evt.registeredCount = evt.registrations.length;
+            }
+          });
+        }
+      } catch (mergeErr) {
+        console.warn('Aviso no merge safeguard de inscrições:', mergeErr);
+      }
+
       const formattedEvents = data.events.map((e) => ({
         id: e.id,
         title: e.title,
@@ -56,26 +97,11 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
         await supabase.from('events').upsert(formattedEvents);
       }
 
-      // Reconciliação: remove eventos órfãos que foram deletados no painel
-      try {
-        const { data: remoteEvents } = await supabase.from('events').select('id');
-        if (remoteEvents) {
-          const orphanEventIds = remoteEvents.map((e) => e.id).filter((id) => !activeEventIds.includes(id));
-          if (orphanEventIds.length > 0) {
-            await supabase.from('events').delete().in('id', orphanEventIds);
-          }
-        }
-      } catch (err) {
-        console.warn('Reconciliação de eventos no Supabase:', err);
-      }
-
       // Sincroniza Inscrições de cada evento
       const allRegistrations: any[] = [];
-      const activeRegIds: string[] = [];
 
       data.events.forEach((evt) => {
         (evt.registrations || []).forEach((r) => {
-          activeRegIds.push(r.id);
           allRegistrations.push({
             id: r.id,
             event_id: evt.id,
@@ -97,19 +123,6 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
 
       if (allRegistrations.length > 0) {
         await supabase.from('event_registrations').upsert(allRegistrations);
-      }
-
-      // Reconciliação: remove inscrições órfãs que foram deletadas no painel
-      try {
-        const { data: remoteRegs } = await supabase.from('event_registrations').select('id');
-        if (remoteRegs) {
-          const orphanRegIds = remoteRegs.map((r) => r.id).filter((id) => !activeRegIds.includes(id));
-          if (orphanRegIds.length > 0) {
-            await supabase.from('event_registrations').delete().in('id', orphanRegIds);
-          }
-        }
-      } catch (err) {
-        console.warn('Reconciliação de inscrições no Supabase:', err);
       }
     }
 
@@ -255,6 +268,52 @@ export async function pullDatabaseFromSupabase(): Promise<DatabaseSchema | null>
 
     if (data && data.data) {
       const rawDb = data.data as DatabaseSchema;
+
+      // Hidratação durável: garante que todas as inscrições registradas na tabela relacional sejam fundidas ao snapshot
+      try {
+        const { data: tableRegs } = await supabase
+          .from('event_registrations')
+          .select('*')
+          .order('registered_at', { ascending: true });
+
+        if (tableRegs && tableRegs.length > 0 && Array.isArray(rawDb.events)) {
+          const regsByEvent: Record<string, EventRegistration[]> = {};
+          tableRegs.forEach((r: any) => {
+            if (!regsByEvent[r.event_id]) regsByEvent[r.event_id] = [];
+            regsByEvent[r.event_id].push({
+              id: r.id,
+              name: r.name,
+              email: r.email,
+              phone: r.phone,
+              checkedIn: Boolean(r.checked_in),
+              registeredAt: r.registered_at,
+              paymentMethod: r.payment_method || 'manual',
+              paymentStatus: r.payment_status || 'pending',
+              paymentNotes: r.payment_notes || undefined,
+              totalPaid: r.price_paid || 0,
+              customAnswers: r.custom_answers || {},
+              includeShirt: (r.price_paid >= 200),
+              shirtPrice: (r.price_paid >= 200 ? 50 : undefined),
+            });
+          });
+
+          rawDb.events.forEach((evt) => {
+            if (regsByEvent[evt.id]) {
+              const regMap = new Map<string, EventRegistration>();
+              (evt.registrations || []).forEach((r) => regMap.set(r.id, r));
+              regsByEvent[evt.id].forEach((r) => {
+                const existing = regMap.get(r.id);
+                regMap.set(r.id, existing ? { ...r, ...existing } : r);
+              });
+              evt.registrations = Array.from(regMap.values());
+              evt.registeredCount = evt.registrations.length;
+            }
+          });
+        }
+      } catch (hydrateErr) {
+        console.warn('Aviso ao hidratar inscrições do Supabase:', hydrateErr);
+      }
+
       const { sanitized, hasChanged } = sanitizeDatabase(rawDb);
 
       if (hasChanged) {

@@ -24,6 +24,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { getGoogleMapsEmbedUrl, getGoogleMapsDirectionsUrl } from '../../services/googleMapsService';
+import { Shirt3DModal } from '../common/Shirt3DModal';
 
 interface EventDetailPageProps {
   event: ChurchEvent;
@@ -38,6 +39,8 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [isShirt3DModalOpen, setIsShirt3DModalOpen] = useState(false);
+  const [selectedShirtSize, setSelectedShirtSize] = useState('M');
   const [openFaqIds, setOpenFaqIds] = useState<Record<string, boolean>>(() => {
     if (event.faq && event.faq.length > 0) {
       return { [event.faq[0].id]: true };
@@ -841,23 +844,46 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
                   {event.isFree ? 'Entrada Gratuita' : `R$ ${event.price?.toFixed(2)}`}
                 </div>
                 {event.hasShirt && event.shirtPrice && (
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.45rem',
-                      background: 'rgba(245, 158, 11, 0.12)',
-                      border: '1px solid rgba(245, 158, 11, 0.35)',
-                      borderRadius: '6px',
-                      padding: '0.35rem 0.65rem',
-                      fontSize: '0.78rem',
-                      color: 'var(--accent-gold)',
-                      fontWeight: 700,
-                      marginTop: '0.5rem',
-                    }}
-                  >
-                    <Shirt size={14} />
-                    <span>Camisa Oficial disponível por R$ {event.shirtPrice.toFixed(2)} (opcional na inscrição)</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.6rem' }}>
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.45rem',
+                        background: 'rgba(245, 158, 11, 0.12)',
+                        border: '1px solid rgba(245, 158, 11, 0.35)',
+                        borderRadius: '6px',
+                        padding: '0.35rem 0.65rem',
+                        fontSize: '0.78rem',
+                        color: 'var(--accent-gold)',
+                        fontWeight: 700,
+                      }}
+                    >
+                      <Shirt size={14} />
+                      <span>Camisa Oficial por R$ {event.shirtPrice.toFixed(2)} (opcional)</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsShirt3DModalOpen(true)}
+                      className="btn btn-secondary"
+                      style={{
+                        padding: '0.45rem 0.85rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 800,
+                        gap: '0.45rem',
+                        borderRadius: '8px',
+                        background: 'rgba(245, 158, 11, 0.14)',
+                        borderColor: 'var(--accent-gold)',
+                        color: 'var(--accent-gold)',
+                        width: '100%',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Sparkles size={14} />
+                      <span>Ver Camisa Oficial em 3D (360°)</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -963,6 +989,28 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Modal 3D Interativo da Camisa Oficial */}
+      {event.hasShirt && (
+        <Shirt3DModal
+          isOpen={isShirt3DModalOpen}
+          onClose={() => setIsShirt3DModalOpen(false)}
+          eventTitle={event.title}
+          category={event.category}
+          isKids={event.title.toLowerCase().includes('kids')}
+          shirtPrice={event.shirtPrice}
+          availableSizes={event.shirtSizes || ['PP', 'P', 'M', 'G', 'GG', 'XGG']}
+          selectedSize={selectedShirtSize}
+          onSelectSize={setSelectedShirtSize}
+          isShirtIncluded={false}
+          onToggleIncludeShirt={() => {
+            onStartRegistration(event);
+          }}
+          frontImageUrl={event.shirtFrontImageUrl}
+          backImageUrl={event.shirtBackImageUrl}
+          shirtColor={event.shirtColor}
+        />
+      )}
     </div>
   );
 };

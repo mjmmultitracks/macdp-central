@@ -243,6 +243,10 @@ export interface ChurchEvent {
   hasShirt?: boolean; // Opção de venda de camisa oficial
   shirtPrice?: number; // Valor unitário da camisa (R$)
   shirtSizes?: string[]; // Tamanhos disponíveis (ex: ['PP', 'P', 'M', 'G', 'GG', 'XGG'])
+  shirtFrontImageUrl?: string; // Imagem/arte da estampa da frente da camisa
+  shirtBackImageUrl?: string; // Imagem/arte da estampa das costas da camisa
+  shirtColor?: string; // Cor base da camisa (ex: '#111827', '#ffffff')
+  shirtDescription?: string; // Detalhes do tecido, corte e acabamento da camisa
   totalCapacity: number;
   registeredCount: number;
   speakerName?: string;

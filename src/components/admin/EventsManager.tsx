@@ -46,6 +46,8 @@ import {
   Sparkles,
   Upload,
   Image as ImageIcon,
+  FileSpreadsheet,
+  Database,
 } from 'lucide-react';
 
 interface RoomItem {
@@ -97,6 +99,8 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
   const [hasShirt, setHasShirt] = useState(false);
   const [shirtPrice, setShirtPrice] = useState<number>(50);
   const [shirtSizesStr, setShirtSizesStr] = useState('PP, P, M, G, GG, XGG, Infantil 8, Infantil 12');
+  const [shirtFrontImageUrl, setShirtFrontImageUrl] = useState('');
+  const [shirtBackImageUrl, setShirtBackImageUrl] = useState('');
   const [totalCapacity, setTotalCapacity] = useState<number>(300);
   const [speakerName, setSpeakerName] = useState('');
   const [detailedSchedule, setDetailedSchedule] = useState('');
@@ -175,6 +179,8 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setHasShirt(false);
     setShirtPrice(50);
     setShirtSizesStr('PP, P, M, G, GG, XGG, Infantil 8, Infantil 12');
+    setShirtFrontImageUrl('');
+    setShirtBackImageUrl('');
     setTotalCapacity(300);
     setSpeakerName('Pr. Oziel Gomes Maduro & Preletores Convidados');
     setDetailedSchedule('');
@@ -216,6 +222,8 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
     setHasShirt(evt.hasShirt || false);
     setShirtPrice(evt.shirtPrice || 50);
     setShirtSizesStr((evt.shirtSizes && evt.shirtSizes.length > 0 ? evt.shirtSizes : ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'Infantil 8', 'Infantil 12']).join(', '));
+    setShirtFrontImageUrl(evt.shirtFrontImageUrl || '');
+    setShirtBackImageUrl(evt.shirtBackImageUrl || '');
     setTotalCapacity(evt.totalCapacity);
     setSpeakerName(evt.speakerName || '');
     setDetailedSchedule(evt.detailedSchedule || '');
@@ -509,6 +517,8 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         hasShirt: !isFree && hasShirt,
         shirtPrice: !isFree && hasShirt ? Number(shirtPrice) || 0 : undefined,
         shirtSizes: !isFree && hasShirt ? shirtSizesStr.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+        shirtFrontImageUrl: !isFree && hasShirt ? shirtFrontImageUrl.trim() || undefined : undefined,
+        shirtBackImageUrl: !isFree && hasShirt ? shirtBackImageUrl.trim() || undefined : undefined,
         totalCapacity: Number(totalCapacity) || 100,
         registeredCount: editingEvent.registrations.length,
         speakerName,
@@ -536,6 +546,8 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
         hasShirt: !isFree && hasShirt,
         shirtPrice: !isFree && hasShirt ? Number(shirtPrice) || 0 : undefined,
         shirtSizes: !isFree && hasShirt ? shirtSizesStr.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
+        shirtFrontImageUrl: !isFree && hasShirt ? shirtFrontImageUrl.trim() || undefined : undefined,
+        shirtBackImageUrl: !isFree && hasShirt ? shirtBackImageUrl.trim() || undefined : undefined,
         totalCapacity: Number(totalCapacity) || 100,
         speakerName,
         detailedSchedule,
@@ -589,6 +601,122 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
   const handleApprovePayment = (eventId: string, regId: string, regName: string) => {
     updateEventRegistrationPayment(eventId, regId, 'confirmed');
     onNotify('success', `Pagamento de ${regName} aprovado com sucesso!`);
+  };
+
+  const handleExportEventCSV = (evt: ChurchEvent) => {
+    let csv = '\uFEFF';
+    const questionLabels = (evt.customQuestions || []).map((q) => q.label);
+    const headers = [
+      'ID Inscrição',
+      'Nome Completo',
+      'Telefone',
+      'E-mail',
+      'Status Pagamento',
+      'Método Pagamento',
+      'Valor Pago (R$)',
+      'Camisa Inclusa',
+      'Tamanho Camisa',
+      'Check-in / Presença',
+      'Data da Inscrição',
+      ...questionLabels,
+    ];
+    csv += headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(';') + '\n';
+
+    evt.registrations.forEach((r) => {
+      const qAnswers = (evt.customQuestions || []).map((q) => {
+        const val = r.customAnswers ? r.customAnswers[q.id] : '';
+        return Array.isArray(val) ? val.join(', ') : val || '';
+      });
+
+      const row = [
+        r.id,
+        r.name,
+        r.phone,
+        r.email,
+        r.paymentStatus === 'confirmed' ? 'Confirmado' : r.paymentStatus === 'free' ? 'Gratuito' : 'Pendente',
+        r.paymentMethod || 'Manual',
+        r.totalPaid || 0,
+        r.includeShirt ? 'Sim' : 'Não',
+        r.includeShirt ? r.shirtSize || 'M' : 'N/A',
+        r.checkedIn ? 'Presente' : 'Aguardando',
+        r.registeredAt,
+        ...qAnswers,
+      ];
+      csv += row.map((cell) => `"${String(cell || '').replace(/"/g, '""')}"`).join(';') + '\n';
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const cleanTitle = evt.title.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    link.download = `inscricoes_${cleanTitle}_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    onNotify('success', `Planilha Excel (CSV) de "${evt.title}" baixada com sucesso!`);
+  };
+
+  const handleExportEventJSON = (evt: ChurchEvent) => {
+    const blob = new Blob([JSON.stringify(evt, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const cleanTitle = evt.title.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    link.download = `backup_${cleanTitle}_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    onNotify('success', `Backup JSON de "${evt.title}" baixado com sucesso!`);
+  };
+
+  const handleExportAllRegistrationsCSV = () => {
+    let csv = '\uFEFF';
+    const headers = [
+      'ID Inscrição',
+      'Evento',
+      'Nome Completo',
+      'Telefone',
+      'E-mail',
+      'Status Pagamento',
+      'Método Pagamento',
+      'Valor Pago (R$)',
+      'Camisa Inclusa',
+      'Tamanho Camisa',
+      'Check-in / Presença',
+      'Data da Inscrição',
+    ];
+    csv += headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(';') + '\n';
+
+    events.forEach((evt) => {
+      (evt.registrations || []).forEach((r) => {
+        const row = [
+          r.id,
+          evt.title,
+          r.name,
+          r.phone,
+          r.email,
+          r.paymentStatus === 'confirmed' ? 'Confirmado' : r.paymentStatus === 'free' ? 'Gratuito' : 'Pendente',
+          r.paymentMethod || 'Manual',
+          r.totalPaid || 0,
+          r.includeShirt ? 'Sim' : 'Não',
+          r.includeShirt ? r.shirtSize || 'M' : 'N/A',
+          r.checkedIn ? 'Presente' : 'Aguardando',
+          r.registeredAt,
+        ];
+        csv += row.map((cell) => `"${String(cell || '').replace(/"/g, '""')}"`).join(';') + '\n';
+      });
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `backup_todas_inscricoes_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    onNotify('success', 'Planilha geral com todas as inscrições baixada com sucesso!');
   };
 
   // Rooms CRUD
@@ -751,6 +879,46 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
             >
               <Download size={17} />
               <span>Gerar PDF da Lista</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleExportEventCSV(selectedEventForCheckin)}
+              className="btn btn-secondary"
+              style={{
+                gap: '0.55rem',
+                background: 'rgba(16, 185, 129, 0.12)',
+                borderColor: 'var(--status-success)',
+                color: 'var(--status-success)',
+                fontWeight: 800,
+                padding: '0.65rem 1.25rem',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '0.92rem',
+              }}
+              title="Baixar Planilha Excel com todos os dados dos inscritos deste evento"
+            >
+              <FileSpreadsheet size={17} />
+              <span>Exportar Excel (CSV)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleExportEventJSON(selectedEventForCheckin)}
+              className="btn btn-secondary"
+              style={{
+                gap: '0.55rem',
+                background: 'rgba(59, 130, 246, 0.12)',
+                borderColor: 'var(--accent-blue)',
+                color: 'var(--accent-blue-light)',
+                fontWeight: 800,
+                padding: '0.65rem 1.25rem',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '0.92rem',
+              }}
+              title="Baixar Arquivo Estruturado JSON de Segurança"
+            >
+              <Database size={17} />
+              <span>Backup JSON</span>
             </button>
 
             <button
@@ -2122,14 +2290,34 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
           </p>
         </div>
 
-        <button
-          onClick={openNewEventModal}
-          className="btn btn-primary"
-          style={{ gap: '0.45rem', fontSize: '0.875rem' }}
-        >
-          <Plus size={16} />
-          <span>Novo Evento</span>
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handleExportAllRegistrationsCSV}
+            className="btn btn-secondary"
+            style={{
+              gap: '0.45rem',
+              fontSize: '0.875rem',
+              background: 'rgba(16, 185, 129, 0.12)',
+              borderColor: 'var(--status-success)',
+              color: 'var(--status-success)',
+              fontWeight: 700,
+            }}
+            title="Baixar planilha Excel (CSV) com todas as inscrições de todos os eventos da igreja"
+          >
+            <FileSpreadsheet size={16} />
+            <span>Baixar Backup das Inscrições (Excel)</span>
+          </button>
+
+          <button
+            onClick={openNewEventModal}
+            className="btn btn-primary"
+            style={{ gap: '0.45rem', fontSize: '0.875rem' }}
+          >
+            <Plus size={16} />
+            <span>Novo Evento</span>
+          </button>
+        </div>
       </div>
 
       {/* Dica Rápida: Cultos Semanais */}
@@ -3209,6 +3397,41 @@ export const EventsManager: React.FC<EventsManagerProps> = ({ events, onNotify }
                       value={shirtSizesStr}
                       onChange={(e) => setShirtSizesStr(e.target.value)}
                     />
+                  </div>
+
+                  {/* Artes e Estampas 3D da Camisa */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.85rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-subtle)' }}>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label" style={{ fontSize: '0.82rem' }}>
+                        Arte da Frente (URL da Estampa 3D)
+                      </label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Ex: /images/estampa_frente.png"
+                        value={shirtFrontImageUrl}
+                        onChange={(e) => setShirtFrontImageUrl(e.target.value)}
+                      />
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                        Opcional (se vazio, usa o emblema oficial comemorativo)
+                      </span>
+                    </div>
+
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label" style={{ fontSize: '0.82rem' }}>
+                        Arte das Costas (URL da Estampa 3D)
+                      </label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Ex: /images/estampa_costas.png"
+                        value={shirtBackImageUrl}
+                        onChange={(e) => setShirtBackImageUrl(e.target.value)}
+                      />
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                        Opcional (se vazio, usa a tipografia bíblica temática)
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}

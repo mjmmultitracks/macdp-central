@@ -522,8 +522,11 @@ export const INITIAL_DATABASE: DatabaseSchema = {
       hasShirt: true,
       shirtPrice: 50,
       shirtSizes: ['PP', 'P', 'M', 'G', 'GG', 'XGG', 'Infantil 8', 'Infantil 12'],
+      shirtFrontImageUrl: '/images/camisa_dorot_frente.png',
+      shirtBackImageUrl: '/images/camisa_dorot_costas.png',
+      shirtColor: '#361c0e',
       totalCapacity: 200,
-      registeredCount: 1,
+      registeredCount: 0,
       speakerName: '',
       detailedSchedule: '',
       customQuestions: [
