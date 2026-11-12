@@ -56,8 +56,8 @@ export async function pushDatabaseToSupabase(data: DatabaseSchema): Promise<bool
                     paymentNotes: r.payment_notes || undefined,
                     totalPaid: r.price_paid || 0,
                     customAnswers: r.custom_answers || {},
-                    includeShirt: (r.price_paid >= 200),
-                    shirtPrice: (r.price_paid >= 200 ? 50 : undefined),
+                    // A tabela relacional não guarda dados de camisa: nunca inferir pelo valor pago.
+                    includeShirt: false,
                   });
                 }
               });
@@ -292,8 +292,8 @@ export async function pullDatabaseFromSupabase(): Promise<DatabaseSchema | null>
               paymentNotes: r.payment_notes || undefined,
               totalPaid: r.price_paid || 0,
               customAnswers: r.custom_answers || {},
-              includeShirt: (r.price_paid >= 200),
-              shirtPrice: (r.price_paid >= 200 ? 50 : undefined),
+              // A tabela relacional não guarda dados de camisa: nunca inferir pelo valor pago.
+              includeShirt: false,
             });
           });
 
