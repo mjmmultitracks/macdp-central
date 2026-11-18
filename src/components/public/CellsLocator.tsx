@@ -23,7 +23,7 @@ export const CellsLocator: React.FC<CellsLocatorProps> = ({ cells, ministries })
 
   const defaultMinistries = [
     { name: 'Caçadores da Presença Music (Ministério de Louvor)', description: 'Ministério de louvor da MACDP, que conduz a igreja em adoração.' },
-    { name: 'Hope Dance (Ministério de Dança)', description: 'Ministério de dança que expressa adoração por meio do movimento.' },
+    { name: 'Hop Dance (Ministério de Dança)', description: 'Ministério de dança que expressa adoração por meio do movimento.' },
     { name: 'HOPART (Ministério de Artes)', description: 'Ministério de artes da MACDP.' },
     { name: 'Ministério de Serviço', description: 'Serve a igreja e os irmãos nos cultos e eventos.' },
     { name: 'Comunicação e Mídia', description: 'Transmissão ao vivo, fotos, vídeos e redes sociais da MACDP.' },

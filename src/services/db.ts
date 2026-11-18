@@ -362,7 +362,7 @@ export const INITIAL_DATABASE: DatabaseSchema = {
     },
     {
       id: 'min_dance',
-      name: 'Hope Dance (Ministério de Dança)',
+      name: 'Hop Dance (Ministério de Dança)',
       leaderName: '',
       leaderPhone: '',
       description: 'Ministério de dança que expressa adoração por meio do movimento.',
