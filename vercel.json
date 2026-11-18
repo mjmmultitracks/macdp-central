@@ -31,5 +31,10 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/dorot-download.js": {
+      "includeFiles": "api/_files/**"
+    }
+  }
 }

@@ -1,4 +1,6 @@
 // Serverless function to create a payment or preference with Mercado Pago
+import { getStoreItem } from './_lib/store.js';
+
 export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -28,6 +30,11 @@ export default async function handler(req, res) {
       registrationId,
       paymentMethod = 'pix', // 'pix' or 'preference' (card/checkout pro)
       customAccessToken,
+      description: customDescription,
+      itemTitle,
+      productId,
+      formatId,
+      quantity,
     } = req.body || {};
 
     const accessToken = (
@@ -44,7 +51,18 @@ export default async function handler(req, res) {
       });
     }
 
-    const parsedAmount = parseFloat(amount);
+    // Loja: o valor é calculado aqui no servidor, a partir do catálogo (o navegador não define o preço).
+    let parsedAmount = parseFloat(amount);
+    let storeMetadata;
+    if (eventId === 'loja') {
+      const item = getStoreItem(String(productId || ''), String(formatId || ''));
+      if (!item) {
+        return res.status(400).json({ error: 'Produto inválido.', code: 'INVALID_PRODUCT' });
+      }
+      const qty = item.format.kind === 'digital' ? 1 : Math.min(10, Math.max(1, parseInt(quantity, 10) || 1));
+      parsedAmount = Number((item.format.price * qty).toFixed(2));
+      storeMetadata = { product: String(productId), format: String(formatId), quantity: qty };
+    }
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ error: 'Valor da transação inválido.', code: 'INVALID_AMOUNT' });
     }
@@ -66,7 +84,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           transaction_amount: Number(parsedAmount.toFixed(2)),
-          description: `Inscrição: ${title.slice(0, 45)} - MACDP`,
+          description: customDescription ? String(customDescription).slice(0, 80) : `Inscrição: ${title.slice(0, 45)} - MACDP`,
           payment_method_id: 'pix',
           payer: {
             email: payerEmail,
@@ -74,6 +92,7 @@ export default async function handler(req, res) {
             last_name: lastName,
           },
           external_reference: `${eventId || 'evt'}:${registrationId || Date.now()}`,
+          ...(storeMetadata ? { metadata: storeMetadata } : {}),
           notification_url: `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host || 'macdp.com.br'}/api/mercadopago-webhook`,
         }),
       });
@@ -115,8 +134,8 @@ export default async function handler(req, res) {
           items: [
             {
               id: eventId || 'evento',
-              title: `Inscrição: ${title} - MACDP`,
-              description: `Vaga oficial no evento ${title}`,
+              title: itemTitle ? String(itemTitle).slice(0, 120) : `Inscrição: ${title} - MACDP`,
+              description: customDescription ? String(customDescription).slice(0, 200) : `Vaga oficial no evento ${title}`,
               unit_price: Number(parsedAmount.toFixed(2)),
               quantity: 1,
               currency_id: 'BRL',
@@ -135,6 +154,7 @@ export default async function handler(req, res) {
           },
           auto_return: 'approved',
           external_reference: `${eventId || 'evt'}:${registrationId || Date.now()}`,
+          ...(storeMetadata ? { metadata: storeMetadata } : {}),
           statement_descriptor: 'MACDP IGREJA',
         }),
       });

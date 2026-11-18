@@ -9,10 +9,10 @@ import {
   Calendar,
   Video,
   Users,
-  Compass,
   Sparkles,
   Shield,
   MessageCircle,
+  ShoppingBag,
 } from 'lucide-react';
 import { ChurchSettings } from '../../types';
 
@@ -52,9 +52,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'home', label: 'Início', icon: Church },
     { id: 'sobre', label: 'Sobre Nós', icon: Users },
     { id: 'ministerios', label: 'Ministérios', icon: Sparkles },
-    { id: 'celulas', label: 'Células', icon: Compass },
     { id: 'mensagens', label: 'Mensagens', icon: Video },
     { id: 'eventos', label: 'Eventos & Cultos', icon: Calendar },
+    { id: 'loja', label: 'Loja', icon: ShoppingBag },
     { id: 'dizimos', label: 'Dízimos & Ofertas', icon: Heart },
     { id: 'oracao', label: 'Oração & Contato', icon: Heart },
   ];

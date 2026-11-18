@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DatabaseSchema, Sermon, ChurchEvent, UserRole, UserSession } from './types';
 import { getDatabase, calculateChurchStats, addEventRegistration } from './services/db';
 import { getCurrentUser, switchUserRole, isUserAuthenticated, logoutUser } from './services/authService';
@@ -16,10 +16,12 @@ import { ToastContainer, ToastMessage } from './components/common/Toast';
 
 // Public Sections
 import { HeroSection } from './components/public/HeroSection';
+import { MusicSection } from './components/public/MusicSection';
+import { StoreSection } from './components/public/StoreSection';
 import { EventsSection } from './components/public/EventsSection';
 import { SermonsSection } from './components/public/SermonsSection';
 import { AboutSection } from './components/public/AboutSection';
-import { CellsLocator } from './components/public/CellsLocator';
+import { MinistriesSection } from './components/public/MinistriesSection';
 import { GivingSection } from './components/public/GivingSection';
 import { PrayerForm } from './components/public/PrayerForm';
 
@@ -110,7 +112,7 @@ export function App() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('igreja_theme');
     if (saved) return saved === 'dark';
-    return true; // Default to elegant dark mode
+    return true; // Padrão: visual escuro, estilo worship
   });
 
   // Toasts
@@ -150,6 +152,9 @@ export function App() {
     return () => window.removeEventListener('popstate', checkQuery);
   }, []);
 
+  // Guarda qual evento já foi aberto pela URL, para só rolar ao topo na primeira abertura
+  const openedEventRouteRef = useRef('');
+
   // Route and Hash listener for dedicated Event Detail Page (/evento/id, /eventos/id, #evento/id, ?evento=id)
   useEffect(() => {
     const checkEventRoute = () => {
@@ -171,12 +176,19 @@ export function App() {
         eventId = params.get('evento') || params.get('evento_id') || '';
       }
 
-      if (eventId) {
+      if (!eventId) {
+        openedEventRouteRef.current = '';
+      } else {
         const found = db.events.find((e) => e.id === eventId);
         if (found) {
+          // Mantém os dados do evento atualizados com a sincronização...
           setSelectedEventForDetail(found);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          document.title = `${found.title} - MACDP Central`;
+          // ...mas só volta ao topo quando o evento é aberto, e não a cada atualização do banco.
+          if (openedEventRouteRef.current !== eventId) {
+            openedEventRouteRef.current = eventId;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.title = `${found.title} - MACDP Central`;
+          }
         }
       }
     };
@@ -478,7 +490,7 @@ export function App() {
           onNotify={addNotification}
         />
       ) : view === 'public' ? (
-        <div key="public-view" className="animate-page-enter" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div key="public-view" className="animate-page-enter public-site" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           {/* Public Navbar */}
           <Navbar
             currentSection={selectedEventForDetail ? 'eventos' : publicSection}
@@ -507,15 +519,27 @@ export function App() {
               <HeroSection
                 onNavigate={handlePublicNavigate}
                 onOpenLiveModal={() => setLiveModalOpen(true)}
+                events={db.events}
+                regularServices={db.churchSettings?.regularServices}
+                onOpenEvent={handleOpenEventPage}
               />
 
               {/* Temporizador da Conferência Caçadores da Presença 2026 (13 de Novembro) */}
-              <ConferenceCountdown
-                event={db.events.find((e) => e.id === 'evt_1' || e.title.includes('DOROT') || e.title.toLowerCase().includes('caçadores'))}
-                allEvents={db.events}
-                onOpenEvent={handleOpenEventPage}
-                onRegister={(evt) => setSelectedEventForWizard(evt)}
-              />
+              {(() => {
+                const conferenceEvent = db.events.find((e) => e.id === 'evt_1' || e.title.includes('DOROT') || e.title.toLowerCase().includes('caçadores'));
+                const now = new Date();
+                const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                // Esconde o banner quando a conferência já terminou
+                if (!conferenceEvent || (conferenceEvent.endDate || conferenceEvent.date) < todayIso) return null;
+                return (
+                  <ConferenceCountdown
+                    event={conferenceEvent}
+                    allEvents={db.events}
+                    onOpenEvent={handleOpenEventPage}
+                    onRegister={(evt) => setSelectedEventForWizard(evt)}
+                  />
+                );
+              })()}
 
               {/* Agenda de Cultos & Próximos Eventos (Acesso Imediato) */}
               <EventsSection
@@ -528,18 +552,20 @@ export function App() {
               {/* Quem Somos & Liderança Pastoral */}
               <AboutSection />
 
-              {/* Comunidade: Células por Bairro & Ministérios */}
-              <CellsLocator
-                cells={db.cells}
-                ministries={db.ministries}
-                onVolunteerMinistry={(name) => setVolunteerMinistryName(name)}
-              />
+              {/* Ministério de Louvor: Caçadores da Presença Music */}
+              <MusicSection />
+
+              {/* Ministérios */}
+              <MinistriesSection ministries={db.ministries} />
 
               {/* Edificação: Mensagens & Transmissões */}
               <SermonsSection
                 sermons={db.sermons}
                 onPlaySermon={(sermon) => setActiveSermon(sermon)}
               />
+
+              {/* Loja: livros da conferência */}
+              <StoreSection onNotify={addNotification} />
 
               {/* Generosidade: Dízimos & Ofertas */}
               <GivingSection onNotify={addNotification} />
@@ -771,7 +797,7 @@ export function App() {
                 Transmissões Oficiais • MACDP Manaus
               </h3>
               <p style={{ color: '#94A3B8', fontSize: '0.9rem', maxWidth: '480px', marginBottom: '1.25rem', lineHeight: 1.5 }}>
-                Nossos cultos são transmitidos ao vivo todos os domingos às 10:00 e 18:30, e quartas às 19:30 diretamente pelo YouTube oficial.
+                Nossos cultos são transmitidos ao vivo aos domingos às 18:30 diretamente pelo YouTube oficial.
               </p>
               <a
                 href="https://www.youtube.com/@_macdp"
@@ -793,7 +819,7 @@ export function App() {
                 <strong style={{ fontSize: '1rem' }}>Transmissão ao Vivo Oficial</strong>
               </div>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                Todos os domingos às 10:00 e 18:30 (Horário de Brasília)
+                Todos os domingos às 18:30 (Horário de Brasília)
               </p>
             </div>
 

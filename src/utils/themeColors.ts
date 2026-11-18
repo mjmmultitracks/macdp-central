@@ -113,9 +113,11 @@ export function getContrastTextColor(hex: string): string {
 
 export function applyThemeColors(
   themeColors?: { primaryColor?: string; secondaryColor?: string },
-  _isDark: boolean = true
+  isDark: boolean = true
 ): void {
-  const primary = themeColors?.primaryColor?.trim() || DEFAULT_THEME_COLORS.primaryColor;
+  const basePrimary = themeColors?.primaryColor?.trim() || DEFAULT_THEME_COLORS.primaryColor;
+  // No tema claro o dourado vivo perde contraste sobre fundo claro: escurecemos um pouco.
+  const primary = isDark ? basePrimary : adjustBrightness(basePrimary, -22);
   const secondary = themeColors?.secondaryColor?.trim() || DEFAULT_THEME_COLORS.secondaryColor;
 
   const root = document.documentElement;

@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import { ChurchEvent, RegularServiceItem } from '../../types';
-import { formatDate, formatEventDateRange } from '../../utils/formatters';
+import { formatEventDateRange } from '../../utils/formatters';
 import {
   Calendar,
-  Clock,
   MapPin,
   Users,
   Navigation,
-  CheckCircle2,
-  Car,
-  Train,
   ExternalLink,
   Ticket,
   List,
@@ -31,47 +27,45 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
+  // Separa eventos que ainda vão acontecer dos que já terminaram
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const upcomingEvents = events.filter((e) => (e.endDate || e.date) >= todayIso);
+  const pastEvents = events.filter((e) => (e.endDate || e.date) < todayIso);
+
   const regularServices = (customServices || [
     {
-      id: 'domingo_1',
+      id: 'domingo',
       day: 'Domingo',
-      time: '10:00',
-      title: 'Culto de Celebração & Ceia',
-      description: 'Início da semana em adoração profunda, ministração da Palavra e celebração da Ceia do Senhor. Berçário e Kids abertos.',
+      time: '18:30',
+      title: 'Culto de Celebração',
+      description: 'Louvor, ministração da Palavra e comunhão em família.',
       category: 'Geral',
       active: true,
     },
     {
-      id: 'domingo_2',
-      day: 'Domingo',
-      time: '18:30',
-      title: 'Culto da Família & Caçadores Kids',
-      description: 'Culto focado na restauração e fortalecimento dos lares, com louvor contemporâneo e salas para todas as idades infantis.',
-      category: 'Famílias',
-      active: true,
-    },
-    {
-      id: 'quarta',
-      day: 'Quarta-feira',
-      time: '19:30',
-      title: 'Noite de Oração & Estudo Bíblico',
-      description: 'Momento precioso de intercessão coletiva pelas causas da igreja, cura e aprofundamento exegético das Escrituras.',
-      category: 'Edificação',
+      id: 'terca',
+      day: 'Terça-feira',
+      time: '19:00',
+      title: 'Culto da Adoração',
+      description: 'Uma noite dedicada à adoração e à presença de Deus.',
+      category: 'Adoração',
       active: true,
     },
     {
       id: 'sabado',
       day: 'Sábado',
       time: '19:00',
-      title: 'Culto Conexão Jovem (Youth)',
-      description: 'Comunidade jovem, música vibrante, temas atuais e comunhão pós-culto na cafeteria da igreja.',
+      title: 'Rede UP',
+      description: 'Rede de Jovens Unidade e Propósito: louvor, Palavra e comunhão da juventude.',
       category: 'Jovens',
       active: true,
     },
   ]).filter((s) => s.active !== false);
 
-  const availableDays = Array.from(new Set(regularServices.map((s) => s.day)));
-  const [selectedDayTab, setSelectedDayTab] = useState<string>('todos');
+
+  // Ex.: '19:30' -> '19h30' e '10:00' -> '10h'
+  const formatServiceTime = (t: string) => t.replace(':', 'h').replace(/h00$/, 'h');
 
   return (
     <section id="eventos" className="section" style={{ background: 'var(--bg-primary)' }}>
@@ -87,94 +81,56 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
           </p>
         </div>
 
-        {/* Regular Services Timetable */}
-        <div
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-xl)',
-            padding: '1.75rem 1.5rem',
-            marginBottom: '3.5rem',
-            boxShadow: 'var(--shadow-md)',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '1rem',
-              marginBottom: '1.5rem',
-              borderBottom: '1px solid var(--border-subtle)',
-              paddingBottom: '1rem',
-            }}
-          >
-            <div>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Horários de Reuniões Semanais</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                Todos os nossos cultos contam com recepção calorosa e suporte do ministério infantil
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => setSelectedDayTab('todos')}
-                className={`btn btn-sm ${selectedDayTab === 'todos' ? 'btn-primary' : 'btn-secondary'}`}
-              >
-                Todos os Cultos ({regularServices.length})
-              </button>
-              {availableDays.map((day) => (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => setSelectedDayTab(day)}
-                  className={`btn btn-sm ${selectedDayTab === day ? 'btn-primary' : 'btn-secondary'}`}
-                >
-                  {day}
-                </button>
-              ))}
-            </div>
+        {/* Cultos semanais: lista limpa em linhas */}
+        <div className="weekly" style={{ marginBottom: '4rem' }}>
+          <div className="weekly-head">
+            <h3>Cultos semanais</h3>
+            <p>Entrada livre, sem necessidade de inscrição. Recepção calorosa e ministério infantil em todos os cultos.</p>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
-            {regularServices
-              .filter((s) => (selectedDayTab === 'todos' ? true : s.day === selectedDayTab))
-              .map((service) => (
-                <div
-                  key={service.id}
-                  className="card card-hover"
-                  style={{
-                    background: 'var(--bg-tertiary)',
-                    border: '1px solid var(--border-subtle)',
-                    padding: '1.5rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <span className="badge badge-gold">
-                      <Clock size={12} /> {service.day} às {service.time}
-                    </span>
-                    <span className="badge badge-blue">{service.category}</span>
-                  </div>
-                  <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-                    {service.title}
-                  </h4>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-                    {service.description}
-                  </p>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <CheckCircle2 size={14} color="var(--success)" /> Entrada Livre • Sem necessidade de inscrição prévia
-                  </div>
-                </div>
-              ))}
-          </div>
+          <ul className="weekly-list">
+            {regularServices.map((service) => (
+              <li key={service.id} className="weekly-row">
+                <span className="weekly-day">{service.day}</span>
+                <span className="weekly-time">{formatServiceTime(service.time)}</span>
+                <span className="weekly-info">
+                  <strong>{service.title}</strong>
+                  <span>{service.description}</span>
+                </span>
+                {service.category && <span className="weekly-tag">{service.category}</span>}
+              </li>
+            ))}
+          </ul>
         </div>
+
+        <style>{`
+          .weekly { max-width: 960px; margin-left: auto; margin-right: auto; }
+          .weekly-head { margin-bottom: 1.25rem; }
+          .weekly-head h3 { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.35rem; }
+          .weekly-head p { color: var(--text-secondary); font-size: 0.95rem; margin: 0; max-width: 40rem; }
+          .weekly-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border-medium); }
+          .weekly-row {
+            display: grid;
+            grid-template-columns: 9rem 5.5rem 1fr auto;
+            align-items: baseline;
+            gap: 1.25rem;
+            padding: 1.35rem 0;
+            border-bottom: 1px solid var(--border-subtle);
+          }
+          .weekly-day { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-secondary); }
+          .weekly-time { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--accent-gold); line-height: 1; }
+          .weekly-info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+          .weekly-info strong { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
+          .weekly-info span { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+          .weekly-tag { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+          @media (max-width: 700px) {
+            .weekly-row { grid-template-columns: auto 1fr; gap: 0.35rem 1rem; padding: 1.1rem 0; }
+            .weekly-day { grid-column: 1; grid-row: 1; align-self: center; }
+            .weekly-time { grid-column: 2; grid-row: 1; font-size: 1.3rem; }
+            .weekly-info { grid-column: 1 / -1; grid-row: 2; }
+            .weekly-tag { display: none; }
+          }
+        `}</style>
 
         {/* Featured Events List / Grid */}
         <div style={{ marginBottom: '4rem' }}>
@@ -185,6 +141,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
             </div>
 
             {/* View Mode Toggle: Lista vs Colunas */}
+            {upcomingEvents.length > 0 && (
             <div style={{ display: 'flex', gap: '0.25rem', background: 'var(--bg-secondary)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
               <button
                 onClick={() => setViewMode('list')}
@@ -205,12 +162,13 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                 <span>Colunas</span>
               </button>
             </div>
+            )}
           </div>
 
           {viewMode === 'list' ? (
             /* ==================== MODO LISTA ==================== */
             <div key="list-view" className="animate-fade-scale" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {events.map((evt) => {
+              {upcomingEvents.map((evt) => {
                 const spotsLeft = evt.totalCapacity - evt.registeredCount;
                 return (
                   <div
@@ -352,7 +310,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                 gap: '2rem',
               }}
             >
-              {events.map((evt) => {
+              {upcomingEvents.map((evt) => {
                 const spotsLeft = evt.totalCapacity - evt.registeredCount;
                 return (
                   <div
@@ -465,6 +423,72 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
               })}
             </div>
           )}
+
+          {upcomingEvents.length === 0 && (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '2.5rem 1.5rem',
+                border: '1px dashed var(--border-medium)',
+                borderRadius: 'var(--radius-lg)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <strong style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
+                Nenhum evento programado no momento
+              </strong>
+              Os cultos semanais continuam abertos a todos. Novos eventos serão divulgados aqui e em nossas redes.
+            </div>
+          )}
+
+          {pastEvents.length > 0 && (
+            <div style={{ marginTop: '2.5rem' }}>
+              <h4
+                style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-muted)',
+                  marginBottom: '0.75rem',
+                }}
+              >
+                Eventos anteriores
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {pastEvents.map((evt) => (
+                  <button
+                    key={evt.id}
+                    type="button"
+                    onClick={() => onOpenEventDetail(evt)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '1rem',
+                      padding: '0.9rem 0',
+                      background: 'none',
+                      border: 0,
+                      borderTop: '1px solid var(--border-subtle)',
+                      color: 'var(--text-secondary)',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span>
+                      <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{evt.title}</strong>
+                      <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        {formatEventDateRange(evt.date, evt.endDate)}
+                      </span>
+                    </span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      Encerrado
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Interactive Location & Directions */}
@@ -516,30 +540,6 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                     <h5 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Endereço Completo</h5>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                       Rua Lagoa Grande, 382 - Cidade Nova - Conj. Canaranas - Manaus - AM
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                  <div
-                    style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '8px',
-                      background: 'var(--accent-gold-soft)',
-                      color: 'var(--accent-gold)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Car size={18} />
-                  </div>
-                  <div>
-                    <h5 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Acesso & Estacionamento</h5>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      Fácil acesso pela Av. Noel Nutels e Av. Camapuã. Estacionamento e recepção acolhedora na chegada.
                     </p>
                   </div>
                 </div>
