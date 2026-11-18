@@ -110,7 +110,7 @@ export function App() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('igreja_theme');
     if (saved) return saved === 'dark';
-    return true; // Default to elegant dark mode
+    return false; // Padrão: tema claro e acolhedor
   });
 
   // Toasts
@@ -478,7 +478,7 @@ export function App() {
           onNotify={addNotification}
         />
       ) : view === 'public' ? (
-        <div key="public-view" className="animate-page-enter" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div key="public-view" className="animate-page-enter public-site" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           {/* Public Navbar */}
           <Navbar
             currentSection={selectedEventForDetail ? 'eventos' : publicSection}
@@ -487,7 +487,7 @@ export function App() {
             isAuthenticated={isAuthenticated}
             isDarkMode={isDarkMode}
             onToggleTheme={handleToggleTheme}
-            isSolid={!!selectedEventForDetail}
+            isSolid={!isDarkMode || !!selectedEventForDetail}
             churchSettings={db.churchSettings}
           />
 
@@ -507,6 +507,9 @@ export function App() {
               <HeroSection
                 onNavigate={handlePublicNavigate}
                 onOpenLiveModal={() => setLiveModalOpen(true)}
+                events={db.events}
+                regularServices={db.churchSettings?.regularServices}
+                onOpenEvent={handleOpenEventPage}
               />
 
               {/* Temporizador da Conferência Caçadores da Presença 2026 (13 de Novembro) */}
