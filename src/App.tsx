@@ -513,12 +513,21 @@ export function App() {
               />
 
               {/* Temporizador da Conferência Caçadores da Presença 2026 (13 de Novembro) */}
-              <ConferenceCountdown
-                event={db.events.find((e) => e.id === 'evt_1' || e.title.includes('DOROT') || e.title.toLowerCase().includes('caçadores'))}
-                allEvents={db.events}
-                onOpenEvent={handleOpenEventPage}
-                onRegister={(evt) => setSelectedEventForWizard(evt)}
-              />
+              {(() => {
+                const conferenceEvent = db.events.find((e) => e.id === 'evt_1' || e.title.includes('DOROT') || e.title.toLowerCase().includes('caçadores'));
+                const now = new Date();
+                const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                // Esconde o banner quando a conferência já terminou
+                if (!conferenceEvent || (conferenceEvent.endDate || conferenceEvent.date) < todayIso) return null;
+                return (
+                  <ConferenceCountdown
+                    event={conferenceEvent}
+                    allEvents={db.events}
+                    onOpenEvent={handleOpenEventPage}
+                    onRegister={(evt) => setSelectedEventForWizard(evt)}
+                  />
+                );
+              })()}
 
               {/* Agenda de Cultos & Próximos Eventos (Acesso Imediato) */}
               <EventsSection
