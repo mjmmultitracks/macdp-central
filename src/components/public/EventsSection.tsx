@@ -6,7 +6,6 @@ import {
   MapPin,
   Users,
   Navigation,
-  Car,
   ExternalLink,
   Ticket,
   List,
@@ -550,30 +549,6 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                     <h5 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Endereço Completo</h5>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                       Rua Lagoa Grande, 382 - Cidade Nova - Conj. Canaranas - Manaus - AM
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                  <div
-                    style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '8px',
-                      background: 'var(--accent-gold-soft)',
-                      color: 'var(--accent-gold)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Car size={18} />
-                  </div>
-                  <div>
-                    <h5 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Acesso & Estacionamento</h5>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      Fácil acesso pela Av. Noel Nutels e Av. Camapuã. Estacionamento e recepção acolhedora na chegada.
                     </p>
                   </div>
                 </div>
