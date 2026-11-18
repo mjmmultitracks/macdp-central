@@ -1,42 +1,8 @@
-import React, { Suspense, lazy, useState } from 'react';
+import React from 'react';
 import { Play, ArrowRight, Calendar, MapPin, Clock } from 'lucide-react';
 import type { ChurchEvent, RegularServiceItem } from '../../types';
 import { formatEventDateRange } from '../../utils/formatters';
 
-const Hero3D = lazy(() => import('./Hero3D'));
-const Hero3DLite = lazy(() => import('./Hero3DLite'));
-
-/** off = sem animação; css = sem WebGL (CSS 3D + canvas 2D); lite/full = WebGL (Three.js) */
-type Motion3D = 'off' | 'css' | 'css-lite' | 'lite' | 'full';
-
-/** Decide se o 3D roda: desliga em aparelhos fracos, economia de dados ou "reduzir movimento". */
-function detectMotion3D(): Motion3D {
-  if (typeof window === 'undefined') return 'off';
-  const off = (reason: string): Motion3D => {
-    console.info(`[capa 3D] desligado: ${reason}`);
-    return 'off';
-  };
-  const forced = new URLSearchParams(window.location.search).get('3d') === 'on';
-  const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
-  if (!forced) {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return off('o sistema pede para reduzir movimento');
-    if (nav.connection?.saveData) return off('economia de dados ativa');
-    if ((nav.hardwareConcurrency || 4) <= 2 || (nav.deviceMemory || 4) <= 1) return off('aparelho com poucos recursos');
-  }
-  const cores = nav.hardwareConcurrency || 4;
-  const memory = nav.deviceMemory || 4;
-  const weak = !forced && (cores <= 4 || memory <= 2 || window.innerWidth < 700);
-  let hasWebGL = false;
-  try {
-    const canvas = document.createElement('canvas');
-    hasWebGL = !!(canvas.getContext('webgl2') || canvas.getContext('webgl'));
-  } catch {
-    hasWebGL = false;
-  }
-  const mode: Motion3D = hasWebGL ? (weak ? 'lite' : 'full') : weak ? 'css-lite' : 'css';
-  console.info(`[capa 3D] ligado em modo ${mode}${hasWebGL ? '' : ' (sem WebGL: versao CSS/canvas)'}`);
-  return mode;
-}
 
 interface HeroSectionProps {
   onNavigate: (section: string) => void;
@@ -78,7 +44,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onOpenEvent,
 }) => {
   const nextEvent = getNextEvent(events);
-  const [motion] = useState<Motion3D>(detectMotion3D);
   const services = (regularServices && regularServices.length > 0
     ? regularServices.filter((s) => s.active !== false)
     : FALLBACK_SERVICES
@@ -101,15 +66,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         aria-hidden="true"
       />
       <div className="hero-shade" />
-      {motion !== 'off' && (
-        <Suspense fallback={null}>
-          {motion === 'css' || motion === 'css-lite' ? (
-            <Hero3DLite lite={motion === 'css-lite'} />
-          ) : (
-            <Hero3D lite={motion === 'lite'} />
-          )}
-        </Suspense>
-      )}
 
       <div className="hero-content">
         <span className="hero-eyebrow">
@@ -209,12 +165,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           background:
             linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.35) 35%, rgba(0, 0, 0, 0.85) 100%),
             radial-gradient(ellipse 70% 60% at 20% 60%, rgba(0, 0, 0, 0.55) 0%, transparent 70%);
-        }
-        .hero-3d {
-          position: absolute;
-          inset: 0;
-          z-index: 2;
-          pointer-events: none;
         }
         .hero-content {
           position: relative;
