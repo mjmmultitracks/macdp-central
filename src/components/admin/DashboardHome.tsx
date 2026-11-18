@@ -2,20 +2,7 @@ import React from 'react';
 import { DatabaseSchema, ChurchStats, UserSession } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { isUserModuleAllowed } from '../../services/authService';
-import {
-  Users,
-  TrendingUp,
-  HeartHandshake,
-  DollarSign,
-  Compass,
-  AlertCircle,
-  PlusCircle,
-  ArrowUpRight,
-  ArrowDownRight,
-  Clock,
-  Sparkles,
-  Heart,
-} from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 interface DashboardHomeProps {
   db: DatabaseSchema;
@@ -25,6 +12,40 @@ interface DashboardHomeProps {
   onOpenNewTransactionModal: () => void;
   currentUser?: UserSession;
 }
+
+const panel: React.CSSProperties = {
+  background: 'var(--bg-secondary)',
+  border: '1px solid var(--border-subtle)',
+  borderRadius: 8,
+};
+
+const Kpi: React.FC<{ label: string; value: React.ReactNode; hint?: string; color?: string; onClick?: () => void }> = ({
+  label,
+  value,
+  hint,
+  color,
+  onClick,
+}) => (
+  <div
+    onClick={onClick}
+    style={{ ...panel, padding: '1.1rem 1.25rem', cursor: onClick ? 'pointer' : 'default', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}
+  >
+    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+    <span style={{ fontSize: '1.7rem', fontWeight: 800, lineHeight: 1.1, color: color || 'var(--text-primary)' }}>{value}</span>
+    {hint && <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{hint}</span>}
+  </div>
+);
+
+const SectionHead: React.FC<{ title: string; action?: { label: string; onClick: () => void } }> = ({ title, action }) => (
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.9rem 1.25rem', borderBottom: '1px solid var(--border-subtle)' }}>
+    <h4 style={{ fontSize: '0.95rem', fontWeight: 700 }}>{title}</h4>
+    {action && (
+      <button onClick={action.onClick} className="btn btn-sm btn-secondary">
+        {action.label}
+      </button>
+    )}
+  </div>
+);
 
 export const DashboardHome: React.FC<DashboardHomeProps> = ({
   db,
@@ -36,452 +57,102 @@ export const DashboardHome: React.FC<DashboardHomeProps> = ({
 }) => {
   const isFinanceAllowed = !currentUser || isUserModuleAllowed(currentUser, 'financeiro');
   const isMembersAllowed = !currentUser || isUserModuleAllowed(currentUser, 'membros');
-  const isCellsAllowed = !currentUser || isUserModuleAllowed(currentUser, 'celulas_admin');
   const isPrayerAllowed = !currentUser || isUserModuleAllowed(currentUser, 'oracao_admin');
 
-  // Weekly attendance points (last 8 weeks)
-  const attendanceWeeks = [
-    { label: 'Sem 1', attendance: 880 },
-    { label: 'Sem 2', attendance: 920 },
-    { label: 'Sem 3', attendance: 890 },
-    { label: 'Sem 4', attendance: 960 },
-    { label: 'Sem 5', attendance: 1020 },
-    { label: 'Sem 6', attendance: 1010 },
-    { label: 'Sem 7', attendance: 1150 },
-    { label: 'Sem 8', attendance: 1210 },
-  ];
-  const maxAttendance = Math.max(...attendanceWeeks.map((w) => w.attendance));
-
   const pendingPrayers = db.prayers.filter((p) => p.status === 'novo');
-  const recentTransactions = db.transactions.slice(0, 4);
+  const recentTransactions = db.transactions.slice(0, 5);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* 4 KPI Metrics */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '1.5rem',
-        }}
-      >
-        {/* Card 1: Membros Ativos */}
-        <div className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.35rem', borderRadius: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Membros Ativos
-            </span>
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '8px',
-                background: 'var(--accent-blue-soft)',
-                color: 'var(--accent-blue-light)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Users size={18} />
-            </div>
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>
-            {stats.totalActiveMembers.toLocaleString('pt-BR')}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', color: 'var(--success)' }}>
-            <ArrowUpRight size={15} />
-            <span>+4.2% em relação ao mês anterior</span>
-          </div>
-        </div>
-
-        {/* Card 2: Presença Média */}
-        <div className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.35rem', borderRadius: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Presença Média nos Cultos
-            </span>
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '8px',
-                background: 'var(--accent-gold-soft)',
-                color: 'var(--accent-gold)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <TrendingUp size={18} />
-            </div>
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>
-            {stats.averageAttendance}%
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', color: 'var(--success)' }}>
-            <ArrowUpRight size={15} />
-            <span>+{stats.attendanceGrowth}% nos últimos 60 dias</span>
-          </div>
-        </div>
-
-        {/* Card 3: Visitantes do Mês */}
-        <div className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.35rem', borderRadius: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Novos Visitantes / Decididos
-            </span>
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '8px',
-                background: 'var(--success-soft)',
-                color: 'var(--success)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <HeartHandshake size={18} />
-            </div>
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1 }}>
-            {stats.monthlyVisitors}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            <span>{db.visitors.length} no funil de integração ativa</span>
-          </div>
-        </div>
-
-        {/* Card 4: Saldo Financeiro Líquido ou Comunhão */}
-        {isFinanceAllowed ? (
-          <div className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.35rem', borderRadius: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                Saldo Financeiro Mensal
-              </span>
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  background: 'var(--accent-gold-soft)',
-                  color: 'var(--accent-gold)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <DollarSign size={18} />
-              </div>
-            </div>
-            <div
-              style={{
-                fontSize: '1.8rem',
-                fontWeight: 800,
-                lineHeight: 1,
-                color: stats.netBalance >= 0 ? 'var(--success)' : 'var(--danger)',
-              }}
-            >
-              {formatCurrency(stats.netBalance)}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Entradas: {formatCurrency(stats.monthlyRevenue)} • Saídas: {formatCurrency(stats.monthlyExpenses)}
-            </div>
-          </div>
-        ) : (
-          <div className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.35rem', borderRadius: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                Células & Comunhão
-              </span>
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  background: 'var(--accent-gold-soft)',
-                  color: 'var(--accent-gold)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Compass size={18} />
-              </div>
-            </div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1 }}>
-              {db.cells?.length || 0}
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Grupos em atividade • {db.ministries?.length || 0} Ministérios
-            </div>
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
+        {isMembersAllowed && (
+          <button onClick={onOpenNewMemberModal} className="btn btn-sm btn-primary" style={{ gap: '0.35rem' }}>
+            <Plus size={15} /> Novo membro
+          </button>
+        )}
+        {isFinanceAllowed && (
+          <button onClick={onOpenNewTransactionModal} className="btn btn-sm btn-secondary" style={{ gap: '0.35rem' }}>
+            <Plus size={15} /> Novo lançamento
+          </button>
         )}
       </div>
 
-      {/* Quick Action Shortcuts */}
-      {(isMembersAllowed || isFinanceAllowed || isCellsAllowed || isPrayerAllowed) && (
-        <div
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '1.25rem',
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: '1rem',
-          }}
-        >
-          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-            Ações Rápidas:
-          </span>
-          {isMembersAllowed && (
-            <button onClick={onOpenNewMemberModal} className="btn btn-sm btn-primary" style={{ gap: '0.4rem' }}>
-              <PlusCircle size={15} />
-              <span>Cadastrar Novo Membro</span>
-            </button>
-          )}
-          {isFinanceAllowed && (
-            <button onClick={onOpenNewTransactionModal} className="btn btn-sm btn-secondary" style={{ gap: '0.4rem' }}>
-              <DollarSign size={15} />
-              <span>Novo Lançamento Financeiro</span>
-            </button>
-          )}
-          {isCellsAllowed && (
-            <button onClick={() => onNavigateTab('celulas_admin')} className="btn btn-sm btn-secondary" style={{ gap: '0.4rem' }}>
-              <Compass size={15} />
-              <span>Gerenciar Células & Grupos</span>
-            </button>
-          )}
-          {isPrayerAllowed && (
-            <button onClick={() => onNavigateTab('oracao_admin')} className="btn btn-sm btn-secondary" style={{ gap: '0.4rem' }}>
-              <Heart size={15} />
-              <span>Triar Pedidos de Oração ({pendingPrayers.length})</span>
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Visual Charts Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
-          gap: '1.5rem',
-        }}
-      >
-        {/* Chart 1: Evolução de Presença */}
-        <div className="card" style={{ padding: '1.75rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <div>
-              <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Evolução de Presença nos Cultos</h4>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Frequência total somada dos cultos (últimas 8 semanas)</span>
-            </div>
-            <span className="badge badge-gold">Em Alta</span>
-          </div>
-
-          {/* SVG Line / Bar Chart Representation */}
-          <div style={{ height: '220px', display: 'flex', alignItems: 'flex-end', gap: '0.75rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-subtle)' }}>
-            {attendanceWeeks.map((item, index) => {
-              const heightPercent = Math.round((item.attendance / maxAttendance) * 100);
-              const isLatest = index === attendanceWeeks.length - 1;
-              return (
-                <div
-                  key={item.label}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    height: '100%',
-                    justifyContent: 'flex-end',
-                    gap: '0.5rem',
-                  }}
-                >
-                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: isLatest ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
-                    {item.attendance}
-                  </span>
-                  <div
-                    style={{
-                      width: '100%',
-                      height: `${heightPercent}%`,
-                      background: isLatest
-                        ? 'linear-gradient(to top, var(--accent-gold), var(--accent-gold-light))'
-                        : 'var(--accent-blue-soft)',
-                      borderRadius: 'var(--radius-sm) var(--radius-sm) 0 0',
-                      transition: 'height 0.3s ease',
-                    }}
-                  />
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{item.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Chart 2: Comparativo Financeiro (somente se permitido) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1rem' }}>
+        <Kpi label="Membros ativos" value={stats.totalActiveMembers.toLocaleString('pt-BR')} onClick={isMembersAllowed ? () => onNavigateTab('membros') : undefined} />
+        <Kpi label="Visitantes no funil" value={db.visitors.length} hint="Em acompanhamento" onClick={isMembersAllowed ? () => onNavigateTab('membros') : undefined} />
+        {isPrayerAllowed && (
+          <Kpi
+            label="Orações a triar"
+            value={pendingPrayers.length}
+            color={pendingPrayers.length ? 'var(--accent-gold)' : undefined}
+            onClick={() => onNavigateTab('oracao_admin')}
+          />
+        )}
         {isFinanceAllowed && (
-          <div className="card" style={{ padding: '1.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <div>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Fluxo de Caixa Mensal</h4>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Entradas de Dízimos/Ofertas vs Saídas Operacionais</span>
-              </div>
-              <button onClick={() => onNavigateTab('financeiro')} className="btn btn-sm btn-secondary">
-                Ver Extrato
-              </button>
-            </div>
-
-            {/* Breakdown bars */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--success)' }}>Entradas (Dízimos & Doações)</span>
-                  <strong>{formatCurrency(stats.monthlyRevenue)}</strong>
-                </div>
-                <div style={{ height: '14px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-                  <div style={{ width: '85%', height: '100%', background: 'var(--success)' }} />
-                </div>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--danger)' }}>Saídas (Contas, Ajuda Social, Manutenção)</span>
-                  <strong>{formatCurrency(stats.monthlyExpenses)}</strong>
-                </div>
-                <div style={{ height: '14px', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-                  <div style={{ width: '52%', height: '100%', background: 'var(--danger)' }} />
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: 'var(--bg-tertiary)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '1rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginTop: '0.5rem',
-                }}
-              >
-                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Superávit / Reserva do Mês:</span>
-                <strong style={{ fontSize: '1.1rem', color: 'var(--success)' }}>
-                  +{formatCurrency(stats.netBalance)}
-                </strong>
-              </div>
-            </div>
-          </div>
+          <Kpi
+            label="Saldo do mês"
+            value={formatCurrency(stats.netBalance)}
+            color={stats.netBalance >= 0 ? 'var(--success)' : 'var(--danger)'}
+            hint={`Entradas ${formatCurrency(stats.monthlyRevenue)} · Saídas ${formatCurrency(stats.monthlyExpenses)}`}
+            onClick={() => onNavigateTab('financeiro')}
+          />
         )}
       </div>
 
-      {/* Two columns: Recent Transactions & Pending Prayers */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: isFinanceAllowed ? 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))' : '1fr',
-          gap: '1.5rem',
-        }}
-      >
-        {/* Recent Financial Transactions (somente se permitido) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '1rem' }}>
         {isFinanceAllowed && (
-          <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h4 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Últimos Lançamentos Financeiros</h4>
-              <button onClick={() => onNavigateTab('financeiro')} className="btn btn-sm btn-secondary">
-                Gerenciar Finanças
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {recentTransactions.map((tx) => (
+          <div style={panel}>
+            <SectionHead title="Últimos lançamentos" action={{ label: 'Ver todos', onClick: () => onNavigateTab('financeiro') }} />
+            {recentTransactions.length === 0 ? (
+              <p style={{ padding: '1.25rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Nenhum lançamento ainda.</p>
+            ) : (
+              recentTransactions.map((tx, i) => (
                 <div
                   key={tx.id}
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.75rem',
-                    borderRadius: 'var(--radius-md)',
-                    background: 'var(--bg-tertiary)',
+                    gap: '1rem',
+                    padding: '0.75rem 1.25rem',
+                    borderTop: i ? '1px solid var(--border-subtle)' : 'none',
                   }}
                 >
-                  <div>
-                    <strong style={{ fontSize: '0.85rem', display: 'block' }}>{tx.description}</strong>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {tx.category} • {tx.memberOrVendor}
-                    </span>
+                  <div style={{ minWidth: 0 }}>
+                    <strong style={{ fontSize: '0.85rem', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.description}</strong>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{tx.category}</span>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <strong
-                      style={{
-                        fontSize: '0.9rem',
-                        display: 'block',
-                        color: tx.type === 'entrada' ? 'var(--success)' : 'var(--danger)',
-                      }}
-                    >
-                      {tx.type === 'entrada' ? '+' : '-'} {formatCurrency(tx.amount)}
-                    </strong>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                      {tx.paymentMethod}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Pending Prayer Requests for Pastoral Triage */}
-        <div className="card" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Central de Oração (Triagem Pendente)</h4>
-            <span className="badge badge-gold">{pendingPrayers.length} novos</span>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {pendingPrayers.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Nenhum pedido aguardando triagem.</p>
-            ) : (
-              pendingPrayers.map((prayer) => (
-                <div
-                  key={prayer.id}
-                  style={{
-                    padding: '0.85rem',
-                    borderRadius: 'var(--radius-md)',
-                    background: 'var(--bg-tertiary)',
-                    borderLeft: '3px solid var(--accent-gold)',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                    <strong style={{ fontSize: '0.85rem' }}>{prayer.requesterName}</strong>
-                    <span className="badge badge-gold" style={{ fontSize: '0.7rem' }}>
-                      {prayer.category}
-                    </span>
-                  </div>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '0.5rem' }}>
-                    "{prayer.message}"
-                  </p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                      {prayer.requestPastoralContact ? '⚠️ Solicitou contato pastoral' : 'Apenas intercessão'}
-                    </span>
-                    <button
-                      onClick={() => onNavigateTab('oracao_admin')}
-                      className="btn btn-sm btn-primary"
-                      style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
-                    >
-                      Atender Pedido
-                    </button>
-                  </div>
+                  <strong style={{ fontSize: '0.88rem', whiteSpace: 'nowrap', color: tx.type === 'entrada' ? 'var(--success)' : 'var(--danger)' }}>
+                    {tx.type === 'entrada' ? '+' : '-'} {formatCurrency(tx.amount)}
+                  </strong>
                 </div>
               ))
             )}
           </div>
-        </div>
+        )}
+
+        {isPrayerAllowed && (
+          <div style={panel}>
+            <SectionHead title="Pedidos de oração pendentes" action={{ label: 'Abrir central', onClick: () => onNavigateTab('oracao_admin') }} />
+            {pendingPrayers.length === 0 ? (
+              <p style={{ padding: '1.25rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Nenhum pedido aguardando triagem.</p>
+            ) : (
+              pendingPrayers.slice(0, 5).map((prayer, i) => (
+                <div key={prayer.id} style={{ padding: '0.75rem 1.25rem', borderTop: i ? '1px solid var(--border-subtle)' : 'none' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+                    <strong style={{ fontSize: '0.85rem' }}>{prayer.requesterName}</strong>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{prayer.category}</span>
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {prayer.message}
+                  </p>
+                  {prayer.requestPastoralContact && (
+                    <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)' }}>Pediu contato pastoral</span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
