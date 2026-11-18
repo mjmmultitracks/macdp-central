@@ -16,6 +16,7 @@ import { ToastContainer, ToastMessage } from './components/common/Toast';
 
 // Public Sections
 import { HeroSection } from './components/public/HeroSection';
+import { MusicSection } from './components/public/MusicSection';
 import { EventsSection } from './components/public/EventsSection';
 import { SermonsSection } from './components/public/SermonsSection';
 import { AboutSection } from './components/public/AboutSection';
@@ -549,6 +550,9 @@ export function App() {
 
               {/* Quem Somos & Liderança Pastoral */}
               <AboutSection />
+
+              {/* Ministério de Louvor: Caçadores da Presença Music */}
+              <MusicSection />
 
               {/* Comunidade: Células por Bairro & Ministérios */}
               <CellsLocator
