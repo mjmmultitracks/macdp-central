@@ -4,7 +4,7 @@ import { Users, Eye, Target, Compass, Heart, BookOpen } from 'lucide-react';
 export const AboutSection: React.FC = () => {
   const pastors = [
     {
-      role: 'Pastores Presidentes e Fundadores',
+      role: 'Pastores Presidentes',
       names: 'Oziel e Midiã Gomes Maduro',
       photoUrl: '/images/pastors_oziel_midia.png',
       objectPosition: 'center top',
