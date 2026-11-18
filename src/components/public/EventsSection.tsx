@@ -6,7 +6,6 @@ import {
   MapPin,
   Users,
   Navigation,
-  Car,
   ExternalLink,
   Ticket,
   List,
@@ -501,218 +500,93 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
           )}
         </div>
 
-        {/* Interactive Location & Directions */}
-        <div
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-xl)',
-            overflow: 'hidden',
-            boxShadow: 'var(--shadow-md)',
-          }}
-        >
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-            }}
-          >
-            {/* Location Info */}
-            <div style={{ padding: 'clamp(1.25rem, 4vw, 2.5rem)' }}>
-              <span className="section-tag">
-                <Navigation size={14} /> Como Chegar
-              </span>
-              <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '1rem' }}>
-                Visite-nos em Manaus (Conj. Canaranas)
-              </h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '1.75rem', lineHeight: 1.6 }}>
-                Nosso templo sede está localizado no coração da Zona Norte de Manaus. Rua Lagoa Grande, 382 - Cidade Nova (Conj. Canaranas). Você e sua família serão recebidos com muito amor e a doce Presença de Deus!
-              </p>
+        {/* Como chegar: endereço e mapa real */}
+        <div id="como-chegar" className="visit">
+          <div className="visit-info">
+            <span className="visit-tag">Como chegar</span>
+            <h3 className="visit-title">Visite-nos em Manaus</h3>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                  <div
-                    style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '8px',
-                      background: 'var(--accent-gold-soft)',
-                      color: 'var(--accent-gold)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <MapPin size={18} />
-                  </div>
-                  <div>
-                    <h5 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Endereço Completo</h5>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      Rua Lagoa Grande, 382 - Cidade Nova - Conj. Canaranas - Manaus - AM
-                    </p>
-                  </div>
-                </div>
+            <address className="visit-address">
+              Rua Lagoa Grande, 382
+              <span>Cidade Nova (Conj. Canaranas) · Manaus/AM</span>
+            </address>
 
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                  <div
-                    style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '8px',
-                      background: 'var(--accent-gold-soft)',
-                      color: 'var(--accent-gold)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Car size={18} />
-                  </div>
-                  <div>
-                    <h5 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Acesso & Estacionamento</h5>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      Fácil acesso pela Av. Noel Nutels e Av. Camapuã. Estacionamento e recepção acolhedora na chegada.
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <p className="visit-note">
+              Acesso pela Av. Noel Nutels e Av. Camapuã. Estacionamento e recepção na chegada.
+            </p>
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <a
-                  href="https://maps.google.com/?q=Rua+Lagoa+Grande+382+Cidade+Nova+Canaranas+Manaus+AM"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-primary"
-                  style={{ gap: '0.5rem' }}
-                >
-                  <MapPin size={16} />
-                  <span>Abrir no Google Maps</span>
-                  <ExternalLink size={14} />
-                </a>
-                <a
-                  href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=Rua%20Lagoa%20Grande%2C%20382%20Canaranas%20Manaus"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-secondary"
-                  style={{ gap: '0.5rem' }}
-                >
-                  <Navigation size={16} />
-                  <span>Pedir Uber até o MACDP</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Simulated Interactive Map Display */}
-            <div
-              style={{
-                background: 'var(--bg-tertiary)',
-                position: 'relative',
-                minHeight: '340px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '2rem',
-                borderLeft: '1px solid var(--border-subtle)',
-              }}
-            >
-              {/* Stylized vector map representation */}
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  background: 'var(--bg-secondary)',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--border-medium)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: 'var(--shadow-inner)',
-                }}
+            <div className="visit-actions">
+              <a
+                href="https://maps.google.com/?q=Rua+Lagoa+Grande+382+Cidade+Nova+Canaranas+Manaus+AM"
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-primary"
+                style={{ gap: '0.5rem' }}
               >
-                {/* Stylized Grid Roads */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    opacity: 0.2,
-                    backgroundImage:
-                      'radial-gradient(var(--text-muted) 1px, transparent 1px), radial-gradient(var(--text-muted) 1px, var(--bg-secondary) 1px)',
-                    backgroundSize: '24px 24px',
-                  }}
-                />
-
-                {/* Road visual road */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    width: '140%',
-                    height: '38px',
-                    background: 'var(--accent-gold-soft)',
-                    borderTop: '2px dashed var(--accent-gold)',
-                    borderBottom: '2px dashed var(--accent-gold)',
-                    transform: 'rotate(-25deg)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 700,
-                    fontSize: '0.75rem',
-                    letterSpacing: '0.15em',
-                    color: 'var(--accent-gold)',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Rua Lagoa Grande — Canaranas / Cidade Nova
-                </div>
-
-                {/* Church Pin with Pulse */}
-                <div
-                  style={{
-                    position: 'relative',
-                    zIndex: 10,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div
-                    style={{
-                      background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-                      color: '#0B1120',
-                      padding: '0.6rem 1rem',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 800,
-                      fontSize: '0.85rem',
-                      boxShadow: '0 8px 20px rgba(245, 158, 11, 0.4)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      marginBottom: '0.5rem',
-                    }}
-                  >
-                    <MapPin size={16} />
-                    <span>MACDP • Caçadores da Presença</span>
-                  </div>
-                  <div
-                    style={{
-                      width: '14px',
-                      height: '14px',
-                      background: 'var(--accent-gold)',
-                      borderRadius: '50%',
-                      boxShadow: '0 0 0 8px rgba(245, 158, 11, 0.3)',
-                    }}
-                  />
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginTop: '0.35rem', fontWeight: 600 }}>
-                    Rua Lagoa Grande, 382 • Manaus/AM
-                  </span>
-                </div>
-              </div>
+                <MapPin size={16} />
+                <span>Abrir no Google Maps</span>
+                <ExternalLink size={14} />
+              </a>
+              <a
+                href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=Rua%20Lagoa%20Grande%2C%20382%20Canaranas%20Manaus"
+                target="_blank"
+                rel="noreferrer"
+                className="visit-link"
+              >
+                <Navigation size={15} /> Pedir Uber
+              </a>
             </div>
           </div>
+
+          <div className="visit-map">
+            <iframe
+              title="Mapa do templo da MACDP"
+              src="https://maps.google.com/maps?q=Rua+Lagoa+Grande+382+Cidade+Nova+Manaus+AM&z=16&output=embed"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
         </div>
+
+        <style>{`
+          .visit {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+            gap: clamp(1.5rem, 4vw, 3.5rem);
+            align-items: stretch;
+            max-width: 1100px;
+            margin: 0 auto;
+          }
+          .visit-info { display: flex; flex-direction: column; justify-content: center; }
+          .visit-tag {
+            font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+            color: var(--accent-gold); margin-bottom: 0.9rem;
+          }
+          .visit-title { font-size: clamp(1.8rem, 3.4vw, 2.6rem); margin: 0 0 1.5rem; }
+          .visit-address {
+            font-style: normal; font-size: 1.2rem; font-weight: 700; color: var(--text-primary);
+            line-height: 1.35; margin-bottom: 1rem;
+          }
+          .visit-address span { display: block; font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); margin-top: 0.2rem; }
+          .visit-note { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; margin: 0 0 1.75rem; max-width: 26rem; }
+          .visit-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; }
+          .visit-link {
+            display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.95rem;
+            color: var(--text-primary); text-decoration: underline; text-underline-offset: 4px;
+            text-decoration-color: var(--border-medium);
+          }
+          .visit-link:hover { text-decoration-color: var(--accent-gold); }
+          .visit-map {
+            min-height: 360px; border-radius: var(--radius-lg); overflow: hidden;
+            border: 1px solid var(--border-subtle); background: var(--bg-tertiary);
+          }
+          .visit-map iframe { width: 100%; height: 100%; min-height: 360px; border: 0; display: block; }
+          [data-theme='dark'] .visit-map iframe { filter: invert(0.92) hue-rotate(180deg) saturate(0.7) contrast(0.95); }
+          @media (max-width: 820px) {
+            .visit { grid-template-columns: 1fr; }
+            .visit-map, .visit-map iframe { min-height: 280px; }
+          }
+        `}</style>
       </div>
     </section>
   );
