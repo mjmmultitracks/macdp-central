@@ -797,7 +797,7 @@ export function App() {
                 Transmissões Oficiais • MACDP Manaus
               </h3>
               <p style={{ color: '#94A3B8', fontSize: '0.9rem', maxWidth: '480px', marginBottom: '1.25rem', lineHeight: 1.5 }}>
-                Nossos cultos são transmitidos ao vivo todos os domingos às 10:00 e 18:30, e quartas às 19:30 diretamente pelo YouTube oficial.
+                Nossos cultos são transmitidos ao vivo aos domingos às 18:30 diretamente pelo YouTube oficial.
               </p>
               <a
                 href="https://www.youtube.com/@_macdp"
@@ -819,7 +819,7 @@ export function App() {
                 <strong style={{ fontSize: '1rem' }}>Transmissão ao Vivo Oficial</strong>
               </div>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                Todos os domingos às 10:00 e 18:30 (Horário de Brasília)
+                Todos os domingos às 18:30 (Horário de Brasília)
               </p>
             </div>
 

@@ -138,19 +138,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, churchS
             </h5>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.84rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                <strong>Domingo (Manhã)</strong>
-                <span>10:00</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                <strong>Domingo (Família)</strong>
+                <strong>Domingo (Celebração)</strong>
                 <span>18:30</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                <strong>Quarta-feira (Ensino)</strong>
-                <span>19:30</span>
+                <strong>Terça-feira (Adoração)</strong>
+                <span>19:00</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                <strong>Sábado (Jovens)</strong>
+                <strong>Sábado (Rede JCDP)</strong>
                 <span>19:00</span>
               </div>
             </div>

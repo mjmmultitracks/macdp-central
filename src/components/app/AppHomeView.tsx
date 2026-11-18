@@ -187,7 +187,7 @@ export const AppHomeView: React.FC<AppHomeViewProps> = ({
             </h3>
 
             <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-              {isLive ? 'Toque para assistir em tempo real' : 'Domingos 10h e 18h30 • Quartas 19h30'}
+              {isLive ? 'Toque para assistir em tempo real' : 'Domingos 18h30'}
             </span>
           </div>
         </div>

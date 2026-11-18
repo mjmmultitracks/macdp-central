@@ -13,10 +13,9 @@ interface HeroSectionProps {
 }
 
 const FALLBACK_SERVICES: Pick<RegularServiceItem, 'id' | 'day' | 'time'>[] = [
-  { id: 'dom-manha', day: 'Domingo', time: '10:00' },
-  { id: 'dom-noite', day: 'Domingo', time: '18:30' },
-  { id: 'qua', day: 'Quarta', time: '19:30' },
-  { id: 'sab', day: 'Sábado', time: '19:00' },
+  { id: 'domingo', day: 'Domingo', time: '18:30' },
+  { id: 'terca', day: 'Terça', time: '19:00' },
+  { id: 'sabado', day: 'Sábado', time: '19:00' },
 ];
 
 const todayIso = () => {

@@ -226,7 +226,7 @@ export const AppLiveView: React.FC<AppLiveViewProps> = ({
               <p style={{ color: '#94A3B8', fontSize: '0.85rem', maxWidth: '380px', margin: '0 0 1.25rem 0', lineHeight: 1.5 }}>
                 {isLive
                   ? 'Nossa transmissão oficial está disponível em nosso canal oficial do YouTube.'
-                  : 'Nossos cultos são transmitidos ao vivo aos domingos (10:00 e 18:30) e quartas (19:30).'}
+                  : 'Nossos cultos são transmitidos ao vivo aos domingos (18:30).'}
               </p>
 
               <a
