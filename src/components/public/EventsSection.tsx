@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { ChurchEvent, RegularServiceItem } from '../../types';
-import { formatDate, formatEventDateRange } from '../../utils/formatters';
+import { formatEventDateRange } from '../../utils/formatters';
 import {
   Calendar,
-  Clock,
   MapPin,
   Users,
   Navigation,
-  CheckCircle2,
   Car,
-  Train,
   ExternalLink,
   Ticket,
   List,
@@ -76,8 +73,9 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
     },
   ]).filter((s) => s.active !== false);
 
-  const availableDays = Array.from(new Set(regularServices.map((s) => s.day)));
-  const [selectedDayTab, setSelectedDayTab] = useState<string>('todos');
+
+  // Ex.: '19:30' -> '19h30' e '10:00' -> '10h'
+  const formatServiceTime = (t: string) => t.replace(':', 'h').replace(/h00$/, 'h');
 
   return (
     <section id="eventos" className="section" style={{ background: 'var(--bg-primary)' }}>
@@ -93,94 +91,56 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
           </p>
         </div>
 
-        {/* Regular Services Timetable */}
-        <div
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-xl)',
-            padding: '1.75rem 1.5rem',
-            marginBottom: '3.5rem',
-            boxShadow: 'var(--shadow-md)',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '1rem',
-              marginBottom: '1.5rem',
-              borderBottom: '1px solid var(--border-subtle)',
-              paddingBottom: '1rem',
-            }}
-          >
-            <div>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Horários de Reuniões Semanais</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                Todos os nossos cultos contam com recepção calorosa e suporte do ministério infantil
-              </p>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => setSelectedDayTab('todos')}
-                className={`btn btn-sm ${selectedDayTab === 'todos' ? 'btn-primary' : 'btn-secondary'}`}
-              >
-                Todos os Cultos ({regularServices.length})
-              </button>
-              {availableDays.map((day) => (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => setSelectedDayTab(day)}
-                  className={`btn btn-sm ${selectedDayTab === day ? 'btn-primary' : 'btn-secondary'}`}
-                >
-                  {day}
-                </button>
-              ))}
-            </div>
+        {/* Cultos semanais: lista limpa em linhas */}
+        <div className="weekly" style={{ marginBottom: '4rem' }}>
+          <div className="weekly-head">
+            <h3>Cultos semanais</h3>
+            <p>Entrada livre, sem necessidade de inscrição. Recepção calorosa e ministério infantil em todos os cultos.</p>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
-            {regularServices
-              .filter((s) => (selectedDayTab === 'todos' ? true : s.day === selectedDayTab))
-              .map((service) => (
-                <div
-                  key={service.id}
-                  className="card card-hover"
-                  style={{
-                    background: 'var(--bg-tertiary)',
-                    border: '1px solid var(--border-subtle)',
-                    padding: '1.5rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <span className="badge badge-gold">
-                      <Clock size={12} /> {service.day} às {service.time}
-                    </span>
-                    <span className="badge badge-blue">{service.category}</span>
-                  </div>
-                  <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-                    {service.title}
-                  </h4>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-                    {service.description}
-                  </p>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <CheckCircle2 size={14} color="var(--success)" /> Entrada Livre • Sem necessidade de inscrição prévia
-                  </div>
-                </div>
-              ))}
-          </div>
+          <ul className="weekly-list">
+            {regularServices.map((service) => (
+              <li key={service.id} className="weekly-row">
+                <span className="weekly-day">{service.day}</span>
+                <span className="weekly-time">{formatServiceTime(service.time)}</span>
+                <span className="weekly-info">
+                  <strong>{service.title}</strong>
+                  <span>{service.description}</span>
+                </span>
+                {service.category && <span className="weekly-tag">{service.category}</span>}
+              </li>
+            ))}
+          </ul>
         </div>
+
+        <style>{`
+          .weekly { max-width: 960px; margin-left: auto; margin-right: auto; }
+          .weekly-head { margin-bottom: 1.25rem; }
+          .weekly-head h3 { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.35rem; }
+          .weekly-head p { color: var(--text-secondary); font-size: 0.95rem; margin: 0; max-width: 40rem; }
+          .weekly-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border-medium); }
+          .weekly-row {
+            display: grid;
+            grid-template-columns: 9rem 5.5rem 1fr auto;
+            align-items: baseline;
+            gap: 1.25rem;
+            padding: 1.35rem 0;
+            border-bottom: 1px solid var(--border-subtle);
+          }
+          .weekly-day { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-secondary); }
+          .weekly-time { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--accent-gold); line-height: 1; }
+          .weekly-info { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+          .weekly-info strong { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
+          .weekly-info span { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+          .weekly-tag { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+          @media (max-width: 700px) {
+            .weekly-row { grid-template-columns: auto 1fr; gap: 0.35rem 1rem; padding: 1.1rem 0; }
+            .weekly-day { grid-column: 1; grid-row: 1; align-self: center; }
+            .weekly-time { grid-column: 2; grid-row: 1; font-size: 1.3rem; }
+            .weekly-info { grid-column: 1 / -1; grid-row: 2; }
+            .weekly-tag { display: none; }
+          }
+        `}</style>
 
         {/* Featured Events List / Grid */}
         <div style={{ marginBottom: '4rem' }}>
