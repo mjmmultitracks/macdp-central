@@ -146,7 +146,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, churchS
                 <span>19:00</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-                <strong>Sábado (Rede JCDP)</strong>
+                <strong>Sábado (Rede UP)</strong>
                 <span>19:00</span>
               </div>
             </div>

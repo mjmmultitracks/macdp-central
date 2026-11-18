@@ -2,89 +2,39 @@ import React, { useState } from 'react';
 import { CellGroup, Ministry } from '../../types';
 import {
   Compass,
-  Sparkles,
   MapPin,
   Clock,
   Users,
   MessageCircle,
-  Music,
-  Baby,
   Smile,
-  HeartHandshake,
-  Heart,
-  Video,
-  Flame,
   Search,
 } from 'lucide-react';
 
 interface CellsLocatorProps {
   cells: CellGroup[];
   ministries?: Ministry[];
-  onVolunteerMinistry: (ministryName: string) => void;
+  onVolunteerMinistry?: (ministryName: string) => void;
 }
 
-export const CellsLocator: React.FC<CellsLocatorProps> = ({ cells, ministries, onVolunteerMinistry }) => {
+export const CellsLocator: React.FC<CellsLocatorProps> = ({ cells, ministries }) => {
   const [searchNeighborhood, setSearchNeighborhood] = useState('');
   const [selectedAudience, setSelectedAudience] = useState<string>('todos');
   const [selectedDay, setSelectedDay] = useState<string>('todos');
 
-  const getMinistryIcon = (mName: string) => {
-    const n = mName.toLowerCase();
-    if (n.includes('louvor') || n.includes('música') || n.includes('adoração')) return Music;
-    if (n.includes('infantil') || n.includes('kids')) return Baby;
-    if (n.includes('jovem') || n.includes('youth')) return Flame;
-    if (n.includes('social') || n.includes('amor')) return HeartHandshake;
-    if (n.includes('família') || n.includes('casal') || n.includes('casais')) return Heart;
-    if (n.includes('mídia') || n.includes('comunicação') || n.includes('vídeo')) return Video;
-    return Sparkles;
-  };
-
   const defaultMinistries = [
-    {
-      name: 'Louvor & Adoração Profética',
-      icon: Music,
-      description: 'Músicos, cantores e ministros que conduzem a congregação à manifestação da Presença de Deus.',
-      leaders: 'Ministério de Louvor MACDP',
-    },
-    {
-      name: 'Caçadores Kids (Infantil)',
-      icon: Baby,
-      description: 'Cuidado amoroso e discipulado bíblico lúdico para crianças, ensinando os pequenos a caçar a Presença.',
-      leaders: 'Pra. Abda Maduro & Equipe Kids',
-    },
-    {
-      name: 'Caçadores Youth (Jovens)',
-      icon: Flame,
-      description: 'Comunidade dinâmica para adolescentes e jovens de Manaus viverem um avivamento autêntico.',
-      leaders: 'Pr. Jaziel Maduro & Pra. Abda Maduro',
-    },
-    {
-      name: 'Ação Social & Amor ao Próximo',
-      icon: HeartHandshake,
-      description: 'Assistência social e distribuição de alimentos a famílias carentes da Zona Norte de Manaus.',
-      leaders: 'Pr. Samuel Trindade & Diaconia',
-    },
-    {
-      name: 'Famílias & Casais na Presença',
-      icon: Heart,
-      description: 'Encontros mensais, cura de relacionamentos e blindagem dos lares com princípios apostólicos.',
-      leaders: 'Pr. Oziel & Pra. Midiã Gomes Maduro',
-    },
-    {
-      name: 'Comunicação & Mídia (MACDP Oficial)',
-      icon: Video,
-      description: 'Transmissão ao vivo para o YouTube, captação audiovisual, redes sociais (@_macdp) e som.',
-      leaders: 'Equipe de Mídia & Transmissão @_macdp',
-    },
+    { name: 'Caçadores da Presença Music (Ministério de Louvor)', description: 'Ministério de louvor da MACDP, que conduz a igreja em adoração.' },
+    { name: 'Hope Dance (Ministério de Dança)', description: 'Ministério de dança que expressa adoração por meio do movimento.' },
+    { name: 'HOPART (Ministério de Artes)', description: 'Ministério de artes da MACDP.' },
+    { name: 'Ministério de Serviço', description: 'Serve a igreja e os irmãos nos cultos e eventos.' },
+    { name: 'Comunicação e Mídia', description: 'Transmissão ao vivo, fotos, vídeos e redes sociais da MACDP.' },
+    { name: 'Rede UP (Rede de Jovens Unidade e Propósito)', description: 'Rede de jovens da MACDP: unidade e propósito.' },
+    { name: 'Rede de Casais', description: 'Encontros e cuidado para os casais da igreja.' },
+    { name: 'Rede de Homens', description: 'Encontros e discipulado para os homens da igreja.' },
+    { name: 'Rede de Mulheres', description: 'Encontros e discipulado para as mulheres da igreja.' },
   ];
 
   const ministriesList = ministries && ministries.length > 0
-    ? ministries.map((m) => ({
-        name: m.name,
-        icon: getMinistryIcon(m.name),
-        description: m.description,
-        leaders: m.leaderName,
-      }))
+    ? ministries.map((m) => ({ name: m.name, description: m.description }))
     : defaultMinistries;
 
   const filteredCells = cells.filter((c) => {
@@ -105,67 +55,38 @@ export const CellsLocator: React.FC<CellsLocatorProps> = ({ cells, ministries, o
   return (
     <section id="celulas" className="section" style={{ background: 'var(--bg-primary)' }}>
       <div className="container">
-        {/* Ministries Section Header */}
-        <div id="ministerios" className="section-header">
-          <span className="section-tag">
-            <Sparkles size={14} /> Ministérios Ativos
-          </span>
-          <h2 className="section-title">Encontre Seu Lugar para Servir</h2>
-          <p className="section-subtitle">
-            A igreja é um corpo onde cada membro possui dons únicos concedidos pelo Espírito Santo. Descubra onde seu talento pode abençoar vidas!
-          </p>
+        {/* Ministérios: lista limpa, sem botões */}
+        <div id="ministerios" className="mins-head">
+          <span className="mins-tag">Ministérios</span>
+          <h2 className="mins-title">Encontre seu lugar para servir</h2>
+          <p className="mins-lead">Cada membro tem dons para abençoar vidas. Conheça os ministérios da MACDP.</p>
         </div>
 
-        {/* Ministries Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-            gap: '1.75rem',
-            marginBottom: '6rem',
-          }}
-        >
-          {ministriesList.map((min, index) => {
-            const Icon = min.icon;
-            return (
-              <div key={index} className="card card-hover" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
-                  <div
-                    style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: '12px',
-                      background: 'var(--accent-gold-soft)',
-                      color: 'var(--accent-gold)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Icon size={22} />
-                  </div>
-                  <div>
-                    <h4 style={{ fontSize: '1.15rem', fontWeight: 700 }}>{min.name}</h4>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Liderança: {min.leaders}</span>
-                  </div>
-                </div>
+        <ol className="mins-list">
+          {ministriesList.map((min, index) => (
+            <li key={min.name + index} className="mins-item">
+              <span className="mins-n">{String(index + 1).padStart(2, '0')}</span>
+              <span className="mins-text">
+                <strong>{min.name}</strong>
+                {min.description && <span>{min.description}</span>}
+              </span>
+            </li>
+          ))}
+        </ol>
 
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.5rem', flex: 1 }}>
-                  {min.description}
-                </p>
-
-                <button
-                  onClick={() => onVolunteerMinistry(min.name)}
-                  className="btn btn-secondary btn-sm"
-                  style={{ alignSelf: 'flex-start' }}
-                >
-                  Quero Fazer Parte
-                </button>
-              </div>
-            );
-          })}
-        </div>
+        <style>{`
+          .mins-head { text-align: center; max-width: 40rem; margin: 0 auto 3rem; }
+          .mins-tag { display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 0.9rem; }
+          .mins-title { font-size: clamp(1.9rem, 4vw, 3rem); margin: 0 0 1rem; }
+          .mins-lead { font-size: 1.05rem; line-height: 1.7; color: var(--text-secondary); margin: 0; }
+          .mins-list { list-style: none; margin: 0 auto 6rem; padding: 0; max-width: 960px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 3rem; border-top: 1px solid var(--border-medium); }
+          .mins-item { display: grid; grid-template-columns: 2.5rem 1fr; gap: 0.75rem; padding: 1.4rem 0; border-bottom: 1px solid var(--border-subtle); }
+          .mins-n { font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; color: var(--accent-gold); padding-top: 0.15rem; }
+          .mins-text { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+          .mins-text strong { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); line-height: 1.35; }
+          .mins-text span { font-size: 0.9rem; line-height: 1.55; color: var(--text-secondary); }
+          @media (max-width: 760px) { .mins-list { grid-template-columns: 1fr; } }
+        `}</style>
 
         {/* Cells Locator Header */}
         <div className="section-header">
