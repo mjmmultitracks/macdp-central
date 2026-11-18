@@ -1,34 +1,31 @@
 import React from 'react';
-import { Users, Eye, Target, Compass, Heart, BookOpen, Quote } from 'lucide-react';
+import { Users, Eye, Target, Compass, Heart, BookOpen } from 'lucide-react';
 
 export const AboutSection: React.FC = () => {
-  const seniorPastoralCouple = {
-    role: 'Pastores Presidentes & Fundadores',
-    names: 'Pr. Oziel Gomes Maduro & Pra. Midiã Gomes Maduro',
-    tag: 'Presidência Geral',
-    photoUrl: '/images/pastors_oziel_midia.png',
-    bio: 'Casal fundador e líderes apostólicos à frente do Ministério Apostólico Caçadores da Presença (MACDP) em Manaus/AM. Movidos por uma paixão inabalável pela Presença de Deus, dedicam suas vidas ao pastoreio com amor paternal e maternal, restauração de famílias, discipulado e edificação de uma igreja acolhedora e relevante.',
-    quote: 'Aqui no MACDP é proibido a entrada de pessoas perfeitas. Somos um hospital de almas acolhidas pela graça de Deus.',
-  };
-
-  const assistantPastors = [
+  const pastors = [
+    {
+      role: 'Pastores Presidentes e Fundadores',
+      names: 'Oziel e Midiã Gomes Maduro',
+      photoUrl: '/images/pastors_oziel_midia.png',
+      objectPosition: 'center top',
+      summary: 'Fundadores e líderes à frente do MACDP em Manaus.',
+    },
     {
       role: 'Pastores Auxiliares',
-      names: 'Pr. Jaziel Maduro & Pra. Abda Maduro',
+      names: 'Jaziel e Abda Maduro',
       photoUrl: '/images/pastors_jaziel_abda.png',
       objectPosition: 'center top',
-      bio: 'Casal pastoral dedicado ao suporte do corpo de Cristo, ensino da Palavra, visitação, consolidação de famílias e fortalecimento espiritual dos ministérios da igreja.',
-      quote: 'Servir à casa do Senhor com alegria e cuidar de cada vida com o amor de Jesus é a nossa maior honra.',
+      summary: 'Ensino da Palavra, visitação e cuidado das famílias.',
     },
     {
       role: 'Pastores Auxiliares',
-      names: 'Pr. Samuel Trindade & Pra. Daniely Trindade',
+      names: 'Samuel e Daniely Trindade',
       photoUrl: '/images/pastors_samuel_daniely.png',
       objectPosition: 'center 10%',
-      bio: 'Casal pastoral atuante no pastoreio, acompanhamento de discípulos, células e edificação dos lares em Manaus, caminhando lado a lado com a liderança do MACDP.',
-      quote: 'A Presença de Deus transforma corações comuns em testemunhas vivas do poder do Evangelho.',
+      summary: 'Discipulado, células e edificação dos lares.',
     },
   ];
+
 
   const coreValues = [
     {
@@ -274,195 +271,53 @@ export const AboutSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Pastoral Leadership Showcase - Grid Padronizado e Proporcional */}
+        {/* Corpo pastoral: fotos circulares e texto curto */}
         <div style={{ marginTop: "1rem" }}>
           <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
             <span className="section-tag">Corpo Pastoral</span>
-            <h3 style={{ fontSize: "1.9rem", fontWeight: 800, marginTop: "0.25rem" }}>Nossos Pastores</h3>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", maxWidth: "600px", margin: "0.4rem auto 0 auto" }}>
-              Homens e mulheres comprometidos em orar, pastorear e apoiar a caminhada espiritual de cada família
-            </p>
+            <h3 style={{ fontSize: "1.6rem", fontWeight: 700, marginTop: "0.25rem" }}>Nossos Pastores</h3>
           </div>
 
-          {/* Grid Compacto com Todos os Pastores Padronizados */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "1.5rem",
-              alignItems: "stretch",
-            }}
-          >
-            {/* 1. Pastores Presidentes */}
-            <div
-              className="card card-hover"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
-                padding: 0,
-                borderRadius: "var(--radius-xl)",
-                border: "1.5px solid rgba(245, 158, 11, 0.45)",
-                background: "var(--bg-tertiary)",
-                boxShadow: "0 10px 25px rgba(0, 0, 0, 0.25), 0 0 18px rgba(245, 158, 11, 0.12)",
-              }}
-            >
-              {/* Foto Reduzida e Padronizada */}
-              <div style={{ height: "250px", overflow: "hidden", position: "relative" }}>
-                <img
-                  src={seniorPastoralCouple.photoUrl}
-                  alt={seniorPastoralCouple.names}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    objectPosition: "center top",
-                    display: "block",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "linear-gradient(to top, rgba(11, 17, 32, 0.92) 0%, rgba(11, 17, 32, 0.25) 50%, transparent 80%)",
-                  }}
-                />
-                <div style={{ position: "absolute", bottom: "0.85rem", left: "1rem", right: "1rem" }}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      background: "linear-gradient(135deg, #f59e0b, #d97706)",
-                      color: "#0b1120",
-                      fontWeight: 900,
-                      fontSize: "0.7rem",
-                      padding: "0.2rem 0.65rem",
-                      borderRadius: "9999px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      marginBottom: "0.3rem",
-                    }}
-                  >
-                    👑 Presidência Geral
-                  </span>
-                  <h4 style={{ color: "#ffffff", fontSize: "1.1rem", fontWeight: 800, lineHeight: 1.25, margin: 0 }}>
-                    {seniorPastoralCouple.names}
-                  </h4>
+          <div className="pastors-row">
+            {pastors.map((p) => (
+              <div key={p.names} className="pastor-item">
+                <div className="pastor-photo">
+                  <img src={p.photoUrl} alt={p.names} style={{ objectPosition: p.objectPosition }} loading="lazy" />
                 </div>
-              </div>
-
-              {/* Texto Padronizado */}
-              <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", flex: 1, gap: "0.85rem" }}>
-                <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", lineHeight: 1.6, margin: 0, flex: 1 }}>
-                  {seniorPastoralCouple.bio}
-                </p>
-
-                <div
-                  style={{
-                    background: "var(--bg-secondary)",
-                    borderLeft: "3px solid var(--accent-gold)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "0.75rem 0.85rem",
-                    display: "flex",
-                    gap: "0.5rem",
-                    fontSize: "0.8rem",
-                    fontStyle: "italic",
-                    color: "var(--text-primary)",
-                  }}
-                >
-                  <Quote size={15} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: "2px" }} />
-                  <span>"{seniorPastoralCouple.quote}"</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 2 & 3. Pastores Auxiliares */}
-            {assistantPastors.map((couple, idx) => (
-              <div
-                key={idx}
-                className="card card-hover"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  overflow: "hidden",
-                  padding: 0,
-                  borderRadius: "var(--radius-xl)",
-                  border: "1px solid var(--border-medium)",
-                  background: "var(--bg-tertiary)",
-                  boxShadow: "var(--shadow-sm)",
-                }}
-              >
-                {/* Foto Reduzida e Padronizada */}
-                <div style={{ height: "250px", overflow: "hidden", position: "relative" }}>
-                  <img
-                    src={couple.photoUrl}
-                    alt={couple.names}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: couple.objectPosition || "center top",
-                      display: "block",
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      background: "linear-gradient(to top, rgba(11, 17, 32, 0.92) 0%, rgba(11, 17, 32, 0.25) 50%, transparent 80%)",
-                    }}
-                  />
-                  <div style={{ position: "absolute", bottom: "0.85rem", left: "1rem", right: "1rem" }}>
-                    <span
-                      style={{
-                        display: "inline-block",
-                        background: "rgba(15, 23, 42, 0.8)",
-                        border: "1px solid rgba(255, 255, 255, 0.25)",
-                        color: "#93c5fd",
-                        fontWeight: 800,
-                        fontSize: "0.7rem",
-                        padding: "0.2rem 0.65rem",
-                        borderRadius: "9999px",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.04em",
-                        marginBottom: "0.3rem",
-                        backdropFilter: "blur(4px)",
-                      }}
-                    >
-                      {couple.role}
-                    </span>
-                    <h4 style={{ color: "#ffffff", fontSize: "1.1rem", fontWeight: 800, lineHeight: 1.25, margin: 0 }}>
-                      {couple.names}
-                    </h4>
-                  </div>
-                </div>
-
-                {/* Texto Padronizado */}
-                <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", flex: 1, gap: "0.85rem" }}>
-                  <p style={{ fontSize: "0.84rem", color: "var(--text-secondary)", lineHeight: 1.6, margin: 0, flex: 1 }}>
-                    {couple.bio}
-                  </p>
-
-                  <div
-                    style={{
-                      background: "var(--bg-secondary)",
-                      borderLeft: "3px solid var(--accent-blue-light)",
-                      borderRadius: "var(--radius-md)",
-                      padding: "0.75rem 0.85rem",
-                      display: "flex",
-                      gap: "0.5rem",
-                      fontSize: "0.8rem",
-                      fontStyle: "italic",
-                      color: "var(--text-primary)",
-                    }}
-                  >
-                    <Quote size={15} color="var(--accent-blue-light)" style={{ flexShrink: 0, marginTop: "2px" }} />
-                    <span>"{couple.quote}"</span>
-                  </div>
-                </div>
+                <h4 className="pastor-name">{p.names}</h4>
+                <span className="pastor-role">{p.role}</span>
+                <p className="pastor-summary">{p.summary}</p>
               </div>
             ))}
           </div>
         </div>
+
+        <style>{`
+          .pastors-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 2rem;
+            max-width: 960px;
+            margin: 0 auto;
+          }
+          .pastor-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
+          .pastor-photo {
+            width: 160px; height: 160px; border-radius: 50%;
+            overflow: hidden; margin-bottom: 1.1rem;
+            border: 1px solid var(--border-medium);
+            background: var(--bg-tertiary);
+          }
+          .pastor-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+          .pastor-name { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.2rem; }
+          .pastor-role {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--accent-gold); margin-bottom: 0.6rem;
+          }
+          .pastor-summary { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; max-width: 16rem; margin: 0; }
+          @media (max-width: 760px) {
+            .pastors-row { grid-template-columns: 1fr; gap: 2.2rem; }
+          }
+        `}</style>
       </div>
     </section>
   );
