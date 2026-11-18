@@ -5,9 +5,7 @@ import { addEventRegistration, getChurchSettings } from '../../services/db';
 import { generatePixCopiaECola } from '../../services/pixService';
 import {
   CheckCircle2,
-  Calendar,
   Clock,
-  MapPin,
   User,
   Phone,
   Mail,
@@ -626,9 +624,9 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
         className="modal-content animate-modal-pop"
         style={{
           background: 'var(--bg-secondary)',
-          border: '1px solid rgba(245, 158, 11, 0.35)',
-          borderRadius: 'var(--radius-xl)',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(245, 158, 11, 0.15)',
+          border: '1px solid var(--border-medium)',
+          borderRadius: '12px',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6)',
           width: '100%',
           maxWidth: '680px',
           maxHeight: 'calc(100dvh - 1.5rem)',
@@ -638,93 +636,29 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
           position: 'relative',
         }}
       >
-        {/* Header with Title & Stepper */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(11, 17, 32, 0.7) 100%)',
-            borderBottom: '1px solid var(--border-subtle)',
-            padding: '1.5rem',
-            position: 'relative',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <span
-                style={{
-                  background: 'rgba(245, 158, 11, 0.2)',
-                  color: 'var(--accent-gold)',
-                  border: '1px solid rgba(245, 158, 11, 0.4)',
-                  padding: '0.2rem 0.65rem',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: '0.72rem',
-                  fontWeight: 800,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                }}
-              >
-                Inscrição Oficial • {event.category}
-              </span>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 900, marginTop: '0.4rem', color: 'var(--text-primary)' }}>
-                {event.title}
-              </h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <Calendar size={13} color="var(--accent-gold)" />
-                  <span>{formatEventDateRange(event.date, event.endDate)} às {event.time}</span>
-                </div>
-                <span>•</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <MapPin size={13} color="var(--accent-blue-light)" />
-                  <span style={{ maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {event.location}
-                  </span>
-                </div>
-              </div>
+        {/* Cabeçalho limpo: título do evento e etapas */}
+        <div className="wz-head">
+          <div className="wz-head-top">
+            <div style={{ minWidth: 0 }}>
+              <span className="wz-eyebrow">Inscrição · {event.category}</span>
+              <h3 className="wz-title">{event.title}</h3>
+              <p className="wz-meta">
+                {formatEventDateRange(event.date, event.endDate)} às {event.time} · {event.location}
+              </p>
             </div>
-
-            <button
-              onClick={onClose}
-              className="btn btn-secondary btn-sm"
-              style={{
-                padding: '0.4rem',
-                borderRadius: '50%',
-                minWidth: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              title="Fechar formulário"
-            >
-              <X size={16} />
+            <button type="button" onClick={onClose} className="wz-close" aria-label="Fechar inscrição" title="Fechar">
+              <X size={18} />
             </button>
           </div>
-
-          {/* Stepper Progress Bar */}
           {currentStep < 4 && (
-            <div style={{ marginTop: '1.25rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.78rem' }}>
-                <span style={{ fontWeight: currentStep === 1 ? 800 : 600, color: currentStep >= 1 ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
-                  1. Seus Dados
-                </span>
-                <span style={{ fontWeight: currentStep === 2 ? 800 : 600, color: currentStep >= 2 ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
-                  2. Questionário do Evento
-                </span>
-                <span style={{ fontWeight: currentStep === 3 ? 800 : 600, color: currentStep >= 3 ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
-                  3. Confirmação
-                </span>
-              </div>
-              <div style={{ height: '5px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '10px', overflow: 'hidden' }}>
-                <div
-                  style={{
-                    height: '100%',
-                    width: currentStep === 1 ? '33%' : currentStep === 2 ? '66%' : '100%',
-                    background: 'linear-gradient(90deg, #F59E0B, #D97706)',
-                    transition: 'width 0.35s ease',
-                  }}
-                />
-              </div>
-            </div>
+            <ol className="wz-steps" aria-label={`Etapa ${currentStep} de 3`}>
+              {['Seus dados', 'Questionário', 'Pagamento'].map((label, i) => (
+                <li key={label} className={currentStep === i + 1 ? 'is-on' : currentStep > i + 1 ? 'is-done' : ''}>
+                  <span />
+                  <em>{label}</em>
+                </li>
+              ))}
+            </ol>
           )}
         </div>
 
@@ -2695,6 +2629,21 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
           shirtColor={event.shirtColor}
         />
       </div>
+      <style>{`
+        .wz-head { padding: 1.4rem 1.5rem 1.1rem; border-bottom: 1px solid var(--border-subtle); }
+        .wz-head-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+        .wz-eyebrow { display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 0.35rem; }
+        .wz-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; line-height: 1.25; margin: 0; color: var(--text-primary); }
+        .wz-meta { margin: 0.35rem 0 0; font-size: 0.85rem; color: var(--text-secondary); }
+        .wz-close { flex-shrink: 0; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; background: none; border: 1px solid var(--border-medium); border-radius: 6px; color: var(--text-primary); cursor: pointer; }
+        .wz-close:hover { border-color: var(--text-primary); }
+        .wz-steps { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin: 1.1rem 0 0; padding: 0; }
+        .wz-steps li { display: flex; flex-direction: column; gap: 0.4rem; }
+        .wz-steps li span { height: 3px; border-radius: 2px; background: var(--border-medium); }
+        .wz-steps li em { font-style: normal; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+        .wz-steps li.is-on span, .wz-steps li.is-done span { background: var(--accent-gold-light); }
+        .wz-steps li.is-on em { color: var(--text-primary); font-weight: 700; }
+      `}</style>
     </div>
   );
 };
