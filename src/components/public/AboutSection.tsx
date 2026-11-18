@@ -1,5 +1,4 @@
 import React from 'react';
-import { Users, Eye, Target, Compass, Heart, BookOpen } from 'lucide-react';
 
 export const AboutSection: React.FC = () => {
   const pastors = [
@@ -28,246 +27,68 @@ export const AboutSection: React.FC = () => {
 
 
   const coreValues = [
-    {
-      icon: BookOpen,
-      title: 'Busca Apaixonada pela Presença',
-      desc: 'Mais do que rituais religiosos, somos incansáveis caçadores da presença manifesta do Espírito Santo em nossas vidas.',
-    },
-    {
-      icon: Heart,
-      title: 'Hospital de Almas (Sem Julgamentos)',
-      desc: '"Proibido a entrada de pessoas perfeitas." Acolhemos o ferido, o necessitado e quem busca recomeçar em Cristo.',
-    },
-    {
-      icon: Users,
-      title: 'Comunhão em Células por Manaus',
-      desc: 'Crescemos juntos nas casas, compartilhando a mesa, a oração e o discipulado de perto em cada bairro.',
-    },
-    {
-      icon: Target,
-      title: 'Autoridade & Transformação Social',
-      desc: 'Amor prático que impacta o Amazonas com projetos comunitários, socorro aos vulneráveis e expansão do Reino.',
-    },
+    { title: 'Busca pela Presença', desc: 'Mais do que rituais, buscamos a presença viva do Espírito Santo em nossas vidas.' },
+    { title: 'Hospital de Almas', desc: 'Acolhemos o ferido e quem busca recomeçar em Cristo, sem julgamentos.' },
+    { title: 'Comunhão em Células', desc: 'Crescemos juntos nas casas, em cada bairro de Manaus, com oração e discipulado.' },
+    { title: 'Amor que Transforma', desc: 'Projetos comunitários e cuidado com quem mais precisa no Amazonas.' },
   ];
 
   return (
     <section id="sobre" className="section" style={{ background: 'var(--bg-secondary)' }}>
       <div className="container">
-        {/* Section Header */}
-        <div className="section-header">
-          <span className="section-tag">
-            <Users size={14} /> Quem Somos
-          </span>
-          <h2 className="section-title">Ministério Apostólico Caçadores da Presença</h2>
-          <p className="section-subtitle">
-            Conheça o coração pastoral de Oziel e Midiã Gomes Maduro e o chamado profético do MACDP em Manaus/AM.
-          </p>
+        {/* Cabeçalho */}
+        <div className="about-head">
+          <span className="about-tag">Quem somos</span>
+          <h2 className="about-title">Uma igreja que caça a presença de Deus.</h2>
         </div>
 
-        {/* Story & Identity Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-            gap: '3rem',
-            alignItems: 'center',
-            marginBottom: '5rem',
-          }}
-        >
-          <div>
-            <span
-              style={{
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                color: 'var(--accent-gold)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-              }}
-            >
-              Cidade Nova • Canaranas • Manaus / AM
-            </span>
-            <h3 style={{ fontSize: '2.1rem', fontWeight: 800, margin: '0.75rem 0 1.25rem 0', lineHeight: 1.2 }}>
-              Uma igreja que ama a Deus e caça Sua Presença incansavelmente.
-            </h3>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '1.25rem' }}>
-              O <strong>Ministério Apostólico Caçadores da Presença (MACDP)</strong> nasceu com uma visão profética e acolhedora no coração da Zona Norte de Manaus. Sob a cobertura e direção dos <strong>Pastores Presidentes Oziel Gomes Maduro e Midiã Gomes Maduro</strong>, a igreja tem sido refúgio para centenas de famílias que anseiam por uma fé viva, sem hipocrisia e transbordante de amor.
+        {/* História e foto */}
+        <div className="about-story">
+          <div className="about-text">
+            <p>
+              O <strong>Ministério Apostólico Caçadores da Presença (MACDP)</strong> nasceu no coração da Zona Norte de Manaus,
+              sob a direção dos pastores presidentes <strong>Oziel e Midiã Gomes Maduro</strong>. Somos refúgio para famílias
+              que buscam uma fé viva, sem hipocrisia e cheia de amor.
             </p>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '2rem' }}>
-              Nosso lema é claro e libertador: <strong>"Proibido a Entrada de Pessoas Perfeitas."</strong> Se você errou, se está cansado ou machucado pela vida, há um lugar reservado para você no altar do Senhor!
+            <p className="about-motto">
+              “Proibido a entrada de pessoas perfeitas.” Se você errou ou está cansado, há um lugar para você aqui.
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '1.25rem' }}>
-              <div
-                style={{
-                  background: 'var(--bg-tertiary)',
-                  padding: '1.25rem',
-                  borderRadius: 'var(--radius-md)',
-                  borderLeft: '3px solid var(--accent-gold)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                  <Target size={18} color="var(--accent-gold)" />
-                  <strong style={{ fontSize: '0.95rem' }}>Nossa Missão</strong>
-                </div>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  Manifestar o Reino de Deus e acolher vidas com o amor incondicional da Presença.
-                </p>
+            <div className="about-mv">
+              <div>
+                <h4>Missão</h4>
+                <p>Manifestar o Reino de Deus e acolher vidas com o amor da Presença.</p>
               </div>
-
-              <div
-                style={{
-                  background: 'var(--bg-tertiary)',
-                  padding: '1.25rem',
-                  borderRadius: 'var(--radius-md)',
-                  borderLeft: '3px solid var(--accent-blue)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                  <Eye size={18} color="var(--accent-blue-light)" />
-                  <strong style={{ fontSize: '0.95rem' }}>Nossa Visão</strong>
-                </div>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  Ser um farol apostólico em Manaus, estabelecendo células de avivamento e comunhão.
-                </p>
+              <div>
+                <h4>Visão</h4>
+                <p>Ser um farol apostólico em Manaus, com células de avivamento e comunhão.</p>
               </div>
             </div>
           </div>
 
-          {/* Fellowship Photo */}
-          <div style={{ position: 'relative' }}>
-            <div
-              style={{
-                borderRadius: 'var(--radius-xl)',
-                overflow: 'hidden',
-                boxShadow: 'var(--shadow-xl), 0 0 25px rgba(245, 158, 11, 0.08)',
-                border: '1px solid rgba(245, 158, 11, 0.3)',
-                aspectRatio: '16 / 10',
-                position: 'relative',
-              }}
-            >
-              <img
-                src="/images/macdp_adoracao_evento.jpg"
-                alt="Comunhão e Oração dos Membros do Ministério Apostólico Caçadores da Presença (MACDP)"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                  filter: 'contrast(1.08) brightness(0.96) saturate(1.18) sepia(0.08)',
-                  transition: 'transform 0.5s ease, filter 0.5s ease',
-                }}
-              />
-              {/* Cinematic Warm Golden & Vignette Overlay */}
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background:
-                    'linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(0, 0, 0, 0.05) 45%, rgba(11, 17, 32, 0.55) 100%)',
-                  pointerEvents: 'none',
-                }}
-              />
-              {/* Editorial Tag */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  left: '1rem',
-                  background: 'rgba(11, 17, 32, 0.78)',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(245, 158, 11, 0.35)',
-                  padding: '0.35rem 0.85rem',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  color: 'var(--accent-gold-light)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
-                }}
-              >
-                <span
-                  style={{
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    background: 'var(--accent-gold)',
-                  }}
-                />
-                <span>Comunhão & Oração • MACDP</span>
-              </div>
-            </div>
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '-1.5rem',
-                right: '1.5rem',
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border-medium)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '1rem 1.5rem',
-                boxShadow: 'var(--shadow-lg)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem',
-              }}
-            >
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-gold)', lineHeight: 1 }}>
-                +14
-              </div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, lineHeight: 1.2 }}>
-                Anos proclamando <br />o Evangelho em Manaus
-              </div>
-            </div>
-          </div>
+          <figure className="about-photo">
+            <img
+              src="/images/macdp_adoracao_evento.jpg"
+              alt="Comunhão e oração no Ministério Apostólico Caçadores da Presença"
+              loading="lazy"
+            />
+            <figcaption>
+              <b>+14</b> anos proclamando o Evangelho em Manaus
+            </figcaption>
+          </figure>
         </div>
 
-        {/* Core Values */}
-        <div style={{ marginBottom: '5rem' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <span className="section-tag">
-              <Compass size={14} /> Nossos Pilares
-            </span>
-            <h3 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Valores que Guiam Cada Decisão</h3>
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
-            {coreValues.map((val, i) => {
-              const Icon = val.icon;
-              return (
-                <div key={i} className="card card-hover" style={{ padding: '1.75rem' }}>
-                  <div
-                    style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: '12px',
-                      background: 'var(--accent-gold-soft)',
-                      color: 'var(--accent-gold)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: '1.25rem',
-                    }}
-                  >
-                    <Icon size={22} />
-                  </div>
-                  <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.65rem' }}>
-                    {val.title}
-                  </h4>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                    {val.desc}
-                  </p>
-                </div>
-              );
-            })}
+        {/* Pilares */}
+        <div className="about-values">
+          <h3 className="about-sub">Nossos pilares</h3>
+          <div className="about-values-grid">
+            {coreValues.map((val, i) => (
+              <div key={val.title} className="about-value">
+                <span className="about-value-n">{String(i + 1).padStart(2, '0')}</span>
+                <h4>{val.title}</h4>
+                <p>{val.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -293,6 +114,39 @@ export const AboutSection: React.FC = () => {
         </div>
 
         <style>{`
+          .about-head { text-align: center; margin: 0 auto 3.5rem; max-width: 44rem; }
+          .about-tag { display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 0.9rem; }
+          .about-title { font-size: clamp(1.9rem, 4vw, 3rem); margin: 0; }
+          .about-story { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(2rem, 5vw, 4rem); align-items: center; max-width: 1100px; margin: 0 auto 5rem; }
+          .about-text > p { color: var(--text-secondary); font-size: 1.05rem; line-height: 1.75; margin: 0 0 1.25rem; }
+          .about-text strong { color: var(--text-primary); }
+          .about-text .about-motto { color: var(--text-primary); font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; line-height: 1.5; padding-left: 1.1rem; border-left: 3px solid var(--accent-gold); margin-bottom: 2rem; }
+          .about-mv { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle); }
+          .about-mv h4 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-gold); margin: 0 0 0.4rem; }
+          .about-mv p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+          .about-photo { margin: 0; }
+          .about-photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; border-radius: var(--radius-lg); }
+          .about-photo figcaption { margin-top: 0.8rem; font-size: 0.9rem; color: var(--text-secondary); }
+          .about-photo figcaption b { color: var(--accent-gold); font-weight: 800; margin-right: 0.15rem; }
+          .about-values { max-width: 1100px; margin: 0 auto 5rem; }
+          .about-sub { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 1.25rem; }
+          .about-values-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--border-medium); }
+          .about-value { padding: 1.5rem 1.25rem 0 0; }
+          .about-value + .about-value { padding-left: 1.25rem; border-left: 1px solid var(--border-subtle); }
+          .about-value-n { display: block; font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; color: var(--accent-gold); margin-bottom: 0.7rem; }
+          .about-value h4 { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.45rem; }
+          .about-value p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+          @media (max-width: 900px) {
+            .about-story { grid-template-columns: 1fr; }
+            .about-values-grid { grid-template-columns: 1fr 1fr; }
+            .about-value { padding: 1.4rem 1rem 1rem 0; border-left: 0 !important; }
+            .about-value:nth-child(even) { padding-left: 1rem; border-left: 1px solid var(--border-subtle) !important; }
+          }
+          @media (max-width: 520px) {
+            .about-mv { grid-template-columns: 1fr; }
+            .about-values-grid { grid-template-columns: 1fr; }
+            .about-value, .about-value:nth-child(even) { padding: 1.2rem 0 1rem 0; border-left: 0 !important; border-bottom: 1px solid var(--border-subtle); }
+          }
           .pastors-row {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
