@@ -1,7 +1,30 @@
-import React from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { Play, ArrowRight, Calendar, MapPin, Clock } from 'lucide-react';
 import type { ChurchEvent, RegularServiceItem } from '../../types';
 import { formatEventDateRange } from '../../utils/formatters';
+
+const Hero3D = lazy(() => import('./Hero3D'));
+
+type Motion3D = 'off' | 'lite' | 'full';
+
+/** Decide se o 3D roda: desliga em aparelhos fracos, economia de dados ou "reduzir movimento". */
+function detectMotion3D(): Motion3D {
+  if (typeof window === 'undefined') return 'off';
+  const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return 'off';
+  if (nav.connection?.saveData) return 'off';
+  const cores = nav.hardwareConcurrency || 4;
+  const memory = nav.deviceMemory || 4;
+  if (cores <= 2 || memory <= 1) return 'off';
+  try {
+    const canvas = document.createElement('canvas');
+    if (!(canvas.getContext('webgl2') || canvas.getContext('webgl'))) return 'off';
+  } catch {
+    return 'off';
+  }
+  if (cores <= 4 || memory <= 2 || window.innerWidth < 700) return 'lite';
+  return 'full';
+}
 
 interface HeroSectionProps {
   onNavigate: (section: string) => void;
@@ -43,6 +66,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onOpenEvent,
 }) => {
   const nextEvent = getNextEvent(events);
+  const [motion] = useState<Motion3D>(detectMotion3D);
   const services = (regularServices && regularServices.length > 0
     ? regularServices.filter((s) => s.active !== false)
     : FALLBACK_SERVICES
@@ -65,6 +89,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         aria-hidden="true"
       />
       <div className="hero-shade" />
+      {motion !== 'off' && (
+        <Suspense fallback={null}>
+          <Hero3D lite={motion === 'lite'} />
+        </Suspense>
+      )}
 
       <div className="hero-content">
         <span className="hero-eyebrow">
@@ -165,9 +194,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.35) 35%, rgba(0, 0, 0, 0.85) 100%),
             radial-gradient(ellipse 70% 60% at 20% 60%, rgba(0, 0, 0, 0.55) 0%, transparent 70%);
         }
+        .hero-3d {
+          position: absolute;
+          inset: 0;
+          z-index: 2;
+          pointer-events: none;
+        }
         .hero-content {
           position: relative;
-          z-index: 2;
+          z-index: 3;
           width: 100%;
           max-width: 1240px;
           margin: 0 auto;
@@ -227,7 +262,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         .hero-strip {
           position: relative;
-          z-index: 2;
+          z-index: 3;
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
           border-top: 1px solid rgba(255, 255, 255, 0.18);
@@ -265,6 +300,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         .hero-cell-sub { font-size: 0.88rem; color: rgba(255, 255, 255, 0.7); }
         .hero-times { display: flex; flex-wrap: wrap; gap: 0.35rem 1.1rem; font-size: 0.95rem; }
         .hero-time b { font-weight: 700; color: rgba(255, 255, 255, 0.7); margin-right: 0.15rem; }
+
+        @supports (animation-timeline: scroll()) {
+          @media (prefers-reduced-motion: no-preference) {
+            .hero-content {
+              animation: hero-content-out linear both;
+              animation-timeline: scroll(root);
+              animation-range: 0 85vh;
+            }
+          }
+        }
+        @keyframes hero-content-out {
+          to { transform: translateY(-60px); opacity: 0.15; }
+        }
 
         @media (max-width: 700px) {
           .hero-content { padding: 6.5rem 1.1rem 2rem; }

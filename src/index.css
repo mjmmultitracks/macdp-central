@@ -1291,3 +1291,21 @@ button, input, select, textarea {
   font-weight: 700;
   letter-spacing: 0;
 }
+
+/* Entradas suaves ao rolar (somente em navegadores com animações guiadas por scroll) */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .public-site .section-header,
+    .public-site .section .card,
+    .public-site .pastor-item,
+    .public-site .reveal {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+    @keyframes reveal-up {
+      from { opacity: 0; transform: translateY(36px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  }
+}
