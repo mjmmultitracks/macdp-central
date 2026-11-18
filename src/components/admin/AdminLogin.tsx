@@ -1,16 +1,7 @@
 import React, { useState } from 'react';
 import { UserSession, ChurchSettings } from '../../types';
 import { loginWithCredentials } from '../../services/authService';
-import {
-  Lock,
-  Mail,
-  Eye,
-  EyeOff,
-  ArrowLeft,
-  ShieldCheck,
-  AlertCircle,
-  KeyRound,
-} from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
 interface AdminLoginProps {
   onLoginSuccess: (user: UserSession) => void;
@@ -25,10 +16,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
   onNotify,
   churchSettings,
 }) => {
-  const [email, setEmail] = useState('oziel.maduro@macdp.com.br');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -36,397 +26,119 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
     e.preventDefault();
     setErrorMessage(null);
     setIsLoading(true);
-
     try {
       const result = await loginWithCredentials(email, password);
-
       if (result.success && result.user) {
-        if (onNotify) {
-          onNotify('success', `Bem-vindo(a) ao painel, ${result.user.name}!`);
-        }
+        onNotify?.('success', `Bem-vindo(a), ${result.user.name}!`);
         onLoginSuccess(result.user);
       } else {
-        setErrorMessage(result.error || 'Credenciais inválidas. Tente novamente.');
+        setErrorMessage(result.error || 'E-mail ou senha incorretos.');
       }
-    } catch (err: any) {
-      setErrorMessage(err?.message || 'Erro de comunicação ao validar acesso.');
+    } catch {
+      setErrorMessage('Não foi possível entrar agora. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const contact = '(92) 98601-4992';
+  const contactLink = 'https://wa.me/5592986014992';
+
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'radial-gradient(ellipse at top, #1e293b 0%, #0b1120 70%)',
-        padding: '1.5rem',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-      className="animate-page-enter"
-    >
-      {/* Subtle Background Glow Orbs */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '-15%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '600px',
-          height: '400px',
-          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '-20%',
-          right: '10%',
-          width: '500px',
-          height: '400px',
-          background: 'radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%)',
-          filter: 'blur(70px)',
-          pointerEvents: 'none',
-        }}
-      />
+    <div className="lg-page animate-page-enter">
+      <div className="lg-box">
+        <img
+          className="lg-logo"
+          src={churchSettings?.logoUrl || '/images/logo.png'}
+          alt={churchSettings?.name || 'MACDP'}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = '/images/logo.png';
+          }}
+        />
+        <span className="lg-eyebrow">{churchSettings?.shortName || 'MACDP'}</span>
+        <h1 className="lg-title">Painel administrativo</h1>
 
-      {/* Main Login Card */}
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '460px',
-          background: 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(245, 158, 11, 0.28)',
-          borderRadius: 'var(--radius-xl)',
-          padding: '2.5rem',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.6), 0 0 30px rgba(245, 158, 11, 0.08)',
-          position: 'relative',
-          zIndex: 10,
-        }}
-        className="animate-modal-pop"
-      >
-        {/* Top Header with Church Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div
-            style={{
-              width: '74px',
-              height: '74px',
-              margin: '0 auto 1.25rem auto',
-              borderRadius: '20px',
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(15, 23, 42, 0.9))',
-              border: '1.5px solid var(--accent-gold)',
-              padding: '6px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 24px var(--accent-gold-glow)',
-            }}
-          >
-            <img
-              src={churchSettings?.logoUrl || '/images/logo.png'}
-              alt={churchSettings?.name || 'Logo Oficial MACDP'}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/images/logo.png';
-              }}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                borderRadius: '14px',
-              }}
+        <form onSubmit={handleSubmit} className="lg-form" noValidate>
+          <label className="lg-label" htmlFor="lg-email">E-mail</label>
+          <input
+            id="lg-email"
+            className="lg-input"
+            type="email"
+            autoComplete="username"
+            placeholder="seu.nome@macdp.com.br"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          <label className="lg-label" htmlFor="lg-password">Senha</label>
+          <div className="lg-pass">
+            <input
+              id="lg-password"
+              className="lg-input"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
-          </div>
-
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.25rem 0.75rem',
-              borderRadius: 'var(--radius-full)',
-              background: 'rgba(245, 158, 11, 0.1)',
-              border: '1px solid rgba(245, 158, 11, 0.2)',
-              color: 'var(--accent-gold-light)',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              marginBottom: '0.5rem',
-            }}
-          >
-            <ShieldCheck size={14} />
-            <span>Acesso Restrito & Seguro</span>
-          </div>
-
-          <h2
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: '1.45rem',
-              fontWeight: 900,
-              color: '#ffffff',
-              letterSpacing: '-0.02em',
-              marginBottom: '0.35rem',
-            }}
-          >
-            {churchSettings?.shortName || churchSettings?.name || 'Painel Eclesiástico'}
-          </h2>
-
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0 }}>
-            {churchSettings?.subtitle || 'Ministério Apostólico Caçadores da Presença'}
-          </p>
-        </div>
-
-        {/* Error Alert Box */}
-        {errorMessage && (
-          <div
-            style={{
-              background: 'rgba(239, 68, 68, 0.12)',
-              border: '1px solid rgba(239, 68, 68, 0.35)',
-              borderRadius: 'var(--radius-md)',
-              padding: '0.85rem 1rem',
-              color: '#FCA5A5',
-              fontSize: '0.85rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.65rem',
-              marginBottom: '1.5rem',
-            }}
-          >
-            <AlertCircle size={18} style={{ flexShrink: 0 }} />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        {/* Login Form */}
-        <form onSubmit={handleSubmit}>
-          {/* Email Field */}
-          <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-            <label
-              className="form-label"
-              style={{
-                color: '#e2e8f0',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-              }}
+            <button
+              type="button"
+              className="lg-eye"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
             >
-              <Mail size={15} color="var(--accent-gold)" />
-              <span>E-mail Corporativo ou Ministerial</span>
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                placeholder="seu.nome@macdp.com.br"
-                className="form-input"
-                style={{
-                  background: 'rgba(2, 6, 23, 0.65)',
-                  border: '1px solid rgba(245, 158, 11, 0.2)',
-                  color: '#ffffff',
-                  padding: '0.85rem 1rem',
-                  fontSize: '0.95rem',
-                  borderRadius: 'var(--radius-md)',
-                  width: '100%',
-                }}
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errorMessage) setErrorMessage(null);
-                }}
-              />
-            </div>
+              {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
           </div>
 
-          {/* Password Field */}
-          <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '0.4rem',
-              }}
-            >
-              <label
-                className="form-label"
-                style={{
-                  color: '#e2e8f0',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  marginBottom: 0,
-                }}
-              >
-                <Lock size={15} color="var(--accent-gold)" />
-                <span>Senha de Acesso</span>
-              </label>
-            </div>
+          {errorMessage && (
+            <p className="lg-error" role="alert">
+              {errorMessage}
+            </p>
+          )}
 
-            <div style={{ position: 'relative' }}>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                autoComplete="current-password"
-                placeholder="••••••••••••"
-                className="form-input"
-                style={{
-                  background: 'rgba(2, 6, 23, 0.65)',
-                  border: '1px solid rgba(245, 158, 11, 0.2)',
-                  color: '#ffffff',
-                  padding: '0.85rem 2.8rem 0.85rem 1rem',
-                  fontSize: '0.95rem',
-                  borderRadius: 'var(--radius-md)',
-                  width: '100%',
-                }}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (errorMessage) setErrorMessage(null);
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '0.85rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  padding: '0.2rem',
-                }}
-                title={showPassword ? 'Ocultar senha' : 'Exibir senha'}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Remember Me */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '1.5rem',
-              fontSize: '0.85rem',
-            }}
-          >
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                cursor: 'pointer',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                style={{
-                  accentColor: 'var(--accent-gold)',
-                  width: '16px',
-                  height: '16px',
-                  cursor: 'pointer',
-                }}
-              />
-              <span>Manter conectado neste dispositivo</span>
-            </label>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="btn btn-primary"
-            style={{
-              width: '100%',
-              padding: '0.9rem',
-              fontSize: '1rem',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.6rem',
-              boxShadow: '0 8px 24px var(--accent-gold-glow)',
-              cursor: isLoading ? 'wait' : 'pointer',
-              opacity: isLoading ? 0.75 : 1,
-            }}
-          >
-            {isLoading ? (
-              <>
-                <span className="spinner-border spinner-border-sm" />
-                <span>Autenticando com segurança...</span>
-              </>
-            ) : (
-              <>
-                <KeyRound size={18} />
-                <span>Entrar no Painel ERP</span>
-              </>
-            )}
+          <button type="submit" className="lg-submit" disabled={isLoading || !email || !password}>
+            {isLoading ? 'Entrando…' : 'Entrar'}
           </button>
         </form>
 
-        {/* Security / Privacy notice */}
-        <div
-          style={{
-            marginTop: '1.75rem',
-            padding: '0.85rem 1rem',
-            borderRadius: 'var(--radius-md)',
-            background: 'rgba(255, 255, 255, 0.02)',
-            border: '1px solid var(--border-subtle)',
-            fontSize: '0.78rem',
-            color: 'var(--text-muted)',
-            textAlign: 'center',
-            lineHeight: 1.5,
-          }}
-        >
-          <span style={{ color: 'var(--accent-gold-light)', fontWeight: 600 }}>Ambiente Eclesiástico Restrito & Monitorado</span>
-          <br />
-          Para liberação de usuário ou recuperação de senha, contate a Secretaria: {churchSettings?.phone || '(92) 99127-9663'}.
-        </div>
+        <p className="lg-help">
+          Esqueceu a senha ou precisa de acesso? Fale com a secretaria:{' '}
+          <a href={contactLink} target="_blank" rel="noreferrer">
+            {contact}
+          </a>
+        </p>
 
-        {/* Back to Public Site Link */}
-        <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-          <button
-            onClick={onBackToPublic}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-muted)',
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              transition: 'color 0.2s',
-            }}
-            onMouseEnter={(e) => ((e.target as HTMLElement).style.color = 'var(--text-primary)')}
-            onMouseLeave={(e) => ((e.target as HTMLElement).style.color = 'var(--text-muted)')}
-          >
-            <ArrowLeft size={16} />
-            <span>Voltar ao Portal Público da Igreja</span>
-          </button>
-        </div>
+        <button type="button" className="lg-back" onClick={onBackToPublic}>
+          <ArrowLeft size={15} /> Voltar ao site
+        </button>
       </div>
+
+      <style>{`
+        .lg-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; background: #09090b; }
+        .lg-box { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: stretch; }
+        .lg-logo { width: 56px; height: 56px; object-fit: contain; align-self: center; margin-bottom: 1.25rem; }
+        .lg-eyebrow { text-align: center; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent-gold-light); }
+        .lg-title { text-align: center; font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0.4rem 0 2rem; }
+        .lg-form { display: flex; flex-direction: column; }
+        .lg-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #8b8b95; margin: 0 0 0.3rem; }
+        .lg-input { width: 100%; padding: 0.8rem 0; background: none; border: 0; border-bottom: 1px solid #34343c; border-radius: 0; color: #fff; font-size: 1rem; outline: 0; margin-bottom: 1.5rem; }
+        .lg-input:focus { border-bottom-color: var(--accent-gold-light); }
+        .lg-input::placeholder { color: #55555e; }
+        .lg-pass { position: relative; }
+        .lg-pass .lg-input { padding-right: 2.5rem; }
+        .lg-eye { position: absolute; right: 0; top: 0.55rem; background: none; border: 0; color: #8b8b95; cursor: pointer; padding: 0.2rem; }
+        .lg-eye:hover { color: #fff; }
+        .lg-error { color: #f87171; font-size: 0.9rem; margin: -0.5rem 0 1rem; }
+        .lg-submit { padding: 1rem; border: 2px solid var(--accent-gold-light); border-radius: 4px; background: var(--accent-gold-light); color: #0a0a0a; font-family: var(--font-display); font-size: 0.8rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; transition: background 150ms ease, border-color 150ms ease; }
+        .lg-submit:hover:not(:disabled) { background: #fff; border-color: #fff; }
+        .lg-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .lg-help { text-align: center; font-size: 0.85rem; line-height: 1.6; color: #8b8b95; margin: 1.75rem 0 0; }
+        .lg-help a { color: #fff; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+        .lg-back { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; margin: 1.25rem auto 0; background: none; border: 0; color: #8b8b95; font-size: 0.88rem; cursor: pointer; }
+        .lg-back:hover { color: #fff; }
+      `}</style>
     </div>
   );
 };

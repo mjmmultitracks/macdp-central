@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { hashPasswordClient } from '../../utils/passwordHash';
 import { SystemAccessUser, PanelModuleId } from '../../types';
 import {
   addAccessUser,
@@ -84,7 +85,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
   // Form Fields
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
-  const [userPassword, setUserPassword] = useState('macdp2026');
+  const [userPassword, setUserPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [userPhone, setUserPhone] = useState('92984509989');
   const [roleTitle, setRoleTitle] = useState('Pastor Auxiliar');
@@ -104,7 +105,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
     setEditingUser(null);
     setUserName('');
     setUserEmail('');
-    setUserPassword('macdp2026');
+    setUserPassword('');
     setShowPassword(false);
     setUserPhone('92984509989');
     setRoleTitle('Pastor Auxiliar');
@@ -120,7 +121,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
     setEditingUser(user);
     setUserName(user.name);
     setUserEmail(user.email);
-    setUserPassword(user.password || 'macdp2026');
+    setUserPassword('');
     setShowPassword(false);
     setUserPhone(user.phone || '');
     setRoleTitle(user.roleTitle);
@@ -148,18 +149,24 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
     setAllowedModules(['dashboard']);
   };
 
-  const handleSaveUser = (e: React.FormEvent) => {
+  const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userName.trim() || !userEmail.trim()) {
       onNotify('error', 'Preencha o nome e o e-mail da pessoa.');
       return;
     }
 
-    const trimmedPassword = userPassword.trim() || 'macdp2026';
-    if (trimmedPassword.length < 6) {
-      onNotify('error', 'A senha deve ter no mínimo 6 dígitos para segurança.');
+    const trimmedPassword = userPassword.trim();
+    if (!editingUser && trimmedPassword.length < 10) {
+      onNotify('error', 'Defina uma senha com no mínimo 10 caracteres.');
       return;
     }
+    if (editingUser && trimmedPassword && trimmedPassword.length < 10) {
+      onNotify('error', 'A nova senha deve ter no mínimo 10 caracteres.');
+      return;
+    }
+    // A senha nunca é guardada: só o hash dela
+    const passwordHash = trimmedPassword ? await hashPasswordClient(trimmedPassword) : undefined;
 
     if (allowedModules.length === 0) {
       onNotify('error', 'Selecione ao menos um módulo permitido para este usuário.');
@@ -170,7 +177,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
       updateAccessUser(editingUser.id, {
         name: userName,
         email: userEmail,
-        password: trimmedPassword,
+        ...(passwordHash ? { passwordHash } : {}),
         phone: userPhone,
         roleTitle,
         roleType,
@@ -184,7 +191,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
       addAccessUser({
         name: userName,
         email: userEmail,
-        password: trimmedPassword,
+        passwordHash,
         phone: userPhone,
         roleTitle,
         roleType,
@@ -512,7 +519,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
 
                   <span style={{ color: 'var(--accent-gold-light)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                     <KeyRound size={12} />
-                    Senha: {user.password ? 'Protegida' : 'macdp2026 (Padrão)'}
+                    Senha: {user.passwordHash ? 'Protegida' : 'Sem senha (não consegue entrar)'}
                   </span>
 
                   {user.lastAccess && (
@@ -669,12 +676,17 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
                 }}
               >
                 <KeyRound size={15} color="var(--accent-gold)" />
-                <span>Senha de Acesso ao Painel *</span>
+                <span>{editingUser ? 'Nova senha (opcional)' : 'Senha de acesso ao painel *'}</span>
               </label>
 
               <button
                 type="button"
-                onClick={() => setUserPassword(`macdp${Math.floor(1000 + Math.random() * 9000)}`)}
+                onClick={() => {
+                  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+                  const bytes = crypto.getRandomValues(new Uint32Array(14));
+                  setUserPassword(Array.from(bytes, (b) => chars[b % chars.length]).join(''));
+                  setShowPassword(true);
+                }}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -692,9 +704,9 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
             <div style={{ position: 'relative' }}>
               <input
                 type={showPassword ? 'text' : 'password'}
-                required
+                required={!editingUser}
                 className="form-input"
-                placeholder="Defina uma senha com mínimo 6 dígitos"
+                placeholder={editingUser ? 'Deixe em branco para manter a senha atual' : 'Mínimo 10 caracteres (ou use Gerar senha)'}
                 value={userPassword}
                 onChange={(e) => setUserPassword(e.target.value)}
                 style={{ paddingRight: '2.8rem' }}
@@ -719,7 +731,7 @@ export const AccessManager: React.FC<AccessManagerProps> = ({
               </button>
             </div>
             <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.73rem', color: 'var(--text-muted)' }}>
-              Apenas esta senha específica concederá acesso a este usuário na tela de login administrativo.
+              A senha não fica guardada em lugar nenhum, só um código de verificação. Anote a senha e entregue a quem vai usar.
             </p>
           </div>
 

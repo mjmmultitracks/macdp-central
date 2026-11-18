@@ -9,6 +9,8 @@ export interface UserSession {
   avatarUrl: string;
   allowedModules?: PanelModuleId[];
   canEdit?: boolean;
+  /** Sessão assinada pelo servidor (login do painel) */
+  token?: string;
 }
 
 export type MemberStatus = 'ativo' | 'visitante' | 'em_integracao' | 'afastado';
@@ -405,7 +407,10 @@ export interface SystemAccessUser {
   id: string;
   name: string;
   email: string;
+  /** Senha antiga em texto puro (removida automaticamente; nunca mais gravada) */
   password?: string;
+  /** Hash PBKDF2 da senha (a senha em si nunca é guardada) */
+  passwordHash?: string;
   phone?: string;
   roleTitle: string;
   roleType: 'Administrador' | 'Pastor' | 'Secretaria' | 'Liderança' | 'Tesouraria' | 'Voluntário';

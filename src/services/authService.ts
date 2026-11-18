@@ -187,201 +187,67 @@ export interface AuthLoginResponse {
 }
 
 /**
- * Autentica usuário através do Supabase Auth e fallback seguro local
+ * Login do painel: o servidor confere e-mail e senha (hash) e devolve uma sessão assinada.
  */
 export async function loginWithCredentials(
   emailInput: string,
   passwordInput: string
 ): Promise<AuthLoginResponse> {
   const email = emailInput.trim().toLowerCase();
-  const password = passwordInput.trim();
+  const password = passwordInput;
 
   if (!email || !password) {
     return { success: false, error: 'Informe o e-mail e a senha de acesso.' };
   }
 
-  // 1. Tentativa via Supabase Auth (se configurado)
-  if (isSupabaseConfigured && supabase) {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (!error && data?.user) {
-        // Mapeia usuário do Supabase para UserSession
-        const role: UserRole = (data.user.user_metadata?.role as UserRole) || 'admin';
-        const sessionUser: UserSession = {
-          id: data.user.id,
-          name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'Administrador MACDP',
-          email: data.user.email || email,
-          role,
-          roleTitle: data.user.user_metadata?.roleTitle || SYSTEM_USERS[role]?.roleTitle || 'Administrador',
-          avatarUrl: data.user.user_metadata?.avatarUrl || SYSTEM_USERS[role]?.avatarUrl || '/images/logo.png',
-        };
-
-        setAuthenticatedSession(sessionUser);
-        return { success: true, user: sessionUser };
-      }
-    } catch (err) {
-      console.warn('Supabase Auth falhou, verificando credenciais locais autorizadas:', err);
-    }
-  }
-
-  // 2. Contas institucionais autorizadas da liderança
-  const authorizedAccounts: Array<{
-    email: string;
-    allowedPasswords: string[];
-    user: UserSession;
-  }> = [
-    {
-      email: 'oziel.maduro@macdp.com.br',
-      allowedPasswords: ['macdp2026', 'central2026'],
-      user: SYSTEM_USERS.admin,
-    },
-    {
-      email: 'admin@macdp.com.br',
-      allowedPasswords: ['macdp2026', 'central2026'],
-      user: SYSTEM_USERS.admin,
-    },
-    {
-      email: 'midia.maduro@macdp.com.br',
-      allowedPasswords: ['macdp2026', 'central2026'],
-      user: SYSTEM_USERS.pastor,
-    },
-    {
-      email: 'jaziel.maduro@macdp.com.br',
-      allowedPasswords: ['macdp2026', 'central2026'],
-      user: SYSTEM_USERS.lider,
-    },
-    {
-      email: 'mikamaduro@macdp.com.br',
-      allowedPasswords: ['macdp2026', 'central2026'],
-      user: {
-        id: 'usr_mika',
-        name: 'Mika Maduro',
-        email: 'mikamaduro@macdp.com.br',
-        role: 'lider',
-        roleTitle: 'Gestão & Apoio',
-        avatarUrl: '/images/pastors.jpg',
-        allowedModules: [
-          'dashboard',
-          'membros',
-          'celulas_admin',
-          'ministerios_admin',
-          'ensino_admin',
-          'kids_admin',
-          'pastoral_admin',
-          'eventos_admin',
-          'oracao_admin',
-        ],
-        canEdit: true,
-      },
-    },
-  ];
-
-  // 3. Verificação em db.accessUsers (usuários e permissões cadastrados no ERP)
   try {
-    const db = getDatabase();
-    if (db && db.accessUsers) {
-      const foundInDb = db.accessUsers.find(
-        (u) => u.email.toLowerCase() === email
-      );
-
-      if (foundInDb) {
-        // Valida se a conta está ativa
-        if (foundInDb.status === 'bloqueado') {
-          return {
-            success: false,
-            error: 'Seu acesso ao painel foi bloqueado pela administração da igreja.',
-          };
-        }
-
-        // Constrói lista estrita de senhas válidas
-        // Prioridade 1: Senha personalizada do usuário salva no banco
-        // Prioridade 2: Senha mestra administrativa da igreja (macdp2026)
-        const validPasswords: string[] = [];
-        if (foundInDb.password) {
-          validPasswords.push(foundInDb.password);
-        }
-        validPasswords.push('macdp2026');
-
-        // Se for uma das contas mestras da liderança, inclui suas senhas autorizadas
-        const authAcc = authorizedAccounts.find((a) => a.email.toLowerCase() === email);
-        if (authAcc) {
-          validPasswords.push(...authAcc.allowedPasswords);
-        }
-
-        const isPasswordMatch = validPasswords.some((vp) => vp === password);
-
-        if (!isPasswordMatch) {
-          return {
-            success: false,
-            error: 'Senha incorreta. Verifique suas credenciais de acesso.',
-          };
-        }
-
-        // Mapeia perfil do usuário
-        let mappedRole: UserRole = 'lider';
-        if (foundInDb.roleType === 'Administrador') mappedRole = 'admin';
-        else if (foundInDb.roleType === 'Pastor') mappedRole = 'pastor';
-        else if (foundInDb.roleType === 'Tesouraria') mappedRole = 'tesouraria';
-        else if (foundInDb.roleType === 'Voluntário') mappedRole = 'voluntario';
-
-        const customUser: UserSession = {
-          id: foundInDb.id,
-          name: foundInDb.name,
-          email: foundInDb.email,
-          role: mappedRole,
-          roleTitle: foundInDb.roleTitle,
-          avatarUrl: SYSTEM_USERS[mappedRole]?.avatarUrl || '/images/logo.png',
-          allowedModules: foundInDb.allowedModules || [],
-          canEdit: foundInDb.canEdit ?? true,
-        };
-
-        setAuthenticatedSession(customUser);
-        return { success: true, user: customUser };
-      }
+    const res = await fetch('/api/admin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data?.success) {
+      return { success: false, error: data?.error || 'Não foi possível entrar agora. Tente novamente.' };
     }
-  } catch (e) {
-    console.error('Erro ao verificar accessUsers:', e);
-  }
 
-  // 4. Verificação nas contas autorizadas institucionais (caso não esteja em accessUsers)
-  const matched = authorizedAccounts.find((acc) => acc.email.toLowerCase() === email);
-  if (matched) {
-    if (matched.allowedPasswords.includes(password) || password === 'macdp2026') {
-      let userToSet: UserSession = matched.user;
-      try {
-        const db = getDatabase();
-        const inDb = db?.accessUsers?.find((u) => u.email.toLowerCase() === email);
-        if (inDb) {
-          userToSet = {
-            ...matched.user,
-            name: inDb.name || matched.user.name,
-            roleTitle: inDb.roleTitle || matched.user.roleTitle,
-            allowedModules: inDb.allowedModules || matched.user.allowedModules,
-            canEdit: inDb.canEdit ?? matched.user.canEdit,
-          };
-        }
-      } catch (e) {
-        console.warn('Erro ao carregar dados do usuário institucional:', e);
-      }
+    const u = data.user;
+    let mappedRole: UserRole = 'lider';
+    if (u.roleType === 'Administrador') mappedRole = 'admin';
+    else if (u.roleType === 'Pastor') mappedRole = 'pastor';
+    else if (u.roleType === 'Tesouraria') mappedRole = 'tesouraria';
+    else if (u.roleType === 'Voluntário') mappedRole = 'voluntario';
 
-      setAuthenticatedSession(userToSet);
-      return { success: true, user: userToSet };
-    }
-    return {
-      success: false,
-      error: 'Senha incorreta para este usuário. Verifique suas credenciais.',
+    const sessionUser: UserSession = {
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: mappedRole,
+      roleTitle: u.roleTitle,
+      avatarUrl: SYSTEM_USERS[mappedRole]?.avatarUrl || '/images/logo.png',
+      allowedModules: u.allowedModules || [],
+      canEdit: u.canEdit ?? true,
+      token: data.token,
     };
+    setAuthenticatedSession(sessionUser);
+    return { success: true, user: sessionUser };
+  } catch {
+    return { success: false, error: 'Não foi possível conectar ao servidor. Verifique a internet e tente de novo.' };
   }
+}
 
-  // 5. Nenhum usuário cadastrado encontrado
-  return {
-    success: false,
-    error: 'Usuário não cadastrado no sistema da igreja. Contate a secretaria ou administração.',
-  };
+/** Confere no servidor se a sessão guardada ainda é válida (token assinado). */
+export async function verifyAdminSession(): Promise<boolean> {
+  const session = getAuthenticatedSession();
+  if (!session) return false;
+  // Em produção, sessão sem token (criada à mão ou antiga) não vale.
+  if (!session.token) return !import.meta.env.PROD;
+  try {
+    const res = await fetch('/api/admin-session', { headers: { Authorization: `Bearer ${session.token}` } });
+    return res.status !== 401;
+  } catch {
+    return true; // sem conexão: não derruba a sessão por isso
+  }
 }
 
 /**
