@@ -41,7 +41,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
     }
   };
 
-  const contact = churchSettings?.phone || '(92) 98450-9989';
+  const contact = '(92) 98601-4992';
+  const contactLink = 'https://wa.me/5592986014992';
 
   return (
     <div className="lg-page animate-page-enter">
@@ -102,7 +103,12 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
           </button>
         </form>
 
-        <p className="lg-help">Esqueceu a senha ou precisa de acesso? Fale com a secretaria: {contact}</p>
+        <p className="lg-help">
+          Esqueceu a senha ou precisa de acesso? Fale com a secretaria:{' '}
+          <a href={contactLink} target="_blank" rel="noreferrer">
+            {contact}
+          </a>
+        </p>
 
         <button type="button" className="lg-back" onClick={onBackToPublic}>
           <ArrowLeft size={15} /> Voltar ao site
@@ -129,6 +135,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
         .lg-submit:hover:not(:disabled) { background: #fff; border-color: #fff; }
         .lg-submit:disabled { opacity: 0.5; cursor: not-allowed; }
         .lg-help { text-align: center; font-size: 0.85rem; line-height: 1.6; color: #8b8b95; margin: 1.75rem 0 0; }
+        .lg-help a { color: #fff; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
         .lg-back { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; margin: 1.25rem auto 0; background: none; border: 0; color: #8b8b95; font-size: 0.88rem; cursor: pointer; }
         .lg-back:hover { color: #fff; }
       `}</style>
