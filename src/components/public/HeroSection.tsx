@@ -10,20 +10,28 @@ type Motion3D = 'off' | 'lite' | 'full';
 /** Decide se o 3D roda: desliga em aparelhos fracos, economia de dados ou "reduzir movimento". */
 function detectMotion3D(): Motion3D {
   if (typeof window === 'undefined') return 'off';
+  const off = (reason: string): Motion3D => {
+    console.info(`[capa 3D] desligado: ${reason}`);
+    return 'off';
+  };
+  const forced = new URLSearchParams(window.location.search).get('3d') === 'on';
   const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return 'off';
-  if (nav.connection?.saveData) return 'off';
-  const cores = nav.hardwareConcurrency || 4;
-  const memory = nav.deviceMemory || 4;
-  if (cores <= 2 || memory <= 1) return 'off';
+  if (!forced) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return off('o sistema pede para reduzir movimento');
+    if (nav.connection?.saveData) return off('economia de dados ativa');
+    if ((nav.hardwareConcurrency || 4) <= 2 || (nav.deviceMemory || 4) <= 1) return off('aparelho com poucos recursos');
+  }
   try {
     const canvas = document.createElement('canvas');
-    if (!(canvas.getContext('webgl2') || canvas.getContext('webgl'))) return 'off';
+    if (!(canvas.getContext('webgl2') || canvas.getContext('webgl'))) return off('WebGL indisponivel no navegador');
   } catch {
-    return 'off';
+    return off('WebGL indisponivel no navegador');
   }
-  if (cores <= 4 || memory <= 2 || window.innerWidth < 700) return 'lite';
-  return 'full';
+  const cores = nav.hardwareConcurrency || 4;
+  const memory = nav.deviceMemory || 4;
+  const mode: Motion3D = !forced && (cores <= 4 || memory <= 2 || window.innerWidth < 700) ? 'lite' : 'full';
+  console.info(`[capa 3D] ligado em modo ${mode}`);
+  return mode;
 }
 
 interface HeroSectionProps {
