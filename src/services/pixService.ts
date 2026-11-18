@@ -5,6 +5,15 @@ function formatEMVField(id: string, value: string): string {
   return `${id}${len}${value}`;
 }
 
+/** O BR Code exige texto simples: sem acentos e só letras, números e espaço. */
+function toPixText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9 ]/g, '')
+    .trim();
+}
+
 function crc16(payload: string): string {
   let crc = 0xffff;
   for (let i = 0; i < payload.length; i++) {
@@ -40,7 +49,8 @@ export function generatePixCopiaECola({
   // Merchant Account Info (GUI + Key + Desc)
   const gui = formatEMVField('00', 'br.gov.bcb.pix');
   const chavePix = formatEMVField('01', key);
-  const infoAdicional = description ? formatEMVField('02', description.slice(0, 25)) : '';
+  const cleanDescription = toPixText(description).slice(0, 25);
+  const infoAdicional = cleanDescription ? formatEMVField('02', cleanDescription) : '';
   const merchantAccountInfo = formatEMVField('26', `${gui}${chavePix}${infoAdicional}`);
 
   // Category Code (0000 generic)
@@ -58,7 +68,7 @@ export function generatePixCopiaECola({
   const cleanCity = city.normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 15);
   const merchantCity = formatEMVField('60', cleanCity);
   // Additional Data (TxID)
-  const txField = formatEMVField('05', txid.slice(0, 25));
+  const txField = formatEMVField('05', toPixText(txid).replace(/ /g, '').slice(0, 25) || '***');
   const additionalData = formatEMVField('62', txField);
 
   // Payload format indicator

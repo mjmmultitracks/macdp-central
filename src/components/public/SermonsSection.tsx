@@ -1,373 +1,161 @@
 import React, { useState } from 'react';
 import { Sermon } from '../../types';
 import { formatDate } from '../../utils/formatters';
-import {
-  Video,
-  Headphones,
-  Play,
-  Search,
-  BookOpen,
-  Calendar,
-  Share2,
-  Download,
-  Filter,
-} from 'lucide-react';
+import { Play, Search } from 'lucide-react';
 
 interface SermonsSectionProps {
   sermons: Sermon[];
   onPlaySermon: (sermon: Sermon) => void;
 }
 
+const PAGE_SIZE = 6;
+
 export const SermonsSection: React.FC<SermonsSectionProps> = ({ sermons, onPlaySermon }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPreacher, setSelectedPreacher] = useState('todos');
-  const [selectedSeries, setSelectedSeries] = useState('todos');
+  const [visible, setVisible] = useState(PAGE_SIZE);
 
-  const preachers = Array.from(new Set(sermons.map((s) => s.preacher)));
-  const seriesList = Array.from(new Set(sermons.map((s) => s.series)));
+  const term = searchTerm.trim().toLowerCase();
+  const featured = sermons[0];
+  const isSearching = term.length > 0;
 
-  const filteredSermons = sermons.filter((s) => {
-    const matchSearch =
-      !searchTerm ||
-      s.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.scripture.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.summary.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchPreacher = selectedPreacher === 'todos' || s.preacher === selectedPreacher;
-    const matchSeries = selectedSeries === 'todos' || s.series === selectedSeries;
-
-    return matchSearch && matchPreacher && matchSeries;
-  });
-
-  const featuredSermon = sermons[0];
+  const list = sermons
+    .filter((s) => (isSearching ? true : s.id !== featured?.id))
+    .filter(
+      (s) =>
+        !isSearching ||
+        s.title.toLowerCase().includes(term) ||
+        s.scripture.toLowerCase().includes(term) ||
+        s.preacher.toLowerCase().includes(term) ||
+        (s.summary || '').toLowerCase().includes(term)
+    );
 
   return (
     <section id="mensagens" className="section" style={{ background: 'var(--bg-secondary)' }}>
       <div className="container">
-        {/* Section Header */}
-        <div className="section-header">
-          <span className="section-tag">
-            <Video size={14} /> Palavra & Ensino
-          </span>
-          <h2 className="section-title">Mídia & Mensagens em Destaque</h2>
-          <p className="section-subtitle">
-            Aprofunde seus conhecimentos nas Escrituras Sagradas através de nossas pregações dominicais, séries temáticas e podcasts semanais.
-          </p>
+        <div className="msg-head">
+          <span className="msg-tag">Mídia e mensagens</span>
+          <h2 className="msg-title">Mensagens em destaque</h2>
         </div>
 
-        {/* Featured Latest Sermon Banner */}
-        {featuredSermon && (
-          <div
-            style={{
-              background: 'var(--bg-tertiary)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-xl)',
-              overflow: 'hidden',
-              marginBottom: '4rem',
-              boxShadow: 'var(--shadow-lg)',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
-            }}
-          >
-            {/* Thumbnail with overlay play */}
-            <div
-              onClick={() => onPlaySermon(featuredSermon)}
-              style={{
-                position: 'relative',
-                minHeight: '320px',
-                cursor: 'pointer',
-                overflow: 'hidden',
-              }}
-            >
-              <img
-                src={featuredSermon.videoThumbnail}
-                alt={featuredSermon.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.3s' }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'rgba(11, 17, 32, 0.45)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s',
-                }}
-              >
-                <div
-                  style={{
-                    width: '68px',
-                    height: '68px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-                    color: '#0B1120',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingLeft: '4px',
-                    boxShadow: '0 8px 25px rgba(245, 158, 11, 0.5)',
-                  }}
-                >
-                  <Play size={28} fill="currentColor" />
-                </div>
-              </div>
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '1rem',
-                  right: '1rem',
-                  background: 'rgba(11, 17, 32, 0.8)',
-                  backdropFilter: 'blur(4px)',
-                  color: '#fff',
-                  padding: '0.25rem 0.6rem',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                }}
-              >
-                {featuredSermon.duration}
-              </div>
-            </div>
+        {featured && !isSearching && (
+          <div className="msg-featured">
+            <button type="button" className="msg-thumb" onClick={() => onPlaySermon(featured)} aria-label={`Assistir ${featured.title}`}>
+              <img src={featured.videoThumbnail} alt="" />
+              <span className="msg-play">
+                <Play size={26} fill="currentColor" />
+              </span>
+              {featured.duration && <span className="msg-duration">{featured.duration}</span>}
+            </button>
 
-            {/* Content Details */}
-            <div style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                <span className="badge badge-gold">Última Mensagem</span>
-                <span className="badge badge-blue">{featuredSermon.series}</span>
-              </div>
-
-              <h3 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.75rem', lineHeight: 1.25 }}>
-                {featuredSermon.title}
-              </h3>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-                <span>Por <strong>{featuredSermon.preacher}</strong> ({featuredSermon.preacherRole})</span>
-                <span>•</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <Calendar size={14} /> {formatDate(featuredSermon.date)}
-                </span>
-                <span>•</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--accent-gold)' }}>
-                  <BookOpen size={14} /> {featuredSermon.scripture}
-                </span>
-              </div>
-
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.925rem', lineHeight: 1.6, marginBottom: '2rem' }}>
-                {featuredSermon.summary}
+            <div className="msg-featured-info">
+              <span className="msg-label">Última mensagem</span>
+              <h3>{featured.title}</h3>
+              <p className="msg-meta">
+                {[featured.preacher, formatDate(featured.date), featured.scripture].filter(Boolean).join(' · ')}
               </p>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <button
-                  onClick={() => onPlaySermon(featuredSermon)}
-                  className="btn btn-primary"
-                  style={{ gap: '0.5rem' }}
-                >
-                  <Play size={16} fill="currentColor" />
-                  <span>Assistir Vídeo Completo</span>
+              {featured.summary && <p className="msg-summary">{featured.summary}</p>}
+              <div className="msg-actions">
+                <button type="button" className="msg-btn" onClick={() => onPlaySermon(featured)}>
+                  <Play size={15} fill="currentColor" /> Assistir
                 </button>
-                <button
-                  onClick={() => onPlaySermon(featuredSermon)}
-                  className="btn btn-secondary"
-                  style={{ gap: '0.5rem' }}
-                >
-                  <Headphones size={16} />
-                  <span>Ouvir em Áudio / Podcast</span>
-                </button>
+                {featured.audioUrl && (
+                  <button type="button" className="msg-link" onClick={() => onPlaySermon(featured)}>
+                    Ouvir em áudio
+                  </button>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Filter Controls */}
-        <div
-          style={{
-            background: 'var(--bg-tertiary)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '1.25rem',
-            marginBottom: '2.5rem',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '1rem',
-            alignItems: 'center',
-          }}
-        >
-          {/* Text search */}
-          <div style={{ position: 'relative' }}>
-            <Search
-              size={18}
-              color="var(--text-muted)"
-              style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }}
-            />
-            <input
-              type="text"
-              className="form-input"
-              style={{ paddingLeft: '2.5rem' }}
-              placeholder="Pesquisar por título, versículo..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          {/* Preacher select */}
-          <div>
-            <select
-              className="form-select"
-              value={selectedPreacher}
-              onChange={(e) => setSelectedPreacher(e.target.value)}
-            >
-              <option value="todos">Todos os Pregadores</option>
-              {preachers.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Series select */}
-          <div>
-            <select
-              className="form-select"
-              value={selectedSeries}
-              onChange={(e) => setSelectedSeries(e.target.value)}
-            >
-              <option value="todos">Todas as Séries</option>
-              {seriesList.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="msg-search">
+          <Search size={17} />
+          <input
+            type="text"
+            placeholder="Buscar mensagem, pregador ou versículo"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setVisible(PAGE_SIZE);
+            }}
+          />
         </div>
 
-        {/* Sermons Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.75rem',
-          }}
-        >
-          {filteredSermons.map((sermon) => (
-            <div
-              key={sermon.id}
-              className="card card-hover"
-              style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
-            >
-              <div
-                onClick={() => onPlaySermon(sermon)}
-                style={{
-                  position: 'relative',
-                  height: '180px',
-                  cursor: 'pointer',
-                  overflow: 'hidden',
-                }}
-              >
-                <img
-                  src={sermon.videoThumbnail}
-                  alt={sermon.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'rgba(11, 17, 32, 0.4)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '50%',
-                      background: 'rgba(245, 158, 11, 0.9)',
-                      color: '#0B1120',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      paddingLeft: '3px',
-                      boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                    }}
-                  >
-                    <Play size={20} fill="currentColor" />
-                  </div>
-                </div>
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: '0.75rem',
-                    right: '0.75rem',
-                    background: 'rgba(11, 17, 32, 0.85)',
-                    color: '#fff',
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                  }}
-                >
-                  {sermon.duration}
-                </div>
-              </div>
-
-              <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 700 }}>
-                    {sermon.series}
+        {list.length === 0 ? (
+          <p className="msg-empty">Nenhuma mensagem encontrada.</p>
+        ) : (
+          <div className="msg-grid">
+            {list.slice(0, visible).map((sermon) => (
+              <button key={sermon.id} type="button" className="msg-card" onClick={() => onPlaySermon(sermon)}>
+                <span className="msg-card-thumb">
+                  <img src={sermon.videoThumbnail} alt="" loading="lazy" />
+                  <span className="msg-card-play">
+                    <Play size={18} fill="currentColor" />
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    {formatDate(sermon.date)}
-                  </span>
-                </div>
+                  {sermon.duration && <span className="msg-duration">{sermon.duration}</span>}
+                </span>
+                <span className="msg-card-meta">
+                  {[sermon.series, formatDate(sermon.date)].filter(Boolean).join(' · ')}
+                </span>
+                <strong className="msg-card-title">{sermon.title}</strong>
+                <span className="msg-card-by">{sermon.preacher}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
-                <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.5rem', lineHeight: 1.3 }}>
-                  {sermon.title}
-                </h4>
-
-                <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
-                  Pregador: <strong>{sermon.preacher}</strong>
-                </div>
-
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    fontSize: '0.8rem',
-                    color: 'var(--text-secondary)',
-                    marginBottom: '1.25rem',
-                  }}
-                >
-                  <BookOpen size={13} color="var(--accent-gold)" />
-                  <span>{sermon.scripture}</span>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.25rem', marginTop: 'auto' }}>
-                  {sermon.tags.map((t, idx) => (
-                    <span key={idx} className="badge badge-gold" style={{ fontSize: '0.7rem' }}>
-                      #{t}
-                    </span>
-                  ))}
-                </div>
-
-                <button
-                  onClick={() => onPlaySermon(sermon)}
-                  className="btn btn-secondary btn-sm"
-                  style={{ width: '100%', gap: '0.4rem' }}
-                >
-                  <Play size={14} />
-                  <span>Assistir / Ouvir</span>
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+        {list.length > visible && (
+          <div className="msg-more">
+            <button type="button" className="msg-more-btn" onClick={() => setVisible((v) => v + PAGE_SIZE)}>
+              Ver mais mensagens
+            </button>
+          </div>
+        )}
       </div>
+
+      <style>{`
+        .msg-head { text-align: center; max-width: 40rem; margin: 0 auto 3rem; }
+        .msg-tag { display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 0.9rem; }
+        .msg-title { font-size: clamp(1.9rem, 4vw, 3rem); margin: 0; }
+
+        .msg-featured { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3rem); align-items: center; max-width: 1100px; margin: 0 auto 3.5rem; }
+        .msg-thumb { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; padding: 0; border: 0; border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; background: var(--bg-tertiary); }
+        .msg-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 300ms ease; }
+        .msg-thumb:hover img { transform: scale(1.03); }
+        .msg-play { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding-left: 4px; background: var(--accent-gold-light); color: #0a0a0a; }
+        .msg-duration { position: absolute; right: 0.7rem; bottom: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(0, 0, 0, 0.75); color: #fff; font-size: 0.75rem; font-weight: 600; }
+        .msg-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-gold); }
+        .msg-featured-info h3 { font-size: clamp(1.4rem, 2.6vw, 2rem); margin: 0.6rem 0 0.75rem; line-height: 1.25; }
+        .msg-meta { font-size: 0.92rem; color: var(--text-secondary); margin: 0 0 1rem; }
+        .msg-summary { font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); margin: 0 0 1.5rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .msg-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1.25rem; }
+        .msg-btn { display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.9rem 1.5rem; border: 2px solid var(--accent-gold-light); border-radius: 4px; background: var(--accent-gold-light); color: #0a0a0a; font-family: var(--font-display); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: background 150ms ease, border-color 150ms ease; }
+        .msg-btn:hover { background: #fff; border-color: #fff; }
+        .msg-link { background: none; border: 0; padding: 0; cursor: pointer; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--border-medium); }
+        .msg-link:hover { text-decoration-color: var(--accent-gold); }
+
+        .msg-search { display: flex; align-items: center; gap: 0.7rem; max-width: 1100px; margin: 0 auto 1.75rem; padding: 0 0.25rem 0.75rem; border-bottom: 1px solid var(--border-medium); color: var(--text-muted); }
+        .msg-search input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--text-primary); font-size: 1rem; padding: 0.25rem 0; }
+        .msg-search input::placeholder { color: var(--text-muted); }
+        .msg-search:focus-within { border-bottom-color: var(--accent-gold); }
+
+        .msg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+        .msg-card { display: flex; flex-direction: column; gap: 0.3rem; padding: 0; background: none; border: 0; text-align: left; color: var(--text-primary); cursor: pointer; }
+        .msg-card-thumb { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-tertiary); margin-bottom: 0.5rem; }
+        .msg-card-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 300ms ease; }
+        .msg-card:hover .msg-card-thumb img { transform: scale(1.04); }
+        .msg-card-play { position: absolute; right: 0.7rem; bottom: 0.7rem; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding-left: 2px; background: var(--accent-gold-light); color: #0a0a0a; opacity: 0; transform: translateY(6px); transition: opacity 200ms ease, transform 200ms ease; }
+        .msg-card:hover .msg-card-play, .msg-card:focus-visible .msg-card-play { opacity: 1; transform: none; }
+        .msg-card-thumb .msg-duration { right: auto; left: 0.6rem; }
+        .msg-card-meta { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; color: var(--accent-gold); }
+        .msg-card-title { font-size: 1.05rem; font-weight: 700; line-height: 1.35; }
+        .msg-card-by { font-size: 0.88rem; color: var(--text-secondary); }
+        .msg-empty { text-align: center; color: var(--text-secondary); padding: 2rem 0; }
+        .msg-more { text-align: center; margin-top: 2.5rem; }
+        .msg-more-btn { padding: 0.8rem 1.6rem; border: 2px solid var(--border-medium); border-radius: 4px; background: none; color: var(--text-primary); font-family: var(--font-display); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+        .msg-more-btn:hover { border-color: var(--text-primary); }
+        @media (max-width: 820px) { .msg-featured { grid-template-columns: 1fr; } }
+      `}</style>
     </section>
   );
 };
