@@ -14,6 +14,8 @@ type Delivery = 'retirada' | 'entrega';
 
 interface Order {
   id: string;
+  productId: string;
+  formatId: string;
   productTitle: string;
   formatLabel: string;
   kind: 'physical' | 'digital';
@@ -51,7 +53,7 @@ const writeJson = (key: string, value: unknown) => {
 
 const deliveryText = (o: Order) =>
   o.kind === 'digital'
-    ? 'PDF por e-mail e WhatsApp'
+    ? 'PDF para baixar'
     : o.delivery === 'entrega'
       ? 'Entrega combinada em Manaus'
       : 'Retirada na igreja';
@@ -77,6 +79,7 @@ export const StoreSection: React.FC<StoreSectionProps> = ({ onNotify }) => {
   const [pix, setPix] = useState<{ paymentId: string; code: string; qr: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [doneOrder, setDoneOrder] = useState<Order | null>(null);
+  const [donePaymentId, setDonePaymentId] = useState('');
   const orderRef = useRef<Order | null>(null);
 
   const getFormat = (p: StoreProduct) => p.formats.find((f) => f.id === selected[p.id]) || p.formats[0];
@@ -86,6 +89,7 @@ export const StoreSection: React.FC<StoreSectionProps> = ({ onNotify }) => {
   const finalizeOrder = useCallback(
     (order: Order, paymentId: string) => {
       const done = readJson<string[]>(DONE_KEY, []);
+      setDonePaymentId(paymentId);
       if (done.includes(order.id)) {
         setDoneOrder(order);
         setStep('done');
@@ -194,6 +198,8 @@ export const StoreSection: React.FC<StoreSectionProps> = ({ onNotify }) => {
 
     const order: Order = {
       id: `loja_${Date.now()}`,
+      productId: product.id,
+      formatId: format.id,
       productTitle: product.title,
       formatLabel: format.label,
       kind: format.kind,
@@ -224,6 +230,9 @@ export const StoreSection: React.FC<StoreSectionProps> = ({ onNotify }) => {
           phone: order.phone,
           eventId: 'loja',
           registrationId: order.id,
+          productId: order.productId,
+          formatId: order.formatId,
+          quantity: order.qty,
           paymentMethod: payment === 'pix' ? 'pix' : 'preference',
         }),
       });
@@ -327,7 +336,7 @@ export const StoreSection: React.FC<StoreSectionProps> = ({ onNotify }) => {
                   </div>
                   <p className="st-note">
                     {format.kind === 'digital'
-                      ? 'O PDF é enviado por e-mail e WhatsApp após a confirmação do pagamento.'
+                      ? 'Baixe o PDF na hora, assim que o pagamento for confirmado.'
                       : 'Retirada na igreja ou entrega combinada em Manaus.'}
                   </p>
                 </div>
@@ -435,11 +444,17 @@ export const StoreSection: React.FC<StoreSectionProps> = ({ onNotify }) => {
         {step === 'done' && doneOrder && (
           <div className="st-pix">
             <p className="st-resume">{orderSummary(doneOrder)}</p>
-            <p className="st-wait">
-              {doneOrder.kind === 'digital'
-                ? 'Enviaremos o PDF para o seu e-mail e WhatsApp.'
-                : `A secretaria vai chamar você no WhatsApp para combinar: ${deliveryText(doneOrder).toLowerCase()}.`}
-            </p>
+            {doneOrder.kind === 'digital' ? (
+              <>
+                <p className="st-wait">Seu pagamento foi confirmado. Baixe o livro agora:</p>
+                <a className="st-btn st-btn-full" href={`/api/dorot-download?paymentId=${encodeURIComponent(donePaymentId)}`}>
+                  Baixar o PDF
+                </a>
+                <p className="st-wait">Guarde o arquivo. Se precisar de ajuda para baixar, fale com a secretaria.</p>
+              </>
+            ) : (
+              <p className="st-wait">{`A secretaria vai chamar você no WhatsApp para combinar: ${deliveryText(doneOrder).toLowerCase()}.`}</p>
+            )}
             <a
               className="st-btn st-btn-full"
               href={waLink(`Olá! Acabei de pagar o pedido ${doneOrder.id}: ${orderSummary(doneOrder)}. Nome: ${doneOrder.name}. ${deliveryText(doneOrder)}.`)}

@@ -1,4 +1,5 @@
-/** Produtos da lojinha da MACDP. Para adicionar um livro, inclua um item na lista. */
+/** Produtos da lojinha da MACDP. Para adicionar um livro, inclua um item na lista.
+ *  Os preços válidos também estão em api/_lib/store.js (o servidor confere o valor). */
 export interface StoreFormat {
   id: string;
   label: string;
@@ -29,7 +30,7 @@ export const STORE_PRODUCTS: StoreProduct[] = [
       'Edição literária das mensagens da Conferência Profética Caçadores da Presença 2026. Uma abertura e onze mensagens sobre o chamado de Deus para levantar gerações, com base em Salmos 145:4.',
     details: '55 páginas · Edição 2026',
     formats: [
-      { id: 'impresso', label: 'Impresso', price: 39.9, kind: 'physical' },
+      { id: 'impresso', label: 'Impresso', price: 49.9, kind: 'physical' },
       { id: 'pdf', label: 'Digital (PDF)', price: 19.9, kind: 'digital' },
     ],
   },
