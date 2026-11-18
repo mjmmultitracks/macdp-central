@@ -69,7 +69,25 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   // Allowed Payment Methods & Mercado Pago Integration (memoized to avoid JSON.parse on every keystroke)
   const churchSettings = useMemo(() => getChurchSettings(), []);
   // Mercado Pago está ativo se habilitado e possuir token configurado
-  const isMercadoPagoConfigured = churchSettings.mercadoPago?.enabled !== false && !!churchSettings.mercadoPago?.accessToken?.trim();
+  // Disponível quando o servidor tem o token (variável de ambiente) ou, por compatibilidade, o painel ainda o guarda.
+  const [serverMpConfigured, setServerMpConfigured] = useState<boolean | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/mercadopago-status')
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled) setServerMpConfigured(!!d?.configured);
+      })
+      .catch(() => {
+        if (!cancelled) setServerMpConfigured(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const isMercadoPagoConfigured =
+    churchSettings.mercadoPago?.enabled !== false &&
+    (serverMpConfigured === true || !!churchSettings.mercadoPago?.accessToken?.trim());
   const isMercadoPagoAvailable = isMercadoPagoConfigured && event.mercadoPagoEnabled !== false;
 
   const allowedMethods = event.allowedPaymentMethods && event.allowedPaymentMethods.length > 0
@@ -130,7 +148,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
   const totalAmount = eventTicketCost + shirtCost;
 
   // Resolve Direct PIX Settings
-  const pixKey = event.pixKey || churchSettings.pix?.key || '92991279663';
+  const pixKey = event.pixKey || churchSettings.pix?.key || '+5592991279663';
   const pixReceiver = event.pixReceiver || churchSettings.pix?.receiver || churchSettings.name || 'Ministério Apostólico Caçadores da Presença';
   const pixBank = event.pixBank || churchSettings.pix?.bank || 'Banco Bradesco';
   const pixCity = churchSettings.address?.city || 'Manaus';
@@ -187,7 +205,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
           phone: phone.trim(),
           eventId: event.id,
           paymentMethod: 'pix',
-          customAccessToken: churchSettings.mercadoPago?.accessToken,
+          includeShirt,
         }),
       });
 
@@ -228,7 +246,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
           phone: phone.trim(),
           eventId: event.id,
           paymentMethod: 'preference',
-          customAccessToken: churchSettings.mercadoPago?.accessToken,
+          includeShirt,
         }),
       });
 
@@ -442,10 +460,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
     if (!mpPayment?.paymentId || isMpApproved) return;
     if (!silent) setIsCheckingMpStatus(true);
     try {
-      const tokenParam = churchSettings.mercadoPago?.accessToken
-        ? `&token=${encodeURIComponent(churchSettings.mercadoPago.accessToken)}`
-        : '';
-      const res = await fetch(`/api/mercadopago-check-status?paymentId=${mpPayment.paymentId}${tokenParam}`);
+      const res = await fetch(`/api/mercadopago-check-status?paymentId=${mpPayment.paymentId}`);
       const data = await res.json();
       if (data.isApproved || data.status === 'approved') {
         setIsMpApproved(true);
@@ -542,10 +557,7 @@ export const EventRegistrationWizard: React.FC<EventRegistrationWizardProps> = (
         setIsCheckingMpStatus(true);
         setMpError(null);
         try {
-          const tokenParam = churchSettings.mercadoPago?.accessToken
-            ? `&token=${encodeURIComponent(churchSettings.mercadoPago.accessToken)}`
-            : '';
-          const res = await fetch(`/api/mercadopago-check-status?paymentId=${mpPayment.paymentId}${tokenParam}`);
+          const res = await fetch(`/api/mercadopago-check-status?paymentId=${mpPayment.paymentId}`);
           const data = await res.json();
           if (data.isApproved || data.status === 'approved') {
             setIsMpApproved(true);

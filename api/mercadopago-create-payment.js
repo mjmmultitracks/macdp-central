@@ -1,5 +1,6 @@
 // Serverless function to create a payment or preference with Mercado Pago
 import { getStoreItem } from './_lib/store.js';
+import { getEventAmount } from './_lib/events.js';
 
 export default async function handler(req, res) {
   // CORS Headers
@@ -35,12 +36,14 @@ export default async function handler(req, res) {
       productId,
       formatId,
       quantity,
+      includeShirt,
     } = req.body || {};
 
+    // O token do servidor tem prioridade; o enviado pelo navegador só vale se não houver token no servidor.
     const accessToken = (
-      customAccessToken ||
       process.env.MERCADO_PAGO_ACCESS_TOKEN ||
       process.env.VITE_MERCADO_PAGO_ACCESS_TOKEN ||
+      customAccessToken ||
       ''
     ).trim();
 
@@ -62,6 +65,19 @@ export default async function handler(req, res) {
       const qty = item.format.kind === 'digital' ? 1 : Math.min(10, Math.max(1, parseInt(quantity, 10) || 1));
       parsedAmount = Number((item.format.price * qty).toFixed(2));
       storeMetadata = { product: String(productId), format: String(formatId), quantity: qty };
+    }
+    // Inscrição em evento: o valor também vem do cadastro do evento, não do navegador.
+    if (eventId && eventId !== 'loja' && eventId !== 'evt') {
+      let eventPricing;
+      try {
+        eventPricing = await getEventAmount(String(eventId), includeShirt === true);
+      } catch (e) {
+        return res.status(503).json({ error: 'Não foi possível conferir o valor da inscrição agora. Tente novamente.', code: 'PRICE_LOOKUP_FAILED' });
+      }
+      if (!eventPricing) {
+        return res.status(404).json({ error: 'Evento não encontrado.', code: 'EVENT_NOT_FOUND' });
+      }
+      parsedAmount = eventPricing.amount;
     }
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ error: 'Valor da transação inválido.', code: 'INVALID_AMOUNT' });
