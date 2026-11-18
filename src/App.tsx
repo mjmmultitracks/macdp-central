@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DatabaseSchema, Sermon, ChurchEvent, UserRole, UserSession } from './types';
 import { getDatabase, calculateChurchStats, addEventRegistration } from './services/db';
 import { getCurrentUser, switchUserRole, isUserAuthenticated, logoutUser } from './services/authService';
@@ -150,6 +150,9 @@ export function App() {
     return () => window.removeEventListener('popstate', checkQuery);
   }, []);
 
+  // Guarda qual evento já foi aberto pela URL, para só rolar ao topo na primeira abertura
+  const openedEventRouteRef = useRef('');
+
   // Route and Hash listener for dedicated Event Detail Page (/evento/id, /eventos/id, #evento/id, ?evento=id)
   useEffect(() => {
     const checkEventRoute = () => {
@@ -171,12 +174,19 @@ export function App() {
         eventId = params.get('evento') || params.get('evento_id') || '';
       }
 
-      if (eventId) {
+      if (!eventId) {
+        openedEventRouteRef.current = '';
+      } else {
         const found = db.events.find((e) => e.id === eventId);
         if (found) {
+          // Mantém os dados do evento atualizados com a sincronização...
           setSelectedEventForDetail(found);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          document.title = `${found.title} - MACDP Central`;
+          // ...mas só volta ao topo quando o evento é aberto, e não a cada atualização do banco.
+          if (openedEventRouteRef.current !== eventId) {
+            openedEventRouteRef.current = eventId;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.title = `${found.title} - MACDP Central`;
+          }
         }
       }
     };
