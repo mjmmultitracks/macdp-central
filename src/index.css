@@ -1407,3 +1407,48 @@ button, input, select, textarea {
   .admin-header.adm-header { padding: 0 1rem !important; }
   .admin-main-content { padding: 1.25rem 1rem 3rem !important; }
 }
+
+/* ==========================================================================
+   ADMIN — PADRONIZAÇÃO DAS TELAS (cabeçalho, abas, filtros, cartões vazios)
+   ========================================================================== */
+/* Cabeçalho do módulo: faixa simples (o título já aparece no topo da página) */
+.admin-main-content .animate-tab-content > div > div:first-child[style*="justify-content: space-between"] {
+  background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+  padding: 0 0 1.1rem !important; border-bottom: 1px solid var(--border-subtle) !important;
+}
+.admin-main-content .animate-tab-content > div > div:first-child > div:first-child > div:first-child > div:first-child:not(h2):not(h3) { display: none !important; }
+.admin-main-content .animate-tab-content > div > div:first-child h2,
+.admin-main-content .animate-tab-content > div > div:first-child h3 { font-size: 1.15rem !important; font-weight: 800 !important; }
+.admin-main-content .animate-tab-content > div > div:first-child p { font-size: 0.85rem !important; color: var(--text-muted) !important; max-width: 46rem; }
+/* Selos de resumo no cabeçalho: contadores discretos */
+.admin-main-content .animate-tab-content > div > div:first-child .badge {
+  background: transparent !important; border: 1px solid var(--border-medium) !important; color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+}
+
+/* Abas do módulo: texto com linha embaixo, sem botões */
+.admin-main-content .animate-tab-content > div > div[style*="border-bottom: 1px solid var(--border-subtle)"][style*="padding-bottom"] { gap: 0.25rem !important; padding-bottom: 0 !important; }
+.admin-main-content .animate-tab-content > div > div[style*="border-bottom: 1px solid var(--border-subtle)"][style*="padding-bottom"] > .btn {
+  background: transparent !important; border: 0 !important; border-bottom: 2px solid transparent !important; border-radius: 0 !important;
+  padding: 0.7rem 0.9rem !important; color: var(--text-secondary) !important; font-weight: 600 !important; font-size: 0.85rem !important; box-shadow: none !important;
+}
+.admin-main-content .animate-tab-content > div > div[style*="border-bottom: 1px solid var(--border-subtle)"][style*="padding-bottom"] > .btn:hover { color: var(--text-primary) !important; }
+.admin-main-content .animate-tab-content > div > div[style*="border-bottom: 1px solid var(--border-subtle)"][style*="padding-bottom"] > .btn-primary {
+  color: var(--accent-gold) !important; border-bottom-color: var(--accent-gold) !important; font-weight: 800 !important;
+}
+
+/* Barras de filtro/busca: sem caixa, só uma linha */
+.admin-main-content div[style*="background: var(--bg-secondary)"][style*="border-radius: var(--radius-md)"][style*="padding: 1rem"] {
+  background: transparent !important; border: 0 !important; border-bottom: 1px solid var(--border-subtle) !important; border-radius: 0 !important; padding: 0.25rem 0 1rem !important;
+}
+/* Campos com ícone de busca: preservam o recuo da esquerda */
+.admin-main-content input[style*="padding-left"] { padding-left: 2.4rem !important; }
+
+/* Cartões e blocos coloridos: sem brilho e sem degradê */
+.admin-main-content [style*="box-shadow"] { box-shadow: none !important; }
+.admin-main-content [style*="linear-gradient"]:not(.keep-gradient):not([style*="width:"]) { background-image: none !important; }
+.admin-main-content [style*="border-radius: var(--radius-xl)"], .admin-main-content [style*="border-radius: 16px"], .admin-main-content [style*="border-radius: 20px"] { border-radius: 8px !important; }
+.admin-main-content [style*="border-radius: var(--radius-lg)"] { border-radius: 8px !important; }
+
+/* Estados vazios: mais discretos */
+.admin-main-content div[style*="text-align: center"][style*="padding: 3rem"], .admin-main-content div[style*="text-align: center"][style*="padding: 4rem"] { border-style: dashed !important; background: transparent !important; }
