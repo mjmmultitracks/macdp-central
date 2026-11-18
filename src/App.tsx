@@ -20,7 +20,7 @@ import { MusicSection } from './components/public/MusicSection';
 import { EventsSection } from './components/public/EventsSection';
 import { SermonsSection } from './components/public/SermonsSection';
 import { AboutSection } from './components/public/AboutSection';
-import { CellsLocator } from './components/public/CellsLocator';
+import { MinistriesSection } from './components/public/MinistriesSection';
 import { GivingSection } from './components/public/GivingSection';
 import { PrayerForm } from './components/public/PrayerForm';
 
@@ -554,12 +554,8 @@ export function App() {
               {/* Ministério de Louvor: Caçadores da Presença Music */}
               <MusicSection />
 
-              {/* Comunidade: Células por Bairro & Ministérios */}
-              <CellsLocator
-                cells={db.cells}
-                ministries={db.ministries}
-                onVolunteerMinistry={(name) => setVolunteerMinistryName(name)}
-              />
+              {/* Ministérios */}
+              <MinistriesSection ministries={db.ministries} />
 
               {/* Edificação: Mensagens & Transmissões */}
               <SermonsSection

@@ -5,7 +5,6 @@ import {
   Mail,
   Clock,
   Heart,
-  Compass,
   Video,
 
   Shield,
@@ -182,12 +181,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin, churchS
                 style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
                 <ArrowUpRight size={13} color="var(--accent-gold)" /> Inscrição em Conferências
-              </button>
-              <button
-                onClick={() => onNavigate('celulas')}
-                style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-              >
-                <Compass size={13} color="var(--accent-gold)" /> Encontrar uma Célula
               </button>
               <button
                 onClick={() => onNavigate('dizimos')}
