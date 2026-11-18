@@ -7,7 +7,8 @@ const inviteUrl = `https://wa.me/${MUSIC_WHATSAPP_NUMBER}?text=${encodeURICompon
 const formatReleaseDate = (iso: string) => {
   const [y, m, d] = iso.split('-').map(Number);
   if (!y || !m || !d) return '';
-  return new Date(y, m - 1, d).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const text = new Date(y, m - 1, d).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
 export const MusicSection: React.FC = () => {
@@ -67,10 +68,10 @@ export const MusicSection: React.FC = () => {
         .music-invite:hover { background: #fff; border-color: #fff; }
         .music-releases { max-width: 1100px; margin: 3.5rem auto 0; }
         .music-sub { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 1.25rem; padding-top: 1.5rem; border-top: 1px solid var(--border-medium); }
-        .music-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1.5rem; }
+        .music-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
         .music-card { display: flex; flex-direction: column; gap: 0.35rem; color: var(--text-primary); }
         .music-cover {
-          position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 1; overflow: hidden;
+          position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 16 / 9; overflow: hidden;
           border-radius: var(--radius-md); background: var(--bg-tertiary); color: var(--text-muted); margin-bottom: 0.45rem;
         }
         .music-cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 300ms ease; }
@@ -81,8 +82,8 @@ export const MusicSection: React.FC = () => {
           opacity: 0; transform: translateY(6px); transition: opacity 200ms ease, transform 200ms ease;
         }
         .music-card:hover .music-play, .music-card:focus-visible .music-play { opacity: 1; transform: none; }
-        .music-name { font-size: 1rem; font-weight: 700; }
-        .music-meta { font-size: 0.85rem; color: var(--text-secondary); text-transform: capitalize; }
+        .music-name { font-size: 1rem; font-weight: 700; line-height: 1.35; }
+        .music-meta { font-size: 0.85rem; color: var(--text-secondary); }
         @media (max-width: 640px) { .music-invite { width: 100%; justify-content: center; } }
       `}</style>
     </section>
