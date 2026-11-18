@@ -4,8 +4,10 @@ import type { ChurchEvent, RegularServiceItem } from '../../types';
 import { formatEventDateRange } from '../../utils/formatters';
 
 const Hero3D = lazy(() => import('./Hero3D'));
+const Hero3DLite = lazy(() => import('./Hero3DLite'));
 
-type Motion3D = 'off' | 'lite' | 'full';
+/** off = sem animação; css = sem WebGL (CSS 3D + canvas 2D); lite/full = WebGL (Three.js) */
+type Motion3D = 'off' | 'css' | 'css-lite' | 'lite' | 'full';
 
 /** Decide se o 3D roda: desliga em aparelhos fracos, economia de dados ou "reduzir movimento". */
 function detectMotion3D(): Motion3D {
@@ -21,16 +23,18 @@ function detectMotion3D(): Motion3D {
     if (nav.connection?.saveData) return off('economia de dados ativa');
     if ((nav.hardwareConcurrency || 4) <= 2 || (nav.deviceMemory || 4) <= 1) return off('aparelho com poucos recursos');
   }
-  try {
-    const canvas = document.createElement('canvas');
-    if (!(canvas.getContext('webgl2') || canvas.getContext('webgl'))) return off('WebGL indisponivel no navegador');
-  } catch {
-    return off('WebGL indisponivel no navegador');
-  }
   const cores = nav.hardwareConcurrency || 4;
   const memory = nav.deviceMemory || 4;
-  const mode: Motion3D = !forced && (cores <= 4 || memory <= 2 || window.innerWidth < 700) ? 'lite' : 'full';
-  console.info(`[capa 3D] ligado em modo ${mode}`);
+  const weak = !forced && (cores <= 4 || memory <= 2 || window.innerWidth < 700);
+  let hasWebGL = false;
+  try {
+    const canvas = document.createElement('canvas');
+    hasWebGL = !!(canvas.getContext('webgl2') || canvas.getContext('webgl'));
+  } catch {
+    hasWebGL = false;
+  }
+  const mode: Motion3D = hasWebGL ? (weak ? 'lite' : 'full') : weak ? 'css-lite' : 'css';
+  console.info(`[capa 3D] ligado em modo ${mode}${hasWebGL ? '' : ' (sem WebGL: versao CSS/canvas)'}`);
   return mode;
 }
 
@@ -99,7 +103,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <div className="hero-shade" />
       {motion !== 'off' && (
         <Suspense fallback={null}>
-          <Hero3D lite={motion === 'lite'} />
+          {motion === 'css' || motion === 'css-lite' ? (
+            <Hero3DLite lite={motion === 'css-lite'} />
+          ) : (
+            <Hero3D lite={motion === 'lite'} />
+          )}
         </Suspense>
       )}
 
