@@ -232,13 +232,12 @@ export async function sendEventConfirmationEmail(params: {
         const response = await fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          // O servidor usa a chave e o remetente próprios; só envia para o e-mail da inscrição informada.
           body: JSON.stringify({
             to: participantEmail.trim(),
             subject,
             html: htmlContent,
-            fromName: emailConfig?.fromName || db.churchSettings?.shortName || 'MACDP Central',
-            fromEmail: emailConfig?.fromEmail,
-            apiKey: emailConfig?.apiKey,
+            registrationId: registration.id,
           }),
         });
 
