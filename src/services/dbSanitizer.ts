@@ -12,6 +12,16 @@ export function sanitizeDatabase(rawDb: DatabaseSchema): { sanitized: DatabaseSc
   let hasChanged = false;
   const db: DatabaseSchema = { ...rawDb };
 
+  // 0. Segurança: senhas em texto puro nunca ficam no banco (só o hash)
+  if (Array.isArray(db.accessUsers) && db.accessUsers.some((u) => u.password !== undefined)) {
+    db.accessUsers = db.accessUsers.map((u) => {
+      const copy = { ...u };
+      delete copy.password;
+      return copy;
+    });
+    hasChanged = true;
+  }
+
   // 1. Escalas de Culto (schedules)
   if (!Array.isArray(db.schedules)) {
     db.schedules = [];

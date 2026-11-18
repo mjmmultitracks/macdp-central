@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DatabaseSchema, Sermon, ChurchEvent, UserRole, UserSession } from './types';
 import { getDatabase, calculateChurchStats, addEventRegistration } from './services/db';
-import { getCurrentUser, switchUserRole, isUserAuthenticated, logoutUser } from './services/authService';
+import { getCurrentUser, switchUserRole, isUserAuthenticated, logoutUser, verifyAdminSession, clearAuthenticatedSession } from './services/authService';
 import { formatDate } from './utils/formatters';
 import { pullDatabaseFromSupabase, pushDatabaseToSupabase, subscribeToSupabaseRealtime } from './services/supabaseSync';
 import { isSupabaseConfigured } from './services/supabase';
@@ -107,6 +107,26 @@ export function App() {
   // Auth / RBAC State
   const [currentUser, setCurrentUser] = useState<UserSession>(getCurrentUser);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isUserAuthenticated());
+
+  // Segurança: a sessão do painel precisa ser válida no servidor (token assinado)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    const check = () => {
+      verifyAdminSession().then((ok) => {
+        if (!ok && !cancelled) {
+          clearAuthenticatedSession();
+          setIsAuthenticated(false);
+        }
+      });
+    };
+    check();
+    const timer = setInterval(check, 10 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [isAuthenticated]);
 
   // Theme State
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
