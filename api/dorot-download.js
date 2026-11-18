@@ -4,7 +4,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getStoreItem } from './_lib/store.js';
+import { ORDER_RE, getStoreItem, normalizeOrder, safeEqual, signOrder } from './_lib/store.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -13,37 +13,46 @@ export default async function handler(req, res) {
   }
 
   try {
-    const paymentId = String(req.query?.paymentId || '').trim();
-    if (!/^\d{3,20}$/.test(paymentId)) {
-      return res.status(400).json({ error: 'Pagamento inválido.' });
-    }
-
-    const accessToken = (process.env.MERCADO_PAGO_ACCESS_TOKEN || process.env.VITE_MERCADO_PAGO_ACCESS_TOKEN || '').trim();
     const keyHex = (process.env.DOROT_PDF_KEY || '').trim();
-    if (!accessToken || !/^[0-9a-f]{64}$/i.test(keyHex)) {
+    if (!/^[0-9a-f]{64}$/i.test(keyHex)) {
       return res.status(503).json({ error: 'Download indisponível no momento. Fale com a secretaria.' });
     }
 
-    const mp = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!mp.ok) {
-      return res.status(404).json({ error: 'Pagamento não encontrado.' });
-    }
-    const payment = await mp.json();
-
-    const meta = payment.metadata || {};
-    const item = getStoreItem(String(meta.product || ''), String(meta.format || ''));
-    const ref = String(payment.external_reference || '');
-    const validPurchase =
-      payment.status === 'approved' &&
-      ref.includes('loja_') &&
-      item &&
-      item.format.kind === 'digital' &&
-      Number(payment.transaction_amount) + 0.001 >= item.format.price;
-
-    if (!validPurchase) {
-      return res.status(402).json({ error: 'Pagamento ainda não confirmado para este livro.' });
+    const order = normalizeOrder(req.query?.pedido);
+    if (order) {
+      // Link liberado pela secretaria (assinado pelo servidor)
+      if (!ORDER_RE.test(order) || !safeEqual(String(req.query?.sig || ''), signOrder(order))) {
+        return res.status(403).json({ error: 'Link inválido.' });
+      }
+    } else {
+      // Pagamento aprovado no Mercado Pago
+      const paymentId = String(req.query?.paymentId || '').trim();
+      if (!/^\d{3,20}$/.test(paymentId)) {
+        return res.status(400).json({ error: 'Pagamento inválido.' });
+      }
+      const accessToken = (process.env.MERCADO_PAGO_ACCESS_TOKEN || process.env.VITE_MERCADO_PAGO_ACCESS_TOKEN || '').trim();
+      if (!accessToken) {
+        return res.status(503).json({ error: 'Download indisponível no momento. Fale com a secretaria.' });
+      }
+      const mp = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!mp.ok) {
+        return res.status(404).json({ error: 'Pagamento não encontrado.' });
+      }
+      const payment = await mp.json();
+      const meta = payment.metadata || {};
+      const item = getStoreItem(String(meta.product || ''), String(meta.format || ''));
+      const ref = String(payment.external_reference || '');
+      const validPurchase =
+        payment.status === 'approved' &&
+        ref.includes('loja_') &&
+        item &&
+        item.format.kind === 'digital' &&
+        Number(payment.transaction_amount) + 0.001 >= item.format.price;
+      if (!validPurchase) {
+        return res.status(402).json({ error: 'Pagamento ainda não confirmado para este livro.' });
+      }
     }
 
     const file = fs.readFileSync(path.join(process.cwd(), 'api', '_files', 'dorot.pdf.enc'));
