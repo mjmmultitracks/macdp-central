@@ -110,7 +110,7 @@ export function App() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('igreja_theme');
     if (saved) return saved === 'dark';
-    return false; // Padrão: tema claro e acolhedor
+    return true; // Padrão: visual escuro, estilo worship
   });
 
   // Toasts
@@ -487,7 +487,7 @@ export function App() {
             isAuthenticated={isAuthenticated}
             isDarkMode={isDarkMode}
             onToggleTheme={handleToggleTheme}
-            isSolid={!isDarkMode || !!selectedEventForDetail}
+            isSolid={!!selectedEventForDetail}
             churchSettings={db.churchSettings}
           />
 

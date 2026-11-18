@@ -1,7 +1,7 @@
 /* Design System: Ministério Apostólico Caçadores da Presença (MACDP Central) */
 :root {
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-display: 'Montserrat', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Theme Tokens - Light Mode */
@@ -56,11 +56,11 @@
 }
 
 [data-theme='dark'] {
-  --bg-primary: #0b1120;
-  --bg-secondary: #0f172a;
-  --bg-tertiary: #1e293b;
-  --bg-elevated: #1e293b;
-  --bg-glass: rgba(15, 23, 42, 0.85);
+  --bg-primary: #09090b;
+  --bg-secondary: #101013;
+  --bg-tertiary: #1a1a1f;
+  --bg-elevated: #17171c;
+  --bg-glass: rgba(9, 9, 11, 0.85);
 
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
@@ -1277,10 +1277,17 @@ button, input, select, textarea {
 }
 
 
-/* Site público: títulos em serifa para um tom mais institucional e acolhedor */
+/* Site público: estilo worship (títulos pesados, maiúsculos e bem espaçados) */
 .public-site h1,
-.public-site h2,
+.public-site h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1.08;
+}
 .public-site h3 {
   font-family: var(--font-display);
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: 0;
 }
