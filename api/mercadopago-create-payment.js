@@ -28,6 +28,8 @@ export default async function handler(req, res) {
       registrationId,
       paymentMethod = 'pix', // 'pix' or 'preference' (card/checkout pro)
       customAccessToken,
+      description: customDescription,
+      itemTitle,
     } = req.body || {};
 
     const accessToken = (
@@ -66,7 +68,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           transaction_amount: Number(parsedAmount.toFixed(2)),
-          description: `Inscrição: ${title.slice(0, 45)} - MACDP`,
+          description: customDescription ? String(customDescription).slice(0, 80) : `Inscrição: ${title.slice(0, 45)} - MACDP`,
           payment_method_id: 'pix',
           payer: {
             email: payerEmail,
@@ -115,8 +117,8 @@ export default async function handler(req, res) {
           items: [
             {
               id: eventId || 'evento',
-              title: `Inscrição: ${title} - MACDP`,
-              description: `Vaga oficial no evento ${title}`,
+              title: itemTitle ? String(itemTitle).slice(0, 120) : `Inscrição: ${title} - MACDP`,
+              description: customDescription ? String(customDescription).slice(0, 200) : `Vaga oficial no evento ${title}`,
               unit_price: Number(parsedAmount.toFixed(2)),
               quantity: 1,
               currency_id: 'BRL',

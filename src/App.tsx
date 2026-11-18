@@ -17,6 +17,7 @@ import { ToastContainer, ToastMessage } from './components/common/Toast';
 // Public Sections
 import { HeroSection } from './components/public/HeroSection';
 import { MusicSection } from './components/public/MusicSection';
+import { StoreSection } from './components/public/StoreSection';
 import { EventsSection } from './components/public/EventsSection';
 import { SermonsSection } from './components/public/SermonsSection';
 import { AboutSection } from './components/public/AboutSection';
@@ -562,6 +563,9 @@ export function App() {
                 sermons={db.sermons}
                 onPlaySermon={(sermon) => setActiveSermon(sermon)}
               />
+
+              {/* Loja: livros da conferência */}
+              <StoreSection onNotify={addNotification} />
 
               {/* Generosidade: Dízimos & Ofertas */}
               <GivingSection onNotify={addNotification} />
