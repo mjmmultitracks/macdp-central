@@ -22,9 +22,9 @@ export default async function handler(req, res) {
     }
 
     const accessToken = (
-      customAccessToken ||
       process.env.MERCADO_PAGO_ACCESS_TOKEN ||
       process.env.VITE_MERCADO_PAGO_ACCESS_TOKEN ||
+      customAccessToken ||
       ''
     ).trim();
 
