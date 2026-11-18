@@ -68,8 +68,8 @@ export const AboutSection: React.FC = () => {
 
           <figure className="about-photo">
             <img
-              src="/images/macdp_adoracao_evento.jpg"
-              alt="Comunhão e oração no Ministério Apostólico Caçadores da Presença"
+              src="/images/quem-somos.jpg"
+              alt="Culto de adoração na MACDP"
               loading="lazy"
             />
             <figcaption>
@@ -125,7 +125,7 @@ export const AboutSection: React.FC = () => {
           .about-mv h4 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-gold); margin: 0 0 0.4rem; }
           .about-mv p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.55; margin: 0; }
           .about-photo { margin: 0; }
-          .about-photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; border-radius: var(--radius-lg); }
+          .about-photo img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; object-position: 48% center; display: block; border-radius: var(--radius-lg); }
           .about-photo figcaption { margin-top: 0.8rem; font-size: 0.9rem; color: var(--text-secondary); }
           .about-photo figcaption b { color: var(--accent-gold); font-weight: 800; margin-right: 0.15rem; }
           .about-values { max-width: 1100px; margin: 0 auto 5rem; }
