@@ -59,6 +59,10 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
 
   const spotsLeft = event.totalCapacity - event.registeredCount;
   const isSoldOut = spotsLeft <= 0;
+  const nowDate = new Date();
+  const todayIso = `${nowDate.getFullYear()}-${String(nowDate.getMonth() + 1).padStart(2, '0')}-${String(nowDate.getDate()).padStart(2, '0')}`;
+  const isPast = (event.endDate || event.date) < todayIso;
+  const isClosed = isSoldOut || isPast;
   const occupancyPercent = event.totalCapacity > 0
     ? Math.min(100, Math.round((event.registeredCount / event.totalCapacity) * 100))
     : 0;
@@ -913,7 +917,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
 
               {/* Botão de Inscrição Grande */}
               <button
-                disabled={isSoldOut}
+                disabled={isClosed}
                 onClick={() => onStartRegistration(event)}
                 className="btn btn-primary"
                 style={{
@@ -922,13 +926,13 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
                   fontWeight: 900,
                   gap: '0.6rem',
                   borderRadius: 'var(--radius-md)',
-                  boxShadow: isSoldOut ? 'none' : '0 6px 25px rgba(245, 158, 11, 0.45)',
+                  boxShadow: isClosed ? 'none' : '0 6px 25px rgba(245, 158, 11, 0.45)',
                   justifyContent: 'center',
                   width: '100%',
                 }}
               >
                 <Ticket size={22} />
-                <span>{isSoldOut ? 'Vagas Esgotadas' : event.isFree ? 'Garantir Minha Vaga Gratuita' : `Inscrever-se • R$ ${event.price?.toFixed(2)}`}</span>
+                <span>{isPast ? 'Inscrições encerradas' : isSoldOut ? 'Vagas Esgotadas' : event.isFree ? 'Garantir Minha Vaga Gratuita' : `Inscrever-se • R$ ${event.price?.toFixed(2)}`}</span>
               </button>
 
               {/* Selos de Confiança */}
@@ -1004,6 +1008,7 @@ export const EventDetailPage: React.FC<EventDetailPageProps> = ({
           onSelectSize={setSelectedShirtSize}
           isShirtIncluded={false}
           onToggleIncludeShirt={() => {
+            if (isClosed) return;
             onStartRegistration(event);
           }}
           frontImageUrl={event.shirtFrontImageUrl}

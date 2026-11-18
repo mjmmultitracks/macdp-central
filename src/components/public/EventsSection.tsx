@@ -31,6 +31,12 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
+  // Separa eventos que ainda vão acontecer dos que já terminaram
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const upcomingEvents = events.filter((e) => (e.endDate || e.date) >= todayIso);
+  const pastEvents = events.filter((e) => (e.endDate || e.date) < todayIso);
+
   const regularServices = (customServices || [
     {
       id: 'domingo_1',
@@ -185,6 +191,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
             </div>
 
             {/* View Mode Toggle: Lista vs Colunas */}
+            {upcomingEvents.length > 0 && (
             <div style={{ display: 'flex', gap: '0.25rem', background: 'var(--bg-secondary)', padding: '0.25rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
               <button
                 onClick={() => setViewMode('list')}
@@ -205,12 +212,13 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                 <span>Colunas</span>
               </button>
             </div>
+            )}
           </div>
 
           {viewMode === 'list' ? (
             /* ==================== MODO LISTA ==================== */
             <div key="list-view" className="animate-fade-scale" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {events.map((evt) => {
+              {upcomingEvents.map((evt) => {
                 const spotsLeft = evt.totalCapacity - evt.registeredCount;
                 return (
                   <div
@@ -352,7 +360,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                 gap: '2rem',
               }}
             >
-              {events.map((evt) => {
+              {upcomingEvents.map((evt) => {
                 const spotsLeft = evt.totalCapacity - evt.registeredCount;
                 return (
                   <div
@@ -463,6 +471,72 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {upcomingEvents.length === 0 && (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '2.5rem 1.5rem',
+                border: '1px dashed var(--border-medium)',
+                borderRadius: 'var(--radius-lg)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <strong style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
+                Nenhum evento programado no momento
+              </strong>
+              Os cultos semanais continuam abertos a todos. Novos eventos serão divulgados aqui e em nossas redes.
+            </div>
+          )}
+
+          {pastEvents.length > 0 && (
+            <div style={{ marginTop: '2.5rem' }}>
+              <h4
+                style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: 'var(--text-muted)',
+                  marginBottom: '0.75rem',
+                }}
+              >
+                Eventos anteriores
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {pastEvents.map((evt) => (
+                  <button
+                    key={evt.id}
+                    type="button"
+                    onClick={() => onOpenEventDetail(evt)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '1rem',
+                      padding: '0.9rem 0',
+                      background: 'none',
+                      border: 0,
+                      borderTop: '1px solid var(--border-subtle)',
+                      color: 'var(--text-secondary)',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span>
+                      <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{evt.title}</strong>
+                      <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        {formatEventDateRange(evt.date, evt.endDate)}
+                      </span>
+                    </span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                      Encerrado
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
